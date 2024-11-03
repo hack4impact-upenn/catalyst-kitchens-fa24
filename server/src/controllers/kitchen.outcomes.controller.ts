@@ -1,9 +1,13 @@
 /* eslint-disable consistent-return */
 import express from 'express';
+import { DocumentDefinition } from 'mongoose';
 import ApiError from '../util/apiError.ts';
 import StatusCode from '../util/statusCode.ts';
 import { IKitchenOutcomes } from '../models/kitchen.outcomes.model.ts';
-import { getOneKitchenOutcomes } from '../services/kitchen.outcomes.service.ts';
+import {
+  getOneKitchenOutcomes,
+  addKitchenOutcomes,
+} from '../services/kitchen.outcomes.service.ts';
 
 const getOneKitchenOutcomesController = async (
   req: express.Request,
@@ -29,4 +33,18 @@ const getOneKitchenOutcomesController = async (
     });
 };
 
-export { getOneKitchenOutcomesController };
+const addKitchenOutcome = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) => {
+  const kitchenData: IKitchenOutcomes = req.body;
+  return addKitchenOutcomes(kitchenData)
+    .then((kitchenData) => {
+      res.status(StatusCode.OK).send(kitchenData);
+    })
+    .catch(() => {
+      next(ApiError.internal('Kitchen outcomes form data could not be added'));
+    });
+};
+export { getOneKitchenOutcomesController, addKitchenOutcomeController };
