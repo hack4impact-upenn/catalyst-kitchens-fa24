@@ -10,7 +10,7 @@ interface IOrganization extends mongoose.Document {
   zip: string;
 }
 const OrganizationSchema = new mongoose.Schema({
-  organization_name: {
+  organizationName: {
     type: String,
     required: true,
   },
