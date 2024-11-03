@@ -11,4 +11,9 @@ const getOneKitchenOutcomes = async (year: Date, orgId: string) => {
   return outcomes;
 };
 
-export { getOneKitchenOutcomes };
+const getAllKitchenOutcomesByYear = async (year: Date) => {
+  const outcomes = await KitchenOutcomes.find({ year }).exec();
+  return outcomes;
+};
+
+export { getOneKitchenOutcomes, getAllKitchenOutcomesByYear };

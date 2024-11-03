@@ -3,7 +3,10 @@ import express from 'express';
 import ApiError from '../util/apiError.ts';
 import StatusCode from '../util/statusCode.ts';
 import { IKitchenOutcomes } from '../models/kitchen.outcomes.model.ts';
-import { getOneKitchenOutcomes } from '../services/kitchen.outcomes.service.ts';
+import {
+  getOneKitchenOutcomes,
+  getAllKitchenOutcomesByYear,
+} from '../services/kitchen.outcomes.service.ts';
 
 const getOneKitchenOutcomesController = async (
   req: express.Request,
@@ -29,4 +32,29 @@ const getOneKitchenOutcomesController = async (
     });
 };
 
-export { getOneKitchenOutcomesController };
+const getAllKitchenOutcomesByYearController = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) => {
+  const { year } = req.params;
+  if (!year) {
+    next(ApiError.missingFields(['year']));
+    return;
+  }
+  const yearDate = new Date(year);
+  return getAllKitchenOutcomesByYear(yearDate)
+    .then((kitchenOutcomes: unknown) => {
+      res.status(StatusCode.OK).send(kitchenOutcomes);
+    })
+    .catch(() => {
+      next(
+        ApiError.internal('Unable to retrieve all kitchen outcomes by year'),
+      );
+    });
+};
+
+export {
+  getOneKitchenOutcomesController,
+  getAllKitchenOutcomesByYearController,
+};
