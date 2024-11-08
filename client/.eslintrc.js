@@ -8,6 +8,7 @@ module.exports = {
     'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
     'prettier/prettier': ['error', { endOfLine: 'auto' }],
     'import/extensions': [0, { tsx: 'always' }, { ts: 'always' }],
+    'react/function-component-definition': 0, // Disable the rule
   },
   env: {
     browser: true,

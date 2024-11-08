@@ -1,3 +1,5 @@
+/* eslint-disable no-underscore-dangle */
+
 import React from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
@@ -25,6 +27,7 @@ import InviteRegisterPage from './Authentication/InviteRegisterPage.tsx';
 import SignUpPage from './SignUp/SignUpPage.tsx';
 import KitchenOutcome from './components/forms/KitchenOutcome.tsx';
 import ProgramOutcome from './components/forms/ProgramOutcome.tsx';
+import ProgramOutcomeViz from './components/ProgramOutcomeViz.tsx';
 
 function App() {
   return (
@@ -46,6 +49,10 @@ function App() {
                     <Route
                       path="/program-outcome-test"
                       element={<ProgramOutcome />}
+                    />
+                    <Route
+                      path="/program-outcome-viz"
+                      element={<ProgramOutcomeViz />}
                     />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
