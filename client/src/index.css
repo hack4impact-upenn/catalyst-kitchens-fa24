@@ -1,0 +1,10 @@
+/* centers text */
+.Button {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.custom-form-grid {
+  background-color: #121826;
+}
