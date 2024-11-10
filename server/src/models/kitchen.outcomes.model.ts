@@ -1,18 +1,13 @@
 import mongoose from 'mongoose';
 
 const KitchenOutcomesSchema = new mongoose.Schema({
-  orgId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'MemberOrganization',
-    required: true,
-  },
-  year: {
-    type: Date,
+  email: {
+    type: String,
     required: true,
   },
   shareSurvey: {
-    type: String,
-    enum: ['Yes', 'No'],
+    type: Boolean,
+    required: true,
   },
   organizationName: {
     type: String,
@@ -216,13 +211,11 @@ const KitchenOutcomesSchema = new mongoose.Schema({
 });
 
 interface IKitchenOutcomes extends mongoose.Document {
-  _id: string;
-  orgId: string;
-  year: Date;
+  email: string;
   shareSurvey: string;
-  organizationName: string;
   responderName: string;
   responderTitle: string;
+  organizationName: string;
   hungerReliefsMealsServed: number;
   typeOfMealsServed: string[];
   costPerMeal: number;

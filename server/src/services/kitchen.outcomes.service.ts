@@ -68,6 +68,18 @@ const deleteKitchenOutcomeById = async (id: string) => {
   }
 };
 
+const addKitchenOutcomes = async (obj: IKitchenOutcomes) => {
+  const newOutcomes = new KitchenOutcomes(obj);
+  console.log('tried to save');
+  const outcomes = newOutcomes;
+  try {
+    const outcomes = await newOutcomes.save();
+  } catch (error) {
+    console.log(error);
+  }
+  console.log('service saved');
+  return outcomes;
+};
 export {
   getOneKitchenOutcomes,
   getAllYearsForOrganization,
@@ -75,4 +87,5 @@ export {
   getAllOrganizations,
   getAllKitchenOutcomesByOrg,
   deleteKitchenOutcomeById,
+  addKitchenOutcomes,
 };

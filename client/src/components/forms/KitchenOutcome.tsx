@@ -20,6 +20,7 @@ import {
   MenuItem,
   InputLabel,
 } from '@mui/material';
+import { postData } from '../../util/api';
 
 export default function KitchenOutcome() {
   // Define the form state type
@@ -29,7 +30,7 @@ export default function KitchenOutcome() {
     responderName: string;
     responderTitle: string;
     organizationName: string;
-    noMealsServerd: number;
+    noMealsServed: number;
     mealTypes: {
       childCare: boolean;
       school: boolean;
@@ -105,7 +106,7 @@ export default function KitchenOutcome() {
     responderName: '',
     responderTitle: '',
     organizationName: '',
-    noMealsServerd: 0,
+    noMealsServed: 0,
     mealTypes: {
       childCare: false,
       school: false,
@@ -220,6 +221,14 @@ export default function KitchenOutcome() {
     });
   }
 
+  const handleSubmit = async () => {
+    try {
+      await postData('kitchen_outcomes/', formState);
+    } catch (error) {
+      console.error('Error submitting kitchen outcomes: ', error);
+    }
+  };
+
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto' }}>
       <h1>Submit Kitchen Outcomes</h1>
@@ -325,7 +334,7 @@ export default function KitchenOutcome() {
           onChange={(e) =>
             setFormState({
               ...formState,
-              noMealsServerd: Number(e.target.value),
+              noMealsServed: Number(e.target.value),
             })
           }
         />
@@ -1328,7 +1337,7 @@ export default function KitchenOutcome() {
             color: '#F5F5F5',
             width: '100%',
           }}
-          onClick={() => console.log(formState)}
+          onClick={() => handleSubmit()}
         >
           Submit Kitchen Data
         </Button>

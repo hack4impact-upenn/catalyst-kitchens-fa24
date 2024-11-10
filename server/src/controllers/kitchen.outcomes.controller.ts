@@ -10,6 +10,7 @@ import {
   getAllYearsForOrganization,
   getAllKitchenOutcomesByOrg,
   deleteKitchenOutcomeById,
+  addKitchenOutcomes,
 } from '../services/kitchen.outcomes.service.ts';
 
 const getOneKitchenOutcomesController = async (
@@ -129,4 +130,20 @@ const deleteKitchenOutcomeByIdController = async (
   }
 };
 
-export { deleteKitchenOutcomeByIdController };
+const addKitchenOutcomesController = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) => {
+  const kitchenOutcomes: IKitchenOutcomes = req.body;
+  return addKitchenOutcomes(kitchenOutcomes)
+    .then((newKitchenOutcomes: IKitchenOutcomes) => {
+      res.status(StatusCode.OK).send(newKitchenOutcomes);
+    })
+    .catch(() => {
+      console.log('ERROR IN CONTROLLER');
+      next(ApiError.internal('Unable to add kitchen outcomes'));
+    });
+};
+
+export { deleteKitchenOutcomeByIdController, addKitchenOutcomesController };
