@@ -8,6 +8,8 @@ import {
   getAllYearsForOrganizationController,
   getKitchenOutcomesByOrg,
   deleteKitchenOutcomeByIdController,
+  getAverageSocialEnterpriseRevenueController,
+  getGrossRevenueController,
 } from '../controllers/kitchen.outcomes.controller.ts';
 
 const router = express.Router();
@@ -25,5 +27,9 @@ router.get('/get/years/:orgId', getAllYearsForOrganizationController);
 router.get('/get/all/:orgId', getKitchenOutcomesByOrg);
 
 router.delete('/delete/:id', deleteKitchenOutcomeByIdController);
+
+router.get('/get/avgRevenue/:year', getAverageSocialEnterpriseRevenueController);
+
+router.get('/get/avgRevenue/:year/:type', getGrossRevenueController);
 
 export default router;

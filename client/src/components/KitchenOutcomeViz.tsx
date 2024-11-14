@@ -16,6 +16,7 @@ import {
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { getData } from '../util/api';
+import RevenueBarChart from './RevenueBarChart';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -136,6 +137,25 @@ function KitchenOutcomesVisualization() {
   const [orgName, setOrgName] = useState('');
   const [orgId, setOrgId] = useState('');
   const [year, setYear] = useState<number | ''>('');
+  const [avgRevenue, setAvgRevenue] = useState<number | ''>('');
+  const [grossRevenueCafe, setGrossRevenueCafe] = useState<{
+    [key: string]: number;
+  }>({});
+  const [grossRevenueCatering, setGrossRevenueCatering] = useState<{
+    [key: string]: number;
+  }>({});
+  const [grossRevenueSubscription, setGrossRevenueSubscription] = useState<{
+    [key: string]: number;
+  }>({});
+  const [grossRevenueTruck, setGrossRevenueTruck] = useState<{
+    [key: string]: number;
+  }>({});
+  const [grossRevenueRestaurant, setGrossRevenueRestaurant] = useState<{
+    [key: string]: number;
+  }>({});
+  const [grossRevenueWholesale, setGrossRevenueWholesale] = useState<{
+    [key: string]: number;
+  }>({});
 
   const tabNames = [
     'Hunger Relief',
@@ -143,6 +163,7 @@ function KitchenOutcomesVisualization() {
     'Capital Projects',
     'Organization Info',
   ];
+
   useEffect(() => {
     const findOrgId = async () => {
       try {
@@ -155,6 +176,7 @@ function KitchenOutcomesVisualization() {
     };
     findOrgId();
   }, [orgName]);
+
   useEffect(() => {
     const fetchOrgList = async () => {
       try {
@@ -172,6 +194,111 @@ function KitchenOutcomesVisualization() {
   }, []);
 
   useEffect(() => {
+    if (!year) return;
+    const getAvgRevenue = async () => {
+      try {
+        const response = await getData(
+          `kitchen_outcomes/get/avgRevenue/${year}`,
+        );
+        setAvgRevenue(response.data.averageRevenue);
+      } catch (error) {
+        console.error('Error fetching orgs', error);
+      }
+    };
+    getAvgRevenue();
+  }, [avgRevenue, year]);
+
+  useEffect(() => {
+    if (!year) return;
+    const getGrossRevenueCafe = async () => {
+      try {
+        const response = await getData(
+          `kitchen_outcomes/get/avgRevenue/${year}/cafe`,
+        );
+        setGrossRevenueCafe(response.data.grossRevenueCounts);
+      } catch (error) {
+        console.error('Error fetching orgs', error);
+      }
+    };
+    getGrossRevenueCafe();
+  }, [grossRevenueCafe, year]);
+
+  useEffect(() => {
+    if (!year) return;
+    const getGrossRevenueCatering = async () => {
+      try {
+        const response = await getData(
+          `kitchen_outcomes/get/avgRevenue/${year}/catering`,
+        );
+        setGrossRevenueCatering(response.data.grossRevenueCounts);
+      } catch (error) {
+        console.error('Error fetching orgs', error);
+      }
+    };
+    getGrossRevenueCatering();
+  }, [grossRevenueCatering, year]);
+
+  useEffect(() => {
+    if (!year) return;
+    const getGrossRevenueTruck = async () => {
+      try {
+        const response = await getData(
+          `kitchen_outcomes/get/avgRevenue/${year}/truck`,
+        );
+        setGrossRevenueTruck(response.data.grossRevenueCounts);
+      } catch (error) {
+        console.error('Error fetching orgs', error);
+      }
+    };
+    getGrossRevenueTruck();
+  }, [grossRevenueTruck, year]);
+
+  useEffect(() => {
+    if (!year) return;
+    const getGrossRevenueSubscription = async () => {
+      try {
+        const response = await getData(
+          `kitchen_outcomes/get/avgRevenue/${year}/subscription`,
+        );
+        setGrossRevenueSubscription(response.data.grossRevenueCounts);
+      } catch (error) {
+        console.error('Error fetching orgs', error);
+      }
+    };
+    getGrossRevenueSubscription();
+  }, [grossRevenueSubscription, year]);
+
+  useEffect(() => {
+    if (!year) return;
+    const getGrossRevenueRestaurant = async () => {
+      try {
+        const response = await getData(
+          `kitchen_outcomes/get/avgRevenue/${year}/restaurant`,
+        );
+        setGrossRevenueRestaurant(response.data.grossRevenueCounts);
+      } catch (error) {
+        console.error('Error fetching orgs', error);
+      }
+    };
+    getGrossRevenueRestaurant();
+  }, [grossRevenueRestaurant, year]);
+
+  useEffect(() => {
+    if (!year) return;
+    const getGrossRevenueWholesale = async () => {
+      try {
+        const response = await getData(
+          `kitchen_outcomes/get/avgRevenue/${year}/wholesale`,
+        );
+        setGrossRevenueWholesale(response.data.grossRevenueCounts);
+      } catch (error) {
+        console.error('Error fetching orgs', error);
+      }
+    };
+    getGrossRevenueWholesale();
+  }, [grossRevenueWholesale, year]);
+
+  useEffect(() => {
     const fetchOutcomes = async () => {
       if (!orgId) return;
       try {
@@ -184,6 +311,7 @@ function KitchenOutcomesVisualization() {
 
     fetchOutcomes();
   }, [year, orgId]);
+
   useEffect(() => {
     const settingYearList = async () => {
       if (!orgId) return;
@@ -815,6 +943,67 @@ function KitchenOutcomesVisualization() {
               Social Enterprise
             </Typography>
             <Grid container spacing={4} direction="column">
+              {/* Total Revenue */}
+              <Grid item container spacing={2}>
+                <Grid item xs={12} md={6}>
+                  <Card
+                    sx={{
+                      p: 3,
+                      bgcolor: '#f8fbf8',
+                      border: '1px solid rgba(72, 148, 72, 0.2)',
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      align="center"
+                      gutterBottom
+                      sx={{ color: '#2e7d32' }}
+                    >
+                      Total Social Enterprise Revenue
+                    </Typography>
+                    <Typography
+                      variant="h4"
+                      align="center"
+                      sx={{
+                        color: '#2e7d32',
+                        fontWeight: 500,
+                      }}
+                    >
+                      $
+                      {surveyData?.retailSocialEnterpriseRevenue?.toLocaleString() ||
+                        'N/A'}
+                    </Typography>
+                  </Card>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Card
+                    sx={{
+                      p: 3,
+                      bgcolor: '#f8fbf8',
+                      border: '1px solid rgba(72, 148, 72, 0.2)',
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      align="center"
+                      gutterBottom
+                      sx={{ color: '#2e7d32' }}
+                    >
+                      Network Average Revenue
+                    </Typography>
+                    <Typography
+                      variant="h4"
+                      align="center"
+                      sx={{
+                        color: '#2e7d32',
+                        fontWeight: 500,
+                      }}
+                    >
+                      ${avgRevenue?.toLocaleString() || 'N/A'}
+                    </Typography>
+                  </Card>
+                </Grid>
+              </Grid>
               {/* Revenue Distribution Chart */}
               <Grid item>
                 <Card
@@ -829,103 +1018,46 @@ function KitchenOutcomesVisualization() {
 
                   <Grid container spacing={3}>
                     {[
-                      { label: 'Cafe', value: surveyData?.grossRevenueCafe },
                       {
-                        label: 'Restaurant',
-                        value: surveyData?.grossRevenueRestaurant,
+                        label: 'Cafe',
+                        all: grossRevenueCafe,
+                        value: surveyData?.grossRevenueCafe || '',
                       },
                       {
                         label: 'Catering',
-                        value: surveyData?.grossRevenueCatering,
-                      },
-                      {
-                        label: 'Food Truck',
-                        value: surveyData?.grossRevenueFoodTruck,
-                      },
-                      {
-                        label: 'Wholesale',
-                        value: surveyData?.grossRevenueWholesale,
+                        all: grossRevenueCatering,
+                        value: surveyData?.grossRevenueCatering || '',
                       },
                       {
                         label: 'Food Subscription',
-                        value: surveyData?.grossRevenueFoodSubscription,
+                        all: grossRevenueSubscription,
+                        value: surveyData?.grossRevenueFoodSubscription || '',
+                      },
+                      {
+                        label: 'Food Truck',
+                        all: grossRevenueTruck,
+                        value: surveyData?.grossRevenueFoodTruck || '',
+                      },
+                      {
+                        label: 'Restaurant',
+                        all: grossRevenueRestaurant,
+                        value: surveyData?.grossRevenueRestaurant || '',
+                      },
+                      {
+                        label: 'Wholesale',
+                        all: grossRevenueWholesale,
+                        value: surveyData?.grossRevenueWholesale || '',
                       },
                     ].map((enterprise) => (
-                      <Grid item xs={12} sm={6} md={4} key={enterprise.label}>
-                        <Card
-                          elevation={2}
-                          sx={{
-                            p: 2,
-                            bgcolor:
-                              enterprise.value === 'No Enterprise'
-                                ? '#f5f5f5'
-                                : 'rgba(236, 239, 237, 0.7)',
-                            height: '100%',
-                            border:
-                              enterprise.value === 'No Enterprise'
-                                ? 'none'
-                                : '1px solid rgba(72, 148, 72, 0.2)',
-                          }}
-                        >
-                          <Typography
-                            variant="subtitle1"
-                            gutterBottom
-                            sx={{
-                              color:
-                                enterprise.value === 'No Enterprise'
-                                  ? 'text.secondary'
-                                  : '#2e7d32',
-                            }}
-                          >
-                            {enterprise.label}
-                          </Typography>
-                          <Typography
-                            variant="h6"
-                            color={
-                              enterprise.value === 'No Enterprise'
-                                ? 'text.secondary'
-                                : '#2e7d32'
-                            }
-                            sx={{ fontWeight: 500 }}
-                          >
-                            {enterprise.value || 'N/A'}
-                          </Typography>
-                        </Card>
+                      <Grid item xs={12} sm={6} key={enterprise.label}>
+                        <RevenueBarChart
+                          grossRevenueCounts={enterprise.all} // Pass the gross revenue counts
+                          userOrganizationRevenue={enterprise.value} // Pass the specific value for each enterprise
+                          label={enterprise.label} // Pass the label for each enterprise
+                        />
                       </Grid>
                     ))}
                   </Grid>
-                </Card>
-              </Grid>
-
-              {/* Total Revenue */}
-              <Grid item>
-                <Card
-                  sx={{
-                    p: 3,
-                    bgcolor: '#f8fbf8',
-                    border: '1px solid rgba(72, 148, 72, 0.2)',
-                  }}
-                >
-                  <Typography
-                    variant="h6"
-                    align="center"
-                    gutterBottom
-                    sx={{ color: '#2e7d32' }}
-                  >
-                    Total Social Enterprise Revenue
-                  </Typography>
-                  <Typography
-                    variant="h4"
-                    align="center"
-                    sx={{
-                      color: '#2e7d32',
-                      fontWeight: 500,
-                    }}
-                  >
-                    $
-                    {surveyData?.retailSocialEnterpriseRevenue?.toLocaleString() ||
-                      'N/A'}
-                  </Typography>
                 </Card>
               </Grid>
             </Grid>

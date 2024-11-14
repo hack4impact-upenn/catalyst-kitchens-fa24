@@ -10,6 +10,8 @@ import {
   getAllYearsForOrganization,
   getAllKitchenOutcomesByOrg,
   deleteKitchenOutcomeById,
+  getAverageSocialEnterpriseRevenue,
+  getGrossRevenue,
 } from '../services/kitchen.outcomes.service.ts';
 
 const getOneKitchenOutcomesController = async (
@@ -130,3 +132,45 @@ const deleteKitchenOutcomeByIdController = async (
 };
 
 export { deleteKitchenOutcomeByIdController };
+
+
+const getAverageSocialEnterpriseRevenueController = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) => {
+  try {
+    const { year } = req.params;
+    if (!year) {
+      next(ApiError.missingFields(['year']));
+      return;
+    }
+    const averageRevenue = await getAverageSocialEnterpriseRevenue(Number(year));
+    res.status(StatusCode.OK).send(averageRevenue);
+  } catch (error) {
+    next(ApiError.internal('Unable to retrieve average revenue'));
+  }
+};
+
+export { getAverageSocialEnterpriseRevenueController };
+
+
+const getGrossRevenueController = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) => {
+  try {
+    const { year, type } = req.params;
+    if (!year || !type) {
+      next(ApiError.missingFields(['year', 'type']));
+      return;
+    }
+    const grossRevenue = await getGrossRevenue(Number(year), type);
+    res.status(StatusCode.OK).send(grossRevenue);
+  } catch (error) {
+    next(ApiError.internal('Unable to retrieve gross revenue'));
+  }
+};
+
+export { getGrossRevenueController };

@@ -68,6 +68,81 @@ const deleteKitchenOutcomeById = async (id: string) => {
   }
 };
 
+const getAverageSocialEnterpriseRevenue = async (year: number) => {
+  try {
+    const outcomes = await KitchenOutcomes.find({
+      year: {
+      $gt: new Date(year - 1, 11, 31),
+      $lt: new Date(year + 1, 0, 1),
+      },
+    }).exec();
+    if (!outcomes || outcomes.length === 0) {
+      throw new Error('No kitchen outcomes found for the specified year');
+    }
+
+    const totalRevenue = outcomes.reduce((sum, outcome) => sum + outcome.retailSocialEnterpriseRevenue, 0);
+    const averageRevenue = totalRevenue / outcomes.length;
+
+    return { averageRevenue: averageRevenue };
+  } catch (error) {
+    console.error('Error calculating average retail social enterprise revenue for the specified year:', error);
+    throw new Error('Unable to calculate average retail social enterprise revenue for the specified year');
+  }
+};
+
+const getGrossRevenue = async (year: number, type: string) => {
+  try {
+    const outcomes = await KitchenOutcomes.find({
+      year: {
+        $gt: new Date(year - 1, 11, 31),
+        $lt: new Date(year + 1, 0, 1),
+      },
+    }).exec();
+
+    if (!outcomes || outcomes.length === 0) {
+      throw new Error('No kitchen outcomes found for the specified year');
+    }
+
+    const grossRevenueCounts = outcomes.reduce((acc: { [key: string]: number }, outcome) => {
+      let revenue;
+      switch (type) {
+        case 'cafe':
+          revenue = outcome.grossRevenueCafe;
+          break;
+        case 'catering':
+          revenue = outcome.grossRevenueCatering;
+          break;
+        case 'subscription':
+          revenue = outcome.grossRevenueFoodSubscription;
+          break;
+        case 'truck':
+          revenue = outcome.grossRevenueFoodTruck;
+          break;
+        case 'restaurant':
+          revenue = outcome.grossRevenueRestaurant;
+          break;
+        case 'wholesale':
+          revenue = outcome.grossRevenueWholesale;
+          break;
+        default:
+          throw new Error('Invalid type specified');
+      }
+      if (acc[revenue]) {
+        acc[revenue]++;
+      } else {
+        acc[revenue] = 1;
+      }
+      return acc;
+    }, {});
+
+    return { grossRevenueCounts };
+  } catch (error) {
+    console.error('Error calculating gross revenue cafe counts for the specified year:', error);
+    throw new Error('Unable to calculate gross revenue cafe counts for the specified year');
+  }
+};
+
+
 export {
   getOneKitchenOutcomes,
   getAllYearsForOrganization,
@@ -75,4 +150,6 @@ export {
   getAllOrganizations,
   getAllKitchenOutcomesByOrg,
   deleteKitchenOutcomeById,
+  getAverageSocialEnterpriseRevenue,
+  getGrossRevenue,
 };
