@@ -27,6 +27,7 @@ import KitchenOutcome from './components/forms/KitchenOutcome.tsx';
 import KitchenOutcomeViz from './components/KitchenOutcomeViz.tsx';
 import ProgramOutcome from './components/forms/ProgramOutcome.tsx';
 import OrgAdminPage from './AdminDashboard/OrgAdminPage.tsx';
+import ProgramOutcomesVisualization from './components/ProgramOutcomesViz';
 
 function App() {
   return (
@@ -52,6 +53,10 @@ function App() {
                     <Route
                       path="/program-outcome-test"
                       element={<ProgramOutcome />}
+                    />
+                    <Route
+                      path="/program-outcomes-viz-test"
+                      element={<ProgramOutcomesVisualization />}
                     />
                     <Route path="/login" element={<LoginPage />} />
                     <Route
