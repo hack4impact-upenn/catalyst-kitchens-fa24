@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+/* eslint-disable no-underscore-dangle */
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Grid,
   Card,
@@ -36,8 +37,6 @@ interface ProgramData {
   year: Date;
   programCostPerTrainee?: number;
   programDesignedForYouthAndAdults?: boolean;
-
-  // Youth-specific metrics
   youthTrained?: number;
   youthProgramRetentionRate?: number;
   youthPositiveOutcomes?: number;
@@ -48,26 +47,11 @@ interface ProgramData {
   youthJobRetentionTwentyFourMonths?: number;
   youthProgramWeeks?: number;
   youthProgramHours?: number;
-  youthEnrollmentStructure?: 'Staggered' | 'Single' | 'Both';
-  youthCompensation?: 'Hourly' | 'Stipend' | 'None';
-  youthTrainedDefinition?:
-    | 'The first day of program'
-    | '2-4 day provisional period'
-    | 'One week provisional period'
-    | 'Two week provisional period';
-  youthGraduatedDefinition?:
-    | 'All weeks of program'
-    | 'Early exit for employment allowed'
-    | 'Other';
-  youthOutcomesMeasure?:
-    | 'High School Graduation'
-    | 'Return to School'
-    | 'Family Reunificiation'
-    | 'Non-Recidivism'
-    | 'Stable Housing'
-    | 'Other';
-
-  // Adult-specific metrics
+  youthEnrollmentStructure?: string;
+  youthCompensation?: string;
+  youthTrainedDefinition?: string;
+  youthGraduatedDefinition?: string;
+  youthOutcomesMeasure?: string;
   programsThatServeAdults: boolean;
   adultsTrained?: number;
   adultsGraduated?: number;
@@ -83,17 +67,10 @@ interface ProgramData {
   adultWageTwentyFourMonths?: number;
   adultProgramWeeks?: number;
   adultProgramHours?: number;
-  adultEnrollmentStructure?: 'Single Cohort' | 'Staggered';
-  adultCompensation?: 'Hourly' | 'Stipend' | 'None';
-  adultTrainedDefinition?:
-    | 'The first day of program'
-    | '2-4 day provisional period'
-    | 'One week provisional period'
-    | 'Two week provisional period'
-    | 'Other';
+  adultEnrollmentStructure?: string;
+  adultCompensation?: string;
+  adultTrainedDefinition?: string;
   adultGraduatedDefinition?: number;
-
-  // Demographics
   traineeAge?: number;
   traineePercentFemale?: number;
   traineePercentMale?: number;
@@ -108,8 +85,6 @@ interface ProgramData {
   traineeWhite?: number;
   traineeOtherRace?: number;
   traineeRaceUnknown?: number;
-
-  // Barriers
   barrierReturningCitizensOrFormerlyIncarceratedPersons?: number;
   barrierPhysicalDisability?: number;
   barrierIntellectualOrDevelopmentalDisability?: number;
@@ -118,92 +93,92 @@ interface ProgramData {
   barrierNewAmericans?: number;
   barrierInRecovery?: number;
   barrierVeteran?: number;
-
-  // Wrap-around services
-  wrapAroundServicesHousing?:
-    | 'You mostly facilitate access through partner agency'
-    | 'Your program does not provide or facilitate access'
-    | 'You mostly provide in-house';
-  wrapAroundServicesLifeSkillsOrSocialEmotionalLearning?:
-    | 'You mostly facilitate access through partner agency'
-    | 'Your program does not provide or facilitate access'
-    | 'You mostly provide in-house';
-  wrapAroundServicesCaseManagement?:
-    | 'You mostly facilitate access through partner agency'
-    | 'Your program does not provide or facilitate access'
-    | 'You mostly provide in-house';
-  wrapAroundServicesJobSearchAndPlacement?:
-    | 'You mostly facilitate access through partner agency'
-    | 'Your program does not provide or facilitate access'
-    | 'You mostly provide in-house';
-  wrapAroundServicesRecoveryTreatment?:
-    | 'You mostly facilitate access through partner agency'
-    | 'Your program does not provide or facilitate access'
-    | 'You mostly provide in-house';
-  wrapAroundServicesMentalHealthServices?:
-    | 'You mostly facilitate access through partner agency'
-    | 'Your program does not provide or facilitate access'
-    | 'You mostly provide in-house';
-  wrapAroundServicesHealthcareAllOther?:
-    | 'You mostly facilitate access through partner agency'
-    | 'Your program does not provide or facilitate access'
-    | 'You mostly provide in-house';
-  wrapAroundServicesChildcare?:
-    | 'You mostly facilitate access through partner agency'
-    | 'Your program does not provide or facilitate access'
-    | 'You mostly provide in-house';
-  wrapAroundServicesTransportation?:
-    | 'You mostly facilitate access through partner agency'
-    | 'Your program does not provide or facilitate access'
-    | 'You mostly provide in-house';
+  wrapAroundServicesHousing?: string;
+  wrapAroundServicesLifeSkillsOrSocialEmotionalLearning?: string;
+  wrapAroundServicesCaseManagement?: string;
+  wrapAroundServicesJobSearchAndPlacement?: string;
+  wrapAroundServicesRecoveryTreatment?: string;
+  wrapAroundServicesMentalHealthServices?: string;
+  wrapAroundServicesHealthcareAllOther?: string;
+  wrapAroundServicesChildcare?: string;
+  wrapAroundServicesTransportation?: string;
   otherPleaseSpecifyOtherWrapAroundServices?: string;
-
-  // Funding and certifications
   fundingPercentFromPublicFunding?: number;
   fundingPercentFromPrivateFunding?: number;
   fundingPercentFromSocialEnterpriseOrGeneratedRevenue?: number;
-  SNAPEAndT?: 'Yes' | 'No But' | 'No And';
-  WIOA?: 'Yes' | 'No But' | 'No And';
-  curriculum?: 'All' | 'Part';
-  programCertifications?:
-    | 'ACF Quality/Approved Program'
-    | 'DOL approved apprenticeship'
-    | 'State Association apprenticeship'
-    | 'Local or State Dept. of Education or Community College'
-    | 'Other';
+  SNAPEAndT?: string;
+  WIOA?: string;
+  curriculum?: string;
+  programCertifications?: string;
   otherProgramCertifications?: string;
-  participantCertifications?:
-    | 'Basic Food Safety (eg ServSafe Handler or similar)'
-    | 'Advanced Food Safety'
-    | 'Credit toward Comm College ACF Certification'
-    | 'NRA (eg Pro Start)'
-    | 'AHLEI (eg Kitchen Cook)'
-    | 'Guest Service Gold'
-    | 'Certified Guest Service Professional, etc.)'
-    | 'Other';
+  participantCertifications?: string;
   otherParticipantCertifications?: string;
-
-  // Employment
   internshipOrExternship?: boolean;
   internshipOrExternshipDescription?: string;
   minimumWage: number;
-  jobType: '1-25%' | '26-50%' | '51-75%' | '76-100%';
-  jobCategory?:
-    | 'Food Service: restaurant, cafe'
-    | 'Food Service: institutional'
-    | 'Food Service: grocery'
-    | 'Customer Service and Retail'
-    | 'Transportation & warehousing'
-    | 'healthcare & social ssistance'
-    | 'safety & maintenance'
-    | 'Construction'
-    | 'Other';
+  jobType: string;
+  jobCategory?: string;
   alumniHiredByOrg?: number;
-
-  // Organization info
   organizationName: string;
   responderName: string;
   responderTitle: string;
+}
+
+interface OrgNameToId {
+  [key: string]: string;
+}
+
+interface NetworkComparison {
+  value: number | null;
+  networkAverage: number | null;
+}
+
+interface SummaryData {
+  barriers: {
+    returningCitizens: NetworkComparison;
+    physicalDisability: NetworkComparison;
+    intellectualDisability: NetworkComparison;
+    unhoused: NetworkComparison;
+    mentalHealth: NetworkComparison;
+    newAmericans: NetworkComparison;
+    inRecovery: NetworkComparison;
+    veteran: NetworkComparison;
+  };
+  demographics: {
+    gender: {
+      female: NetworkComparison;
+      male: NetworkComparison;
+      nonBinary: NetworkComparison;
+      transgender: NetworkComparison;
+    };
+    race: {
+      americanIndian: NetworkComparison;
+      asian: NetworkComparison;
+      black: NetworkComparison;
+      latino: NetworkComparison;
+      pacificIslander: NetworkComparison;
+      multiracial: NetworkComparison;
+      white: NetworkComparison;
+      other: NetworkComparison;
+      unknown: NetworkComparison;
+    };
+  };
+  adultOutcomes: {
+    enrolled: NetworkComparison;
+    completion: NetworkComparison;
+    jobPlacement: NetworkComparison;
+    retention6Months: NetworkComparison;
+    retention12Months: NetworkComparison;
+    retention24Months: NetworkComparison;
+  };
+  youthOutcomes: {
+    enrolled: NetworkComparison;
+    completion: NetworkComparison;
+    jobPlacement: NetworkComparison;
+    retention3Months: NetworkComparison;
+    retention6Months: NetworkComparison;
+    retention12Months: NetworkComparison;
+  };
 }
 
 function ProgramOutcomesVisualization() {
@@ -214,6 +189,13 @@ function ProgramOutcomesVisualization() {
   const [orgName, setOrgName] = useState('');
   const [orgId, setOrgId] = useState('');
   const [year, setYear] = useState<number | ''>('');
+  const [orgMap, setOrgMap] = useState<OrgNameToId>({});
+  const [alert, setAlert] = useState<{
+    severity: 'error' | 'warning' | 'info' | 'success';
+    message: string;
+  } | null>(null);
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
 
   const tabNames = [
     'Summary',
@@ -222,70 +204,444 @@ function ProgramOutcomesVisualization() {
     'Organization Info',
   ];
 
-  // Organization ID fetching
-  useEffect(() => {
-    const findOrgId = async () => {
-      try {
-        const response = await getData(`organization/name/${orgName}`);
-        setOrgId(response.data.id);
-      } catch (error) {
-        console.error('Error fetching specific organization id', error);
-      }
-    };
-    findOrgId();
-  }, [orgName]);
-
-  // Organization list fetching
+  // Fetch the list of organizations
   useEffect(() => {
     const fetchOrgList = async () => {
       try {
         const response = await getData(`organization/organizations`);
-        const organizationNames = response.data.map(
-          (org: { organizationName: string }) => org.organizationName,
+        const orgNameToIdMap: OrgNameToId = {};
+        response.data.forEach(
+          (org: { organizationName: string; _id: string }) => {
+            orgNameToIdMap[org.organizationName] = org._id;
+          },
         );
-        setOrgList(organizationNames);
+        setOrgMap(orgNameToIdMap);
+        setOrgList(Object.keys(orgNameToIdMap));
       } catch (error) {
-        console.error('Error fetching organization data:', error);
+        console.error('Error fetching organization list:', error);
       }
     };
     fetchOrgList();
   }, []);
 
-  // Program outcomes data fetching
+  // Fetch program outcomes data based on the selected year and organization ID
   useEffect(() => {
-    const fetchOutcomes = async () => {
-      if (!orgId) return;
+    const fetchProgramOutcomes = async () => {
+      if (!orgId || !year) return;
+      console.log(
+        `Fetching program outcomes for orgId: ${orgId}, year: ${year}`,
+      );
       try {
-        const response = await getData(`program_outcomes/${year}/${orgId}`);
+        const url = `program_outcomes/org/${orgId}/${year}`;
+        console.log('Fetching from URL:', url);
+        const response = await getData(url);
+
+        if (!response || !response.data) {
+          console.log('No program outcomes found for this org and year');
+          setProgramData(null);
+          return;
+        }
+
+        console.log('Program outcomes response:', response.data);
+
+        if (response.data.orgId !== orgId) {
+          console.error('Mismatched orgId in response:', {
+            expected: orgId,
+            received: response.data.orgId,
+          });
+        }
+
         setProgramData(response.data);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching program outcomes:', error);
+        console.error('Error details:', {
+          orgId,
+          year,
+          errorMessage:
+            error instanceof Error ? error.message : 'Unknown error',
+        });
+        setProgramData(null);
       }
     };
-    fetchOutcomes();
+
+    if (orgId && year) {
+      console.log('Triggering fetch with:', { orgId, year });
+      fetchProgramOutcomes();
+    }
   }, [year, orgId]);
-
-  // Year list fetching
-  useEffect(() => {
-    const settingYearList = async () => {
-      if (!orgId) return;
-      try {
-        const response = await getData(`program_outcomes/get/years/${orgId}`);
-        setYearList(response.data);
-      } catch (error) {
-        console.error('Error fetching years:', error);
-      }
-    };
-    settingYearList();
-  }, [orgId]);
-
-  const handleOrgSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
-    event.preventDefault();
-    setOrgName(event.target.value);
+  // Handle alerts
+  const handleAlert = (
+    severity: 'error' | 'warning' | 'info' | 'success',
+    message: string,
+  ) => {
+    setAlert({ severity, message });
+    setAlertOpen(true);
   };
 
+  const handleCloseAlert = () => {
+    setAlert(null);
+    setAlertOpen(false);
+  };
+
+  // Fetch the list of years for the selected organization
+  useEffect(() => {
+    const fetchYearList = async () => {
+      if (!orgId) return;
+      console.log('Fetching years for orgId:', orgId);
+      try {
+        const response = await getData(`program_outcomes/org/${orgId}/years`);
+        console.log('Years response:', response.data);
+        setYearList(response.data);
+        if (response.data.length === 0) {
+          handleAlert('warning', 'No data available for this organization');
+        }
+      } catch (error) {
+        console.error('Error fetching years:', error);
+        handleAlert('error', 'Error fetching program outcomes years');
+      }
+    };
+    fetchYearList();
+  }, [orgId]);
+
+  // Handle organization selection - update to use orgMap directly
+  const handleOrgSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
+    event.preventDefault();
+    const selectedOrgName = event.target.value;
+    console.log('Selected org name:', selectedOrgName);
+    console.log('OrgMap:', orgMap);
+    console.log('Setting orgId to:', orgMap[selectedOrgName]);
+    setOrgName(selectedOrgName);
+    setOrgId(orgMap[selectedOrgName]);
+    setYear('');
+    setProgramData(null);
+  };
+
+  // Handle tab change
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
+  };
+
+  // Add function to fetch network average
+  const fetchNetworkAverage = async (field: string, selectedYear: number) => {
+    console.log(
+      `Fetching network average for field: ${field}, year: ${selectedYear}`,
+    );
+    try {
+      const response = await getData(
+        `program_outcomes/network-average/${field}/${selectedYear}`,
+      );
+      console.log(`Network average response for ${field}:`, response.data);
+      return response.data.average;
+    } catch (error) {
+      console.error(`Error fetching network average for ${field}:`, error);
+      return null;
+    }
+  };
+
+  // Wrap fetchSummaryData in useCallback
+  const fetchSummaryData = useCallback(
+    async (selectedYear: number) => {
+      console.log('Fetching summary data for year:', selectedYear);
+      console.log('Current programData:', programData);
+      if (!programData) return;
+
+      const summary: SummaryData = {
+        barriers: {
+          returningCitizens: {
+            value:
+              programData.barrierReturningCitizensOrFormerlyIncarceratedPersons ||
+              null,
+            networkAverage: await fetchNetworkAverage(
+              'barrierReturningCitizensOrFormerlyIncarceratedPersons',
+              selectedYear,
+            ),
+          },
+          physicalDisability: {
+            value: programData.barrierPhysicalDisability || null,
+            networkAverage: await fetchNetworkAverage(
+              'barrierPhysicalDisability',
+              selectedYear,
+            ),
+          },
+          intellectualDisability: {
+            value:
+              programData.barrierIntellectualOrDevelopmentalDisability || null,
+            networkAverage: await fetchNetworkAverage(
+              'barrierIntellectualOrDevelopmentalDisability',
+              selectedYear,
+            ),
+          },
+          unhoused: {
+            value: programData.barrierUnhoused || null,
+            networkAverage: await fetchNetworkAverage(
+              'barrierUnhoused',
+              selectedYear,
+            ),
+          },
+          mentalHealth: {
+            value: programData.barrierMentalHealth || null,
+            networkAverage: await fetchNetworkAverage(
+              'barrierMentalHealth',
+              selectedYear,
+            ),
+          },
+          newAmericans: {
+            value: programData.barrierNewAmericans || null,
+            networkAverage: await fetchNetworkAverage(
+              'barrierNewAmericans',
+              selectedYear,
+            ),
+          },
+          inRecovery: {
+            value: programData.barrierInRecovery || null,
+            networkAverage: await fetchNetworkAverage(
+              'barrierInRecovery',
+              selectedYear,
+            ),
+          },
+          veteran: {
+            value: programData.barrierVeteran || null,
+            networkAverage: await fetchNetworkAverage(
+              'barrierVeteran',
+              selectedYear,
+            ),
+          },
+        },
+        demographics: {
+          gender: {
+            female: {
+              value: programData.traineePercentFemale || null,
+              networkAverage: await fetchNetworkAverage(
+                'traineePercentFemale',
+                selectedYear,
+              ),
+            },
+            male: {
+              value: programData.traineePercentMale || null,
+              networkAverage: await fetchNetworkAverage(
+                'traineePercentMale',
+                selectedYear,
+              ),
+            },
+            nonBinary: {
+              value: programData.traineePercentNonBinary || null,
+              networkAverage: await fetchNetworkAverage(
+                'traineePercentNonBinary',
+                selectedYear,
+              ),
+            },
+            transgender: {
+              value: programData.traineePercentTransgender || null,
+              networkAverage: await fetchNetworkAverage(
+                'traineePercentTransgender',
+                selectedYear,
+              ),
+            },
+          },
+          race: {
+            americanIndian: {
+              value: programData.traineePercentAmericanIndian || null,
+              networkAverage: await fetchNetworkAverage(
+                'traineePercentAmericanIndian',
+                selectedYear,
+              ),
+            },
+            asian: {
+              value: programData.traineePercentAsianOrAsianAmerican || null,
+              networkAverage: await fetchNetworkAverage(
+                'traineePercentAsianOrAsianAmerican',
+                selectedYear,
+              ),
+            },
+            black: {
+              value: programData.traineePercentBlackOrAfricanAmerican || null,
+              networkAverage: await fetchNetworkAverage(
+                'traineePercentBlackOrAfricanAmerican',
+                selectedYear,
+              ),
+            },
+            latino: {
+              value: programData.traineePercentLatinaLatinoLatinx || null,
+              networkAverage: await fetchNetworkAverage(
+                'traineePercentLatinaLatinoLatinx',
+                selectedYear,
+              ),
+            },
+            pacificIslander: {
+              value:
+                programData.traineePercentNativeHawaiianPacificIslander || null,
+              networkAverage: await fetchNetworkAverage(
+                'traineePercentNativeHawaiianPacificIslander',
+                selectedYear,
+              ),
+            },
+            multiracial: {
+              value: programData.traineeMultiracial || null,
+              networkAverage: await fetchNetworkAverage(
+                'traineeMultiracial',
+                selectedYear,
+              ),
+            },
+            white: {
+              value: programData.traineeWhite || null,
+              networkAverage: await fetchNetworkAverage(
+                'traineeWhite',
+                selectedYear,
+              ),
+            },
+            other: {
+              value: programData.traineeOtherRace || null,
+              networkAverage: await fetchNetworkAverage(
+                'traineeOtherRace',
+                selectedYear,
+              ),
+            },
+            unknown: {
+              value: programData.traineeRaceUnknown || null,
+              networkAverage: await fetchNetworkAverage(
+                'traineeRaceUnknown',
+                selectedYear,
+              ),
+            },
+          },
+        },
+        adultOutcomes: {
+          enrolled: {
+            value: programData.adultsTrained || null,
+            networkAverage: await fetchNetworkAverage(
+              'adultsTrained',
+              selectedYear,
+            ),
+          },
+          completion: {
+            value: programData.adultsGraduated || null,
+            networkAverage: await fetchNetworkAverage(
+              'adultsGraduated',
+              selectedYear,
+            ),
+          },
+          jobPlacement: {
+            value: programData.adultJobPlacement || null,
+            networkAverage: await fetchNetworkAverage(
+              'adultJobPlacement',
+              selectedYear,
+            ),
+          },
+          retention6Months: {
+            value: programData.adultJobRetentionSixMonths || null,
+            networkAverage: await fetchNetworkAverage(
+              'adultJobRetentionSixMonths',
+              selectedYear,
+            ),
+          },
+          retention12Months: {
+            value: programData.adultJobRetentionTwelveMonths || null,
+            networkAverage: await fetchNetworkAverage(
+              'adultJobRetentionTwelveMonths',
+              selectedYear,
+            ),
+          },
+          retention24Months: {
+            value: programData.adultJobRetentionTwentyFourMonths || null,
+            networkAverage: await fetchNetworkAverage(
+              'adultJobRetentionTwentyFourMonths',
+              selectedYear,
+            ),
+          },
+        },
+        youthOutcomes: {
+          enrolled: {
+            value: programData.youthTrained || null,
+            networkAverage: await fetchNetworkAverage(
+              'youthTrained',
+              selectedYear,
+            ),
+          },
+          completion: {
+            value: programData.youthProgramRetentionRate || null,
+            networkAverage: await fetchNetworkAverage(
+              'youthProgramRetentionRate',
+              selectedYear,
+            ),
+          },
+          jobPlacement: {
+            value: programData.youthPositiveOutcomes || null,
+            networkAverage: await fetchNetworkAverage(
+              'youthPositiveOutcomes',
+              selectedYear,
+            ),
+          },
+          retention3Months: {
+            value: programData.youthJobRetentionThreeMonths || null,
+            networkAverage: await fetchNetworkAverage(
+              'youthJobRetentionThreeMonths',
+              selectedYear,
+            ),
+          },
+          retention6Months: {
+            value: programData.youthJobRetentionSixMonths || null,
+            networkAverage: await fetchNetworkAverage(
+              'youthJobRetentionSixMonths',
+              selectedYear,
+            ),
+          },
+          retention12Months: {
+            value: programData.youthJobRetentionTwelveMonths || null,
+            networkAverage: await fetchNetworkAverage(
+              'youthJobRetentionTwelveMonths',
+              selectedYear,
+            ),
+          },
+        },
+      };
+
+      setSummaryData(summary);
+    },
+    [programData],
+  ); // Add programData as a dependency
+
+  // Update the useEffect to include fetchSummaryData in dependencies
+  useEffect(() => {
+    console.log('Summary data useEffect triggered');
+    console.log('Current programData:', programData);
+    console.log('Current year:', year);
+    if (programData && year) {
+      fetchSummaryData(Number(year));
+    }
+  }, [programData, year, fetchSummaryData]); // Add fetchSummaryData to dependencies
+
+  // Add the summary tab content
+  const renderSummaryTab = () => {
+    if (!summaryData) return <Typography>Loading summary data...</Typography>;
+
+    return (
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <Typography variant="h6" gutterBottom>
+            Student Barriers (Compared to Network Average)
+          </Typography>
+          {/* Add barrier comparison visualization */}
+        </Grid>
+        <Grid item xs={12}>
+          <Typography variant="h6" gutterBottom>
+            Demographics
+          </Typography>
+          {/* Add demographics visualization */}
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <Typography variant="h6" gutterBottom>
+            Adult Outcomes
+          </Typography>
+          {/* Add adult outcomes visualization */}
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <Typography variant="h6" gutterBottom>
+            Youth Outcomes
+          </Typography>
+          {/* Add youth outcomes visualization */}
+        </Grid>
+      </Grid>
+    );
   };
 
   return (
@@ -313,9 +669,9 @@ function ProgramOutcomesVisualization() {
             value={orgName}
             onChange={handleOrgSelection}
           >
-            {orgList?.map((org) => (
-              <MenuItem key={org} value={org}>
-                {org}
+            {Object.entries(orgMap).map(([name, id]) => (
+              <MenuItem key={id} value={name}>
+                {name}
               </MenuItem>
             )) ?? []}
           </TextField>
@@ -328,9 +684,7 @@ function ProgramOutcomesVisualization() {
             size="small"
             fullWidth
             value={year}
-            onChange={(event) => {
-              setYear(Number(event.target.value));
-            }}
+            onChange={(event) => setYear(Number(event.target.value))}
             disabled={!orgName || yearList.length === 0}
           >
             {yearList.map((availableYear) => (
@@ -397,172 +751,8 @@ function ProgramOutcomesVisualization() {
         </Box>
       </Box>
 
-      {/* Content with Overlay */}
+      {/* Content */}
       <Box sx={{ position: 'relative' }}>
-        {/* Content */}
-        <Box sx={{ p: 2 }}>
-          {/* Summary Tab */}
-          {tabValue === 0 && (
-            <Box>
-              <Typography variant="h6" sx={{ mb: 4 }}>
-                Program Summary
-              </Typography>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <Card sx={{ p: 3, bgcolor: 'rgba(236, 239, 237, 0.5)' }}>
-                    <Typography variant="h6" gutterBottom>
-                      Program Overview
-                    </Typography>
-                    <Grid container spacing={2}>
-                      <Grid item xs={12}>
-                        <Typography variant="subtitle2" color="textSecondary">
-                          Cost per Trainee
-                        </Typography>
-                        <Typography variant="h6">
-                          $
-                          {programData?.programCostPerTrainee?.toLocaleString() ||
-                            'N/A'}
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Typography variant="subtitle2" color="textSecondary">
-                          Total Participants
-                        </Typography>
-                        <Typography variant="h6">
-                          {(
-                            (programData?.youthTrained || 0) +
-                            (programData?.adultsTrained || 0)
-                          ).toLocaleString()}
-                        </Typography>
-                      </Grid>
-                    </Grid>
-                  </Card>
-                </Grid>
-              </Grid>
-            </Box>
-          )}
-
-          {/* Adult Outcomes Tab */}
-          {tabValue === 1 && (
-            <Box>
-              <Typography variant="h6" sx={{ mb: 4 }}>
-                Adult Program Outcomes
-              </Typography>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <Card sx={{ p: 3, bgcolor: 'rgba(236, 239, 237, 0.5)' }}>
-                    <Typography variant="h6" gutterBottom>
-                      Adult Training Metrics
-                    </Typography>
-                    <Grid container spacing={2}>
-                      <Grid item xs={12}>
-                        <Typography variant="subtitle2" color="textSecondary">
-                          Adults Trained
-                        </Typography>
-                        <Typography variant="h6">
-                          {programData?.adultsTrained?.toLocaleString() ||
-                            'N/A'}
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Typography variant="subtitle2" color="textSecondary">
-                          Average Wage
-                        </Typography>
-                        <Typography variant="h6">
-                          ${programData?.adultWage?.toLocaleString() || 'N/A'}
-                          /hr
-                        </Typography>
-                      </Grid>
-                    </Grid>
-                  </Card>
-                </Grid>
-              </Grid>
-            </Box>
-          )}
-
-          {/* Youth Outcomes Tab */}
-          {tabValue === 2 && (
-            <Box>
-              <Typography variant="h6" sx={{ mb: 4 }}>
-                Youth Program Outcomes
-              </Typography>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <Card sx={{ p: 3, bgcolor: 'rgba(236, 239, 237, 0.5)' }}>
-                    <Typography variant="h6" gutterBottom>
-                      Youth Training Metrics
-                    </Typography>
-                    <Grid container spacing={2}>
-                      <Grid item xs={12}>
-                        <Typography variant="subtitle2" color="textSecondary">
-                          Youth Trained
-                        </Typography>
-                        <Typography variant="h6">
-                          {programData?.youthTrained?.toLocaleString() || 'N/A'}
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Typography variant="subtitle2" color="textSecondary">
-                          Average Wage
-                        </Typography>
-                        <Typography variant="h6">
-                          ${programData?.youthWage?.toLocaleString() || 'N/A'}
-                          /hr
-                        </Typography>
-                      </Grid>
-                    </Grid>
-                  </Card>
-                </Grid>
-              </Grid>
-            </Box>
-          )}
-
-          {/* Organization Info Tab */}
-          {tabValue === 3 && (
-            <Box>
-              <Typography variant="h6" sx={{ mb: 4 }}>
-                Organization Info
-              </Typography>
-              <Grid container spacing={4}>
-                <Grid item xs={12} md={6}>
-                  <Card sx={{ p: 3, bgcolor: 'rgba(236, 239, 237, 0.5)' }}>
-                    <Typography variant="h6" gutterBottom>
-                      Contact Information
-                    </Typography>
-                    <Grid container spacing={2}>
-                      <Grid item xs={12}>
-                        <Typography variant="subtitle2" color="textSecondary">
-                          Organization Name
-                        </Typography>
-                        <Typography variant="h6">
-                          {programData?.organizationName || 'N/A'}
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Typography variant="subtitle2" color="textSecondary">
-                          Responder Name
-                        </Typography>
-                        <Typography variant="h6">
-                          {programData?.responderName || 'N/A'}
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Typography variant="subtitle2" color="textSecondary">
-                          Responder Title
-                        </Typography>
-                        <Typography variant="h6">
-                          {programData?.responderTitle || 'N/A'}
-                        </Typography>
-                      </Grid>
-                    </Grid>
-                  </Card>
-                </Grid>
-              </Grid>
-            </Box>
-          )}
-        </Box>
-
-        {/* Overlay when no organization/year selected */}
         {(!orgName || !year) && (
           <Box
             sx={{
@@ -594,6 +784,21 @@ function ProgramOutcomesVisualization() {
               Please Choose an Organization and Year
             </Typography>
           </Box>
+        )}
+
+        {/* Tab Content */}
+        {tabValue === 0 && (
+          <Box>
+            <Typography variant="h6" sx={{ mb: 4 }}>
+              Program Summary: {orgName || 'N/A'}
+            </Typography>
+            {renderSummaryTab()}
+          </Box>
+        )}
+        {tabValue === 1 && <Typography variant="h6">Adult Outcomes</Typography>}
+        {tabValue === 2 && <Typography variant="h6">Youth Outcomes</Typography>}
+        {tabValue === 3 && (
+          <Typography variant="h6">Organization Info</Typography>
         )}
       </Box>
     </Container>

@@ -7,7 +7,10 @@ const getOrganizationByName = async (name: string) => {
   return org;
 };
 const getAllOrganizations = async () => {
-  const orgList = await Organization.find({}, ['organizationName']).exec();
+  const orgList = await Organization.find({}, [
+    '_id',
+    'organizationName',
+  ]).exec();
   return orgList;
 };
 
