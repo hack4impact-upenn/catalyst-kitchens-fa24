@@ -78,48 +78,12 @@ interface SurveyData {
     | 'Operating expenses'
     | 'Other';
   retailSocialEnterpriseRevenue?: number;
-  grossRevenueCafe?:
-    | 'Less than $100K'
-    | '$100K to $250K'
-    | '$250K to $500K'
-    | '$500K to $1M'
-    | 'Over $1M'
-    | 'No Enterprise';
-  grossRevenueRestaurant?:
-    | 'Less than $100K'
-    | '$100K to $250K'
-    | '$250K to $500K'
-    | '$500K to $1M'
-    | 'Over $1M'
-    | 'No Enterprise';
-  grossRevenueCatering?:
-    | 'Less than $100K'
-    | '$100K to $250K'
-    | '$250K to $500K'
-    | '$500K to $1M'
-    | 'Over $1M'
-    | 'No Enterprise';
-  grossRevenueFoodTruck?:
-    | 'Less than $100K'
-    | '$100K to $250K'
-    | '$250K to $500K'
-    | '$500K to $1M'
-    | 'Over $1M'
-    | 'No Enterprise';
-  grossRevenueWholesale?:
-    | 'Less than $100K'
-    | '$100K to $250K'
-    | '$250K to $500K'
-    | '$500K to $1M'
-    | 'Over $1M'
-    | 'No Enterprise';
-  grossRevenueFoodSubscription?:
-    | 'Less than $100K'
-    | '$100K to $250K'
-    | '$250K to $500K'
-    | '$500K to $1M'
-    | 'Over $1M'
-    | 'No Enterprise';
+  grossRevenueCafe?: number;
+  grossRevenueRestaurant?: number;
+  grossRevenueCatering?: number;
+  grossRevenueFoodTruck?: number;
+  grossRevenueWholesale?: number;
+  grossRevenueFoodSubscription?: number;
 }
 
 function KitchenOutcomesVisualization() {
@@ -138,24 +102,20 @@ function KitchenOutcomesVisualization() {
   const [orgId, setOrgId] = useState('');
   const [year, setYear] = useState<number | ''>('');
   const [avgRevenue, setAvgRevenue] = useState<number | ''>('');
-  const [grossRevenueCafe, setGrossRevenueCafe] = useState<{
-    [key: string]: number;
-  }>({});
-  const [grossRevenueCatering, setGrossRevenueCatering] = useState<{
-    [key: string]: number;
-  }>({});
-  const [grossRevenueSubscription, setGrossRevenueSubscription] = useState<{
-    [key: string]: number;
-  }>({});
-  const [grossRevenueTruck, setGrossRevenueTruck] = useState<{
-    [key: string]: number;
-  }>({});
-  const [grossRevenueRestaurant, setGrossRevenueRestaurant] = useState<{
-    [key: string]: number;
-  }>({});
-  const [grossRevenueWholesale, setGrossRevenueWholesale] = useState<{
-    [key: string]: number;
-  }>({});
+  const [grossRevenueCafe, setGrossRevenueCafe] = useState<number[]>([]);
+  const [grossRevenueCatering, setGrossRevenueCatering] = useState<number[]>(
+    [],
+  );
+  const [grossRevenueSubscription, setGrossRevenueSubscription] = useState<
+    number[]
+  >([]);
+  const [grossRevenueTruck, setGrossRevenueTruck] = useState<number[]>([]);
+  const [grossRevenueRestaurant, setGrossRevenueRestaurant] = useState<
+    number[]
+  >([]);
+  const [grossRevenueWholesale, setGrossRevenueWholesale] = useState<number[]>(
+    [],
+  );
 
   const tabNames = [
     'Hunger Relief',
@@ -215,7 +175,7 @@ function KitchenOutcomesVisualization() {
         const response = await getData(
           `kitchen_outcomes/get/avgRevenue/${year}/cafe`,
         );
-        setGrossRevenueCafe(response.data.grossRevenueCounts);
+        setGrossRevenueCafe(response.data);
       } catch (error) {
         console.error('Error fetching orgs', error);
       }
@@ -230,7 +190,7 @@ function KitchenOutcomesVisualization() {
         const response = await getData(
           `kitchen_outcomes/get/avgRevenue/${year}/catering`,
         );
-        setGrossRevenueCatering(response.data.grossRevenueCounts);
+        setGrossRevenueCatering(response.data);
       } catch (error) {
         console.error('Error fetching orgs', error);
       }
@@ -245,7 +205,7 @@ function KitchenOutcomesVisualization() {
         const response = await getData(
           `kitchen_outcomes/get/avgRevenue/${year}/truck`,
         );
-        setGrossRevenueTruck(response.data.grossRevenueCounts);
+        setGrossRevenueTruck(response.data);
       } catch (error) {
         console.error('Error fetching orgs', error);
       }
@@ -260,7 +220,7 @@ function KitchenOutcomesVisualization() {
         const response = await getData(
           `kitchen_outcomes/get/avgRevenue/${year}/subscription`,
         );
-        setGrossRevenueSubscription(response.data.grossRevenueCounts);
+        setGrossRevenueSubscription(response.data);
       } catch (error) {
         console.error('Error fetching orgs', error);
       }
@@ -275,7 +235,7 @@ function KitchenOutcomesVisualization() {
         const response = await getData(
           `kitchen_outcomes/get/avgRevenue/${year}/restaurant`,
         );
-        setGrossRevenueRestaurant(response.data.grossRevenueCounts);
+        setGrossRevenueRestaurant(response.data);
       } catch (error) {
         console.error('Error fetching orgs', error);
       }
@@ -290,7 +250,7 @@ function KitchenOutcomesVisualization() {
         const response = await getData(
           `kitchen_outcomes/get/avgRevenue/${year}/wholesale`,
         );
-        setGrossRevenueWholesale(response.data.grossRevenueCounts);
+        setGrossRevenueWholesale(response.data);
       } catch (error) {
         console.error('Error fetching orgs', error);
       }
@@ -1021,37 +981,37 @@ function KitchenOutcomesVisualization() {
                       {
                         label: 'Cafe',
                         all: grossRevenueCafe,
-                        value: surveyData?.grossRevenueCafe || '',
+                        value: surveyData?.grossRevenueCafe || 0,
                       },
                       {
                         label: 'Catering',
                         all: grossRevenueCatering,
-                        value: surveyData?.grossRevenueCatering || '',
+                        value: surveyData?.grossRevenueCatering || 0,
                       },
                       {
                         label: 'Food Subscription',
                         all: grossRevenueSubscription,
-                        value: surveyData?.grossRevenueFoodSubscription || '',
+                        value: surveyData?.grossRevenueFoodSubscription || 0,
                       },
                       {
                         label: 'Food Truck',
                         all: grossRevenueTruck,
-                        value: surveyData?.grossRevenueFoodTruck || '',
+                        value: surveyData?.grossRevenueFoodTruck || 0,
                       },
                       {
                         label: 'Restaurant',
                         all: grossRevenueRestaurant,
-                        value: surveyData?.grossRevenueRestaurant || '',
+                        value: surveyData?.grossRevenueRestaurant || 0,
                       },
                       {
                         label: 'Wholesale',
                         all: grossRevenueWholesale,
-                        value: surveyData?.grossRevenueWholesale || '',
+                        value: surveyData?.grossRevenueWholesale || 0,
                       },
                     ].map((enterprise) => (
                       <Grid item xs={12} sm={6} key={enterprise.label}>
                         <RevenueBarChart
-                          grossRevenueCounts={enterprise.all} // Pass the gross revenue counts
+                          grossRevenues={enterprise.all} // Pass the gross revenue counts
                           userOrganizationRevenue={enterprise.value} // Pass the specific value for each enterprise
                           label={enterprise.label} // Pass the label for each enterprise
                         />

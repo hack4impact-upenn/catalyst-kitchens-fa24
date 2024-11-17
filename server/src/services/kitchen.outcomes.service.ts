@@ -72,25 +72,36 @@ const getAverageSocialEnterpriseRevenue = async (year: number) => {
   try {
     const outcomes = await KitchenOutcomes.find({
       year: {
-      $gt: new Date(year - 1, 11, 31),
-      $lt: new Date(year + 1, 0, 1),
+        $gt: new Date(year - 1, 11, 31),
+        $lt: new Date(year + 1, 0, 1),
       },
     }).exec();
     if (!outcomes || outcomes.length === 0) {
       throw new Error('No kitchen outcomes found for the specified year');
     }
 
-    const totalRevenue = outcomes.reduce((sum, outcome) => sum + outcome.retailSocialEnterpriseRevenue, 0);
+    const totalRevenue = outcomes.reduce(
+      (sum, outcome) => sum + outcome.retailSocialEnterpriseRevenue,
+      0,
+    );
     const averageRevenue = totalRevenue / outcomes.length;
 
     return { averageRevenue: averageRevenue };
   } catch (error) {
-    console.error('Error calculating average retail social enterprise revenue for the specified year:', error);
-    throw new Error('Unable to calculate average retail social enterprise revenue for the specified year');
+    console.error(
+      'Error calculating average retail social enterprise revenue for the specified year:',
+      error,
+    );
+    throw new Error(
+      'Unable to calculate average retail social enterprise revenue for the specified year',
+    );
   }
 };
 
-const getGrossRevenue = async (year: number, type: string) => {
+const getGrossRevenue = async (
+  year: number,
+  type: string,
+): Promise<number[]> => {
   try {
     const outcomes = await KitchenOutcomes.find({
       year: {
@@ -103,45 +114,32 @@ const getGrossRevenue = async (year: number, type: string) => {
       throw new Error('No kitchen outcomes found for the specified year');
     }
 
-    const grossRevenueCounts = outcomes.reduce((acc: { [key: string]: number }, outcome) => {
-      let revenue;
+    // Extract relevant revenues into a list
+    const revenueList = outcomes.map((outcome) => {
       switch (type) {
         case 'cafe':
-          revenue = outcome.grossRevenueCafe;
-          break;
+          return outcome.grossRevenueCafe;
         case 'catering':
-          revenue = outcome.grossRevenueCatering;
-          break;
+          return outcome.grossRevenueCatering;
         case 'subscription':
-          revenue = outcome.grossRevenueFoodSubscription;
-          break;
+          return outcome.grossRevenueFoodSubscription;
         case 'truck':
-          revenue = outcome.grossRevenueFoodTruck;
-          break;
+          return outcome.grossRevenueFoodTruck;
         case 'restaurant':
-          revenue = outcome.grossRevenueRestaurant;
-          break;
+          return outcome.grossRevenueRestaurant;
         case 'wholesale':
-          revenue = outcome.grossRevenueWholesale;
-          break;
+          return outcome.grossRevenueWholesale;
         default:
           throw new Error('Invalid type specified');
       }
-      if (acc[revenue]) {
-        acc[revenue]++;
-      } else {
-        acc[revenue] = 1;
-      }
-      return acc;
-    }, {});
+    });
 
-    return { grossRevenueCounts };
+    return revenueList.map(Number); // Ensure all values are returned as numbers
   } catch (error) {
-    console.error('Error calculating gross revenue cafe counts for the specified year:', error);
-    throw new Error('Unable to calculate gross revenue cafe counts for the specified year');
+    console.error(error);
+    throw error;
   }
 };
-
 
 export {
   getOneKitchenOutcomes,
