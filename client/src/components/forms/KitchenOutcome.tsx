@@ -20,8 +20,9 @@ import {
   Select,
   MenuItem,
   InputLabel,
-  Snackbar,
+  Alert,
   Grid,
+  Snackbar,
 } from '@mui/material';
 import { number } from 'prop-types';
 
@@ -257,38 +258,6 @@ export default function KitchenOutcome() {
   }, [formState]);
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-      <Snackbar
-        open={ageOpen}
-        autoHideDuration={6000}
-        onClose={() => {
-          setAgeOpen(false);
-        }}
-        message="The percentages under the Age Groups category do not add up to 100!"
-      />
-      <Snackbar
-        open={mealOpen}
-        autoHideDuration={6000}
-        onClose={() => {
-          setMealOpen(false);
-        }}
-        message="The percentages under the Hunger Relief Meal Funding Mix category do not add up to 100!"
-      />
-      <Snackbar
-        open={genderOpen}
-        autoHideDuration={6000}
-        onClose={() => {
-          setGenderOpen(false);
-        }}
-        message="The percentages under the Hunger Relief Demographics Gender category do not add up to 100!"
-      />
-      <Snackbar
-        open={racialOpen}
-        autoHideDuration={6000}
-        onClose={() => {
-          setRacialOpen(false);
-        }}
-        message="The percentages under the Hunger Relief Demographics Race and Ethnicity category do not add up to 100!"
-      />
       <h1>Submit Kitchen Outcomes</h1>
       <p>
         Some description of the kitchen outcomes form: Lorem ipsum dolor sit
@@ -1248,6 +1217,61 @@ export default function KitchenOutcome() {
           </Box>
         </div>
       ))}
+      {racialOpen ? (
+        <Alert
+          severity="warning"
+          onClose={() => {
+            setRacialOpen(false);
+          }}
+        >
+          The percentages under the Hunger Relief Demographics Race and
+          Ethnicity category do not add up to 100!
+        </Alert>
+      ) : (
+        // eslint-disable-next-line react/jsx-no-useless-fragment
+        <></>
+      )}
+      {ageOpen ? (
+        <Alert
+          severity="warning"
+          onClose={() => {
+            setAgeOpen(false);
+          }}
+        >
+          The percentages under the Age Groups category do not add up to 100!
+        </Alert>
+      ) : (
+        // eslint-disable-next-line react/jsx-no-useless-fragment
+        <></>
+      )}
+      {genderOpen ? (
+        <Alert
+          severity="warning"
+          onClose={() => {
+            setGenderOpen(false);
+          }}
+        >
+          The percentages under the Hunger Relief Demographics Gender category
+          do not add up to 100!
+        </Alert>
+      ) : (
+        // eslint-disable-next-line react/jsx-no-useless-fragment
+        <></>
+      )}
+      {mealOpen ? (
+        <Alert
+          severity="warning"
+          onClose={() => {
+            setMealOpen(false);
+          }}
+        >
+          The percentages under the Hunger Relief Meal Funding Mix category do
+          not add up to 100!
+        </Alert>
+      ) : (
+        // eslint-disable-next-line react/jsx-no-useless-fragment
+        <></>
+      )}
       <div
         style={{
           display: 'flex',
