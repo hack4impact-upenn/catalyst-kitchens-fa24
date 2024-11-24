@@ -9,6 +9,7 @@ import {
   deleteProgramOutcomeByIdController,
   getDistinctYearsByOrgIdController,
   getNetworkAverageController,
+  getFieldValuesByYearController,
 } from '../controllers/program.outcomes.controller.ts';
 
 const router = express.Router();
@@ -20,5 +21,6 @@ router.get('/org/:orgId/:year', getOneProgramOutcomesController);
 router.delete('/org/:id', deleteProgramOutcomeByIdController);
 router.get('/year/:year', getAllProgramOutcomesByYearController);
 router.post('/new', addProgramOutcomesController);
+router.get('/field-values/:orgId/:field', getFieldValuesByYearController);
 
 export default router;

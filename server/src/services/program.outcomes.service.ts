@@ -105,6 +105,34 @@ const getNetworkAverage = async (
   }
 };
 
+const getFieldValuesByYear = async (
+  orgId: string,
+  field: keyof IProgramOutcomes
+): Promise<Map<number, number | null>> => {
+  try {
+    const outcomes = await ProgramOutcomes.find(
+      { 
+        orgId,
+        [field]: { $exists: true }
+      },
+      ['year', field]
+    ).exec();
+
+    const valuesByYear = new Map<number, number | null>();
+    
+    outcomes.forEach(outcome => {
+      const year = outcome.year.getUTCFullYear();
+      const value = outcome[field] as number | null;
+      valuesByYear.set(year, value);
+    });
+
+    return valuesByYear;
+  } catch (error) {
+    console.error(`Error getting ${field} values by year:`, error);
+    throw error;
+  }
+};
+
 export {
   getProgramOutcomesByOrgId,
   getOneProgramOutcomes,
@@ -114,4 +142,5 @@ export {
   deleteProgramOutcomeById,
   getDistinctYearsByOrgId,
   getNetworkAverage,
+  getFieldValuesByYear,
 };

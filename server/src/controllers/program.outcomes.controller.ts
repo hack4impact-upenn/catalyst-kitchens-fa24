@@ -11,6 +11,7 @@ import {
   deleteProgramOutcomeById,
   getDistinctYearsByOrgId,
   getNetworkAverage,
+  getFieldValuesByYear,
 } from '../services/program.outcomes.service.ts';
 
 const getOneProgramOutcomesController = async (
@@ -172,6 +173,30 @@ const getNetworkAverageController = async (
   }
 };
 
+const getFieldValuesByYearController = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) => {
+  const { orgId, field } = req.params;
+
+  if (!orgId || !field) {
+    next(ApiError.missingFields(['orgId', 'field']));
+    return;
+  }
+
+  try {
+    const valuesByYear = await getFieldValuesByYear(orgId, field as keyof IProgramOutcomes);
+    
+    // Convert Map to object for JSON response
+    const response = Object.fromEntries(valuesByYear);
+    
+    res.status(StatusCode.OK).json(response);
+  } catch (error) {
+    next(ApiError.internal(`Unable to get ${field} values by year`));
+  }
+};
+
 export {
   getDistinctYearsByOrgIdController,
   getOneProgramOutcomesController,
@@ -180,4 +205,5 @@ export {
   getAllProgramOutcomesByOrgController,
   deleteProgramOutcomeByIdController,
   getNetworkAverageController,
+  getFieldValuesByYearController,
 };
