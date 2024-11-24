@@ -10,7 +10,6 @@ const getOneKitchenOutcomes = async (year: Date, orgId: string) => {
   }).exec();
   return outcomes;
 };
-
 const getAllKitchenOutcomesByOrg = async (orgId: string) => {
   const outcomes = await KitchenOutcomes.find(
     {
@@ -21,6 +20,56 @@ const getAllKitchenOutcomesByOrg = async (orgId: string) => {
   return outcomes;
 };
 
+const addKitchenOutcomes = async (formState: any) => {
+  const kitchenOutcomesData = {
+    orgId: formState.orgId, // Assume orgId is provided in formState or session
+    year: formState.year,
+    shareSurvey: formState.shareSurvey ? 'Yes' : 'No',
+    organizationName: formState.organizationName,
+    responderName: formState.responderName,
+    responderTitle: formState.responderTitle,
+    hungerReliefsMealsServed: formState.noMealsServed,
+    typeOfMealsServed: formState.typeOfMealsServed,
+    costPerMeal: formState.costPerMeal,
+    foodCostPercentage: formState.foodCostPercentage,
+    mealReimbursement: formState.mealReimbursement,
+    mealFundingPublic: formState.mealFundingPublic,
+    mealFundingPrivateContracts: formState.mealFundingPrivateContracts,
+    mealFundingPrivateDonations: formState.mealFundingPrivateDonations,
+    mealsFemale: formState.mealsFemale,
+    mealsMale: formState.mealsMale,
+    mealsNonBinary: formState.mealsNonBinary,
+    mealsGenderUnknown: formState.mealsGenderUnknown,
+    mealsTransgender: formState.mealsTrangender,
+    mealsAmericanIndian: formState.mealsAmericanIndian,
+    mealsAsian: formState.mealsAsian,
+    mealsBlack: formState.mealsBlack,
+    mealsLatinx: formState.mealsLatinx,
+    mealsNativeHawaiian: formState.mealsNativeHawaiian,
+    mealsMultiRacial: formState.mealsMultiRacial,
+    mealsWhite: formState.mealsWhite,
+    mealsOtherRace: formState.mealsOtherRace,
+    mealsRaceUnknown: formState.mealsRaceUnknown,
+    mealsInfants: formState.mealsInfants,
+    mealsChildren: formState.mealsChildren,
+    mealsAdults: formState.mealsAdults,
+    mealsSeniors: formState.mealsSeniors,
+    mealsAgeUnknown: formState.mealsAgeUnknown,
+    capitalExpansionProjects: formState.capitalExpansionProjects,
+    capitalProjectSize: formState.capitalProjectSize,
+    capitalProjectDate: formState.capitalProjectDate,
+    capitalExpansionProjectNeeds: formState.capitalExpansionProjectNeeds,
+    retailSocialEnterpriseRevenue: formState.retailSocialEnterpriseRevenue,
+    grossRevenueCafe: formState.grossRevenueCafe,
+    grossRevenueRestaurant: formState.grossRevenueRestaurant,
+    grossRevenueCatering: formState.grossRevenueCatering,
+    grossRevenueFoodTruck: formState.grossRevenueFoodTruck,
+    grossRevenueWholesale: formState.grossRevenueWholesale,
+    grossRevenueFoodSubscription: formState.grossRevenueFoodSubscription,
+  };
+  const kitchenOutcomes = new KitchenOutcomes(kitchenOutcomesData);
+  await kitchenOutcomes.save();
+};
 const getAllKitchenOutcomes = async () => {
   const outcomes = await KitchenOutcomes.find().exec();
   return outcomes;
@@ -75,4 +124,5 @@ export {
   getAllOrganizations,
   getAllKitchenOutcomesByOrg,
   deleteKitchenOutcomeById,
+  addKitchenOutcomes,
 };
