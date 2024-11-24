@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import {
   IKitchenOutcomes,
   KitchenOutcomes,
@@ -22,7 +23,7 @@ const getAllKitchenOutcomesByOrg = async (orgId: string) => {
 
 const addKitchenOutcomes = async (formState: any) => {
   const kitchenOutcomesData = {
-    orgId: formState.orgId, // Assume orgId is provided in formState or session
+    orgId: new mongoose.Types.ObjectId('672679257a17c492dd2405a2'), // Assume orgId is provided in formState or session
     year: formState.year,
     shareSurvey: formState.shareSurvey ? 'Yes' : 'No',
     organizationName: formState.organizationName,
@@ -68,6 +69,7 @@ const addKitchenOutcomes = async (formState: any) => {
     grossRevenueFoodSubscription: formState.grossRevenueFoodSubscription,
   };
   const kitchenOutcomes = new KitchenOutcomes(kitchenOutcomesData);
+  console.log(kitchenOutcomes);
   await kitchenOutcomes.save();
 };
 const getAllKitchenOutcomes = async () => {

@@ -143,6 +143,7 @@ const addKitchenOutcomesController = async (
     const result = await addKitchenOutcomes(formState);
     res.status(StatusCode.OK).json(result);
   } catch (error) {
+    console.log(error);
     next(error);
   }
 };

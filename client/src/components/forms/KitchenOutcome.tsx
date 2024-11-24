@@ -228,7 +228,7 @@ export default function KitchenOutcome() {
   const handleSubmit = async () => {
     if (validateInputs()) {
       axios
-        .post('http://localhost:4000/api/kitchen.outcomes/', formState)
+        .post('http://localhost:4000/api/kitchen_outcomes/add/', formState)
         .then((response) => {
           console.log('submitted!');
         })
@@ -871,27 +871,27 @@ export default function KitchenOutcome() {
           }
         >
           <FormControlLabel
-            value="earlyStages"
+            value="We are in early stages of planning a capital expansion"
             control={<Radio />}
             label="We are in early stages of planning a capital expansion"
           />
           <FormControlLabel
-            value="fundraising"
+            value="We have a capital expansion plan and are fundraising"
             control={<Radio />}
             label="We have a capital expansion plan and are fundraising"
           />
           <FormControlLabel
-            value="fullyFunded"
+            value="We have a fully funded capital expansion plan"
             control={<Radio />}
             label="We have a fully funded capital expansion plan"
           />
           <FormControlLabel
-            value="completed"
+            value="We have recently completed or will soon complete the project"
             control={<Radio />}
             label="We have recently completed or will soon complete the project"
           />
           <FormControlLabel
-            value="noPlans"
+            value="We have no future plans or projects underway"
             control={<Radio />}
             label="We have no future plans or projects underway"
           />
@@ -995,27 +995,27 @@ export default function KitchenOutcome() {
             }
           >
             <FormControlLabel
-              value="earlyStages"
+              value="We are in early stages of planning a capital expansion"
               control={<Radio />}
               label="We are in early stages of planning a capital expansion"
             />
             <FormControlLabel
-              value="fundraising"
+              value="We have a capital expansion plan and are fundraising"
               control={<Radio />}
               label="We have a capital expansion plan and are fundraising"
             />
             <FormControlLabel
-              value="fullyFunded"
+              value="We have a fully funded capital expansion plan"
               control={<Radio />}
               label="We have a fully funded capital expansion plan"
             />
             <FormControlLabel
-              value="completed"
+              value="We have recently completed or will soon complete the project"
               control={<Radio />}
               label="We have recently completed or will soon complete the project"
             />
             <FormControlLabel
-              value="noPlans"
+              value="We have no future plans or projects underway"
               control={<Radio />}
               label="We have no future plans or projects underway"
             />
