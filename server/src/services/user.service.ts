@@ -61,6 +61,12 @@ const getUserByEmail = async (email: string) => {
   return user;
 };
 
+const getUserOrganizationByEmail = async (email: string) => {
+  const result = await User.findOne({ email }).select('organization').exec();
+  console.log(result);
+  return result?.organization || null;
+};
+
 /**
  * Gets a user from the database by their email and includes the password in
  * the returned user.
@@ -147,6 +153,7 @@ export {
   createUser,
   getUserByEmail,
   getUserByVerificationToken,
+  getUserOrganizationByEmail,
   getUserById,
   getUserByEmailWithPassword,
   getUserByResetPasswordToken,
