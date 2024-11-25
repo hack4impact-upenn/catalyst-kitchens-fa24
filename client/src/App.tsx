@@ -39,7 +39,6 @@ const router = createBrowserRouter([
     element: <UnauthenticatedRoutesWrapper />, // Wrapper for unauthenticated routes
     children: [
       { path: 'signup', element: <SignUpPage /> },
-      { path: 'kitchen-outcome-test', element: <KitchenOutcome /> },
       { path: 'kitchen-outcome-viz-test', element: <KitchenOutcomeViz /> },
       { path: 'program-outcome-test', element: <ProgramOutcome /> },
       { path: 'login', element: <LoginPage /> },
@@ -51,7 +50,10 @@ const router = createBrowserRouter([
   {
     path: '/',
     element: <ProtectedRoutesWrapper />, // Wrapper for authenticated routes
-    children: [{ path: 'home', element: <HomePage /> }],
+    children: [
+      { path: 'home', element: <HomePage /> },
+      { path: 'kitchen-outcome-test', element: <KitchenOutcome /> },
+    ],
   },
   {
     path: '/',
