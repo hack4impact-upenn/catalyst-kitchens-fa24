@@ -16,8 +16,28 @@ const getOrganizationNameById = async (id: string) => {
   return org;
 };
 const getAllOrganizations = async () => {
-  const orgList = await Organization.find({}, ['organizationName']).exec();
+  const orgList = await Organization.find({}, [
+    '_id',
+    'organizationName',
+  ]).exec();
   return orgList;
 };
 
-export { getOrganizationByName, getAllOrganizations, getOrganizationNameById };
+const getOrganizationById = async (
+  orgId: string,
+): Promise<IOrganization | null> => {
+  try {
+    const org = await Organization.findById(orgId).exec();
+    return org;
+  } catch (error) {
+    console.error('Error fetching organization by ID:', error);
+    throw error;
+  }
+};
+
+export {
+  getOrganizationByName,
+  getAllOrganizations,
+  getOrganizationById,
+  getOrganizationNameById,
+};

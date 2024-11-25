@@ -6,6 +6,7 @@ import {
   getOrganizationByName,
   getAllOrganizations,
   getOrganizationNameById,
+  getOrganizationById,
 } from '../services/organization.service.ts';
 
 const getOrgByName = async (
@@ -63,4 +64,29 @@ const getAll = async (
       next(ApiError.internal('Unable to retrieve all organizations'));
     });
 };
-export { getOrgByName, getAll, getOrganizationNameByIdController };
+const getOrgById = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) => {
+  const { id } = req.params;
+
+  if (!id) {
+    next(ApiError.missingFields(['id']));
+    return;
+  }
+
+  try {
+    const org = await getOrganizationById(id);
+
+    if (!org) {
+      next(ApiError.notFound('Organization not found'));
+      return;
+    }
+
+    res.status(StatusCode.OK).send(org);
+  } catch (error) {
+    next(ApiError.internal('Unable to retrieve organization by ID'));
+  }
+};
+export { getOrgByName, getAll, getOrganizationNameByIdController, getOrgById };

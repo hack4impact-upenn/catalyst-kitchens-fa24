@@ -27,6 +27,7 @@ import KitchenOutcome from './components/forms/KitchenOutcome.tsx';
 import KitchenOutcomeViz from './components/KitchenOutcomeViz.tsx';
 import ProgramOutcome from './components/forms/ProgramOutcome.tsx';
 import OrgAdminPage from './AdminDashboard/OrgAdminPage.tsx';
+import ProgramOutcomesVisualization from './components/ProgramOutcomesViz';
 
 // Router Configuration
 const router = createBrowserRouter([
@@ -40,6 +41,10 @@ const router = createBrowserRouter([
     children: [
       { path: 'signup', element: <SignUpPage /> },
       { path: 'kitchen-outcome-viz-test', element: <KitchenOutcomeViz /> },
+      {
+        path: 'program-outcomes-viz-test',
+        element: <ProgramOutcomesVisualization />,
+      },
       { path: 'program-outcome-test', element: <ProgramOutcome /> },
       { path: 'login', element: <LoginPage /> },
       { path: 'verify-account/:token', element: <VerifyAccountPage /> },

@@ -7,14 +7,20 @@ import {
   addProgramOutcomesController,
   getAllProgramOutcomesByOrgController,
   deleteProgramOutcomeByIdController,
+  getDistinctYearsByOrgIdController,
+  getNetworkAverageController,
+  getFieldValuesByYearController,
 } from '../controllers/program.outcomes.controller.ts';
 
 const router = express.Router();
 
-router.get('/:year/:orgId', getOneProgramOutcomesController); // no authentication for now
-router.get('/:year', getAllProgramOutcomesByYearController); // no authentication for now
-router.post('/', addProgramOutcomesController); // no auth for now
-router.get('/get/all/:orgId', getAllProgramOutcomesByOrgController);
-router.delete('/delete/:id', deleteProgramOutcomeByIdController);
+router.get('/network-average/:field/:year', getNetworkAverageController);
+router.get('/org/:orgId/years', getDistinctYearsByOrgIdController);
+router.get('/org/:orgId/all', getAllProgramOutcomesByOrgController);
+router.get('/org/:orgId/:year', getOneProgramOutcomesController);
+router.delete('/org/:id', deleteProgramOutcomeByIdController);
+router.get('/year/:year', getAllProgramOutcomesByYearController);
+router.post('/new', addProgramOutcomesController);
+router.get('/field-values/:orgId/:field', getFieldValuesByYearController);
 
 export default router;
