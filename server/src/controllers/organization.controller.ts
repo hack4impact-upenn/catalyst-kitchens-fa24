@@ -5,6 +5,7 @@ import { IOrganization } from '../models/organization.model.ts';
 import {
   getOrganizationByName,
   getAllOrganizations,
+  getOrganizationNameById,
   getOrganizationById,
 } from '../services/organization.service.ts';
 
@@ -20,6 +21,27 @@ const getOrgByName = async (
   return getOrganizationByName(name)
     .then((org: unknown) => {
       res.status(StatusCode.OK).send(org);
+    })
+    .catch(() => {
+      next(
+        ApiError.internal(
+          'Unable to retrieve the organization by the name provided',
+        ),
+      );
+    });
+};
+const getOrganizationNameByIdController = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) => {
+  const { id } = req.params;
+  if (!id) {
+    next(ApiError.missingFields(['id']));
+  }
+  return getOrganizationNameById(id)
+    .then((name: unknown) => {
+      res.status(StatusCode.OK).send(name);
     })
     .catch(() => {
       next(
@@ -48,7 +70,7 @@ const getOrgById = async (
   next: express.NextFunction,
 ) => {
   const { id } = req.params;
-  
+
   if (!id) {
     next(ApiError.missingFields(['id']));
     return;
@@ -56,7 +78,7 @@ const getOrgById = async (
 
   try {
     const org = await getOrganizationById(id);
-    
+
     if (!org) {
       next(ApiError.notFound('Organization not found'));
       return;
@@ -67,4 +89,4 @@ const getOrgById = async (
     next(ApiError.internal('Unable to retrieve organization by ID'));
   }
 };
-export { getOrgByName, getAll, getOrgById };
+export { getOrgByName, getAll, getOrganizationNameByIdController, getOrgById };

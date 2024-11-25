@@ -43,10 +43,6 @@ function App() {
                   <Route element={<UnauthenticatedRoutesWrapper />}>
                     <Route path="/signup" element={<SignUpPage />} />
                     <Route
-                      path="/kitchen-outcome-test"
-                      element={<KitchenOutcome />}
-                    />
-                    <Route
                       path="/kitchen-outcome-viz-test"
                       element={<KitchenOutcomeViz />}
                     />
@@ -79,6 +75,10 @@ function App() {
                   {/* Routes accessed only if user is authenticated */}
                   <Route element={<ProtectedRoutesWrapper />}>
                     <Route path="/home" element={<HomePage />} />
+                    <Route
+                      path="/kitchen-outcome-test"
+                      element={<KitchenOutcome />}
+                    />
                   </Route>
                   <Route element={<AdminRoutesWrapper />}>
                     <Route path="/users" element={<AdminDashboardPage />} />

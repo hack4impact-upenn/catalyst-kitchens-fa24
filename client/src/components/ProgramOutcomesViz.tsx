@@ -1220,7 +1220,10 @@ function ProgramOutcomesVisualization() {
           },
           ticks: {
             color: '#666',
-            callback(this: Scale<CoreScaleOptions>, tickValue: number | string) {
+            callback(
+              this: Scale<CoreScaleOptions>,
+              tickValue: number | string,
+            ) {
               return `${Math.round(Number(tickValue))}%`;
             },
             font: { size: 11 },
@@ -1609,20 +1612,28 @@ function ProgramOutcomesVisualization() {
   // Add function to fetch historical data for a specific field
   const fetchFieldHistory = async (selectedOrgId: string, field: string) => {
     console.log(`Fetching field history for ${field}:`, { selectedOrgId });
-    
+
     const fieldValuesResponse = await getData(
       `program_outcomes/field-values/${selectedOrgId}/${field}`,
     );
-    console.log(`Field values response for ${field}:`, fieldValuesResponse.data);
-    
+    console.log(
+      `Field values response for ${field}:`,
+      fieldValuesResponse.data,
+    );
+
     const yearValues = fieldValuesResponse.data;
     const yearsList = Object.keys(yearValues).map(Number);
-    
+
     console.log(`Fetching network averages for ${field}:`, { yearsList });
     const networkAverageResults = await Promise.all(
       yearsList.map(async (yearNum) => {
-        const networkResponse = await getData(`program_outcomes/network-average/${field}/${yearNum}`);
-        console.log(`Network average for ${field} in ${yearNum}:`, networkResponse.data);
+        const networkResponse = await getData(
+          `program_outcomes/network-average/${field}/${yearNum}`,
+        );
+        console.log(
+          `Network average for ${field} in ${yearNum}:`,
+          networkResponse.data,
+        );
         return networkResponse;
       }),
     );
@@ -1632,7 +1643,7 @@ function ProgramOutcomesVisualization() {
       orgValues: yearsList.map((yearNum) => yearValues[yearNum]),
       networkValues: networkAverageResults.map((res) => res.data.average),
     };
-    
+
     console.log(`Final data for ${field}:`, result);
     return result;
   };
@@ -1950,8 +1961,7 @@ function ProgramOutcomesVisualization() {
                     datasets: [
                       {
                         label: 'Organization',
-                        data: historicalData.retention.twelveMonth
-                          .orgValues,
+                        data: historicalData.retention.twelveMonth.orgValues,
                         borderColor: retentionColors.org.twelveMonth,
                         backgroundColor: retentionColors.org.twelveMonth,
                         pointStyle: 'circle',
@@ -2077,17 +2087,17 @@ function ProgramOutcomesVisualization() {
   // Update the youthRetentionColors constant
   const youthRetentionColors = {
     org: {
-      threeMonth: 'rgb(188, 108, 98)',   // Muted red
-      sixMonth: 'rgb(204, 197, 143)',    // Muted yellow
+      threeMonth: 'rgb(188, 108, 98)', // Muted red
+      sixMonth: 'rgb(204, 197, 143)', // Muted yellow
       twelveMonth: 'rgb(128, 153, 128)', // Muted green
       twentyFourMonth: 'rgb(98, 148, 188)', // Muted blue
     },
     network: {
-      threeMonth: chartColors.network,    // Standard gray
-      sixMonth: chartColors.network,      // Standard gray
-      twelveMonth: chartColors.network,   // Standard gray
+      threeMonth: chartColors.network, // Standard gray
+      sixMonth: chartColors.network, // Standard gray
+      twelveMonth: chartColors.network, // Standard gray
       twentyFourMonth: chartColors.network, // Standard gray
-    }
+    },
   };
 
   // Add the YouthHistoricalData interface
@@ -2098,7 +2108,7 @@ function ProgramOutcomesVisualization() {
       threeMonth: TimeSeriesData;
       sixMonth: TimeSeriesData;
       twelveMonth: TimeSeriesData;
-      twentyFourMonth: TimeSeriesData;  // Add this line
+      twentyFourMonth: TimeSeriesData; // Add this line
     };
     positiveOutcomes: TimeSeriesData;
   }
@@ -2117,7 +2127,7 @@ function ProgramOutcomesVisualization() {
           threeMonth,
           sixMonth,
           twelveMonth,
-          twentyFourMonth,  // Add this line
+          twentyFourMonth, // Add this line
           positiveOutcomes,
         ] = await Promise.all([
           fetchFieldHistory(orgId, 'youthProgramRetentionRate'),
@@ -2125,7 +2135,7 @@ function ProgramOutcomesVisualization() {
           fetchFieldHistory(orgId, 'youthJobRetentionThreeMonths'),
           fetchFieldHistory(orgId, 'youthJobRetentionSixMonths'),
           fetchFieldHistory(orgId, 'youthJobRetentionTwelveMonths'),
-          fetchFieldHistory(orgId, 'youthJobRetentionTwentyFourMonths'),  // Add this line
+          fetchFieldHistory(orgId, 'youthJobRetentionTwentyFourMonths'), // Add this line
           fetchFieldHistory(orgId, 'youthPositiveOutcomes'),
         ]);
 
@@ -2134,9 +2144,9 @@ function ProgramOutcomesVisualization() {
           retention: {
             twentyFourMonth: {
               orgValues: twentyFourMonth.orgValues,
-              networkValues: twentyFourMonth.networkValues
-            }
-          }
+              networkValues: twentyFourMonth.networkValues,
+            },
+          },
         });
 
         setYouthHistoricalData({
@@ -2146,7 +2156,7 @@ function ProgramOutcomesVisualization() {
             threeMonth,
             sixMonth,
             twelveMonth,
-            twentyFourMonth,  // Add this line
+            twentyFourMonth, // Add this line
           },
           positiveOutcomes,
         });
@@ -2256,7 +2266,8 @@ function ProgramOutcomesVisualization() {
                     datasets: [
                       {
                         label: 'Organization',
-                        data: youthHistoricalData.retention.threeMonth.orgValues,
+                        data: youthHistoricalData.retention.threeMonth
+                          .orgValues,
                         borderColor: youthRetentionColors.org.threeMonth,
                         backgroundColor: youthRetentionColors.org.threeMonth,
                         pointStyle: 'circle',
@@ -2265,9 +2276,11 @@ function ProgramOutcomesVisualization() {
                       },
                       {
                         label: 'Network Average',
-                        data: youthHistoricalData.retention.threeMonth.networkValues,
+                        data: youthHistoricalData.retention.threeMonth
+                          .networkValues,
                         borderColor: youthRetentionColors.network.threeMonth,
-                        backgroundColor: youthRetentionColors.network.threeMonth,
+                        backgroundColor:
+                          youthRetentionColors.network.threeMonth,
                         pointStyle: 'circle',
                         pointRadius: 6,
                         tension: 0.1,
@@ -2302,7 +2315,8 @@ function ProgramOutcomesVisualization() {
                       },
                       {
                         label: 'Network Average',
-                        data: youthHistoricalData.retention.sixMonth.networkValues,
+                        data: youthHistoricalData.retention.sixMonth
+                          .networkValues,
                         borderColor: youthRetentionColors.network.sixMonth,
                         backgroundColor: youthRetentionColors.network.sixMonth,
                         pointStyle: 'circle',
@@ -2330,7 +2344,8 @@ function ProgramOutcomesVisualization() {
                     datasets: [
                       {
                         label: 'Organization',
-                        data: youthHistoricalData.retention.twelveMonth.orgValues,
+                        data: youthHistoricalData.retention.twelveMonth
+                          .orgValues,
                         borderColor: youthRetentionColors.org.twelveMonth,
                         backgroundColor: youthRetentionColors.org.twelveMonth,
                         pointStyle: 'circle',
@@ -2339,9 +2354,11 @@ function ProgramOutcomesVisualization() {
                       },
                       {
                         label: 'Network Average',
-                        data: youthHistoricalData.retention.twelveMonth.networkValues,
+                        data: youthHistoricalData.retention.twelveMonth
+                          .networkValues,
                         borderColor: youthRetentionColors.network.twelveMonth,
-                        backgroundColor: youthRetentionColors.network.twelveMonth,
+                        backgroundColor:
+                          youthRetentionColors.network.twelveMonth,
                         pointStyle: 'circle',
                         pointRadius: 6,
                         tension: 0.1,
@@ -2367,18 +2384,23 @@ function ProgramOutcomesVisualization() {
                     datasets: [
                       {
                         label: 'Organization',
-                        data: youthHistoricalData.retention.twentyFourMonth.orgValues,
+                        data: youthHistoricalData.retention.twentyFourMonth
+                          .orgValues,
                         borderColor: youthRetentionColors.org.twentyFourMonth,
-                        backgroundColor: youthRetentionColors.org.twentyFourMonth,
+                        backgroundColor:
+                          youthRetentionColors.org.twentyFourMonth,
                         pointStyle: 'circle',
                         pointRadius: 6,
                         tension: 0.1,
                       },
                       {
                         label: 'Network Average',
-                        data: youthHistoricalData.retention.twentyFourMonth.networkValues,
-                        borderColor: youthRetentionColors.network.twentyFourMonth,
-                        backgroundColor: youthRetentionColors.network.twentyFourMonth,
+                        data: youthHistoricalData.retention.twentyFourMonth
+                          .networkValues,
+                        borderColor:
+                          youthRetentionColors.network.twentyFourMonth,
+                        backgroundColor:
+                          youthRetentionColors.network.twentyFourMonth,
                         pointStyle: 'circle',
                         pointRadius: 6,
                         tension: 0.1,
