@@ -78,9 +78,8 @@ function OrgTable() {
     try {
       const [kitchenRes, programRes] = await Promise.all([
         getData(`kitchen_outcomes/get/all/${organizationId}`),
-        getData(`program_outcomes/get/all/${organizationId}`),
+        getData(`program_outcomes/org/${organizationId}/all`),
       ]);
-
       setKitchenOutcomes(kitchenRes.data);
       setProgramOutcomes(programRes.data);
 
@@ -146,7 +145,7 @@ function OrgTable() {
       ),
     }));
 
-    const programRows: OutcomeRow[] = programOutcomes.map((outcome) => ({
+    const programRows: OutcomeRow[] = programOutcomes.map((outcome: any) => ({
       // eslint-disable-next-line no-underscore-dangle
       key: outcome._id,
       date: new Date(outcome.year).toISOString().slice(0, 10),
@@ -197,12 +196,8 @@ function OrgTable() {
           </MenuItem>
         ))}
       </Select>
-
-      <Box mt={2} />
-
       {/* Outcomes Table */}
       <PaginationTable rows={createOutcomeRows()} columns={columns} />
-
       {/* Notification Snackbar */}
       <Snackbar
         open={notification.open}

@@ -12,7 +12,9 @@ function OrgAdminPage() {
   return (
     <ScreenGrid>
       <Grid item>
-        <Typography variant="h2">Welcome to the Admin Dashboard</Typography>
+        <Typography variant="h2">
+          Welcome to the Admin Organization Dashboard
+        </Typography>
       </Grid>
       <Grid item>
         <div style={{ height: '60vh', width: '60vw' }}>

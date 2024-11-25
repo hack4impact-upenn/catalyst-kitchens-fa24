@@ -18,7 +18,7 @@ const getOneProgramOutcomes = async (year: Date, orgId: string) => {
   const endDate = new Date(Date.UTC(year.getFullYear() + 1, 0, 1));
 
   const outcomes = await ProgramOutcomes.findOne({
-    orgId: orgId,
+    orgId,
     year: {
       $gte: startDate,
       $lt: endDate,
@@ -40,7 +40,7 @@ const getAllProgramOutcomesByOrg = async (orgId: string) => {
 const getDistinctYearsByOrgId = async (orgId: string): Promise<number[]> => {
   console.log('Service - Getting years for orgId:', orgId);
   const outcomes = await ProgramOutcomes.find({ orgId }, ['year']);
-  const years = outcomes.map((outcome) => outcome.year.getUTCFullYear());
+  const years = outcomes.map((outcome: any) => outcome.year.getUTCFullYear());
   return [...new Set(years)].sort((a, b) => b - a);
 };
 
@@ -112,20 +112,20 @@ const getNetworkAverage = async (
 
 const getFieldValuesByYear = async (
   orgId: string,
-  field: keyof IProgramOutcomes
+  field: keyof IProgramOutcomes,
 ): Promise<Map<number, number | null>> => {
   try {
     const outcomes = await ProgramOutcomes.find(
-      { 
+      {
         orgId,
-        [field]: { $exists: true }
+        [field]: { $exists: true },
       },
-      ['year', field]
+      ['year', field],
     ).exec();
 
     const valuesByYear = new Map<number, number | null>();
-    
-    outcomes.forEach(outcome => {
+
+    outcomes.forEach((outcome: any) => {
       const year = outcome.year.getUTCFullYear();
       const value = outcome[field] as number | null;
       valuesByYear.set(year, value);
