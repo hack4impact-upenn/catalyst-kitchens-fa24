@@ -69,6 +69,10 @@ function OrgTable() {
 
   const handleOrgChange = async (event: SelectChangeEvent<string>) => {
     const organizationId = event.target.value;
+    if (organizationId === 'No Org') {
+      setSelectedOrgId('No Org');
+      return;
+    }
     setSelectedOrgId(organizationId);
 
     try {
