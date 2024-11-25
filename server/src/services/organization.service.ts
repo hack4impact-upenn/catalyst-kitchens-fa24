@@ -6,9 +6,18 @@ const getOrganizationByName = async (name: string) => {
   }).exec();
   return org;
 };
+const getOrganizationNameById = async (id: string) => {
+  const org = await Organization.findOne(
+    {
+      _id: id,
+    },
+    ['organizationName'],
+  ).exec();
+  return org;
+};
 const getAllOrganizations = async () => {
   const orgList = await Organization.find({}, ['organizationName']).exec();
   return orgList;
 };
 
-export { getOrganizationByName, getAllOrganizations };
+export { getOrganizationByName, getAllOrganizations, getOrganizationNameById };

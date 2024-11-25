@@ -13,6 +13,7 @@ import {
   verifyAccount,
   registerInvite,
   addUserToOrganization,
+  getUserOrganizationByEmailController,
 } from '../controllers/auth.controller.ts';
 import { isAuthenticated } from '../controllers/auth.middleware.ts';
 import 'dotenv/config';
@@ -74,6 +75,8 @@ router.get('/authstatus', isAuthenticated, approve);
  * a new account is created. Otherwise a 400 bad request error is returned
  */
 router.post('/register-invite', registerInvite);
+
+router.get('/organization/:email', getUserOrganizationByEmailController);
 
 /**
  * PUT route to modify a users organization property. Expects a JSON body with the following fields:
