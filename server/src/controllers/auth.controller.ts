@@ -16,6 +16,7 @@ import {
   getUserByResetPasswordToken,
   getUserByVerificationToken,
   getUserById,
+  getUserOrganizationByEmail,
 } from '../services/user.service.ts';
 import {
   emailResetPasswordLink,
@@ -114,7 +115,6 @@ const logout = async (
             distinct_id: req.user ? (req.user as IUser)._id : undefined,
             email: req.user ? (req.user as IUser).email : undefined,
           });
-          return;
         }
       });
     }
@@ -419,7 +419,20 @@ const registerInvite = async (
     next(ApiError.internal('Unable to register user.'));
   }
 };
-
+const getUserOrganizationByEmailController = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) => {
+  const { email } = req.params;
+  return getUserOrganizationByEmail(email)
+    .then((organizationName: unknown) => {
+      res.status(StatusCode.OK).send(organizationName);
+    })
+    .catch(() => {
+      next(ApiError.internal('Unable to receive organization by user email'));
+    });
+};
 /*
 Add a user to an organization
 */
@@ -449,7 +462,6 @@ const addUserToOrganization = async (
     next(ApiError.internal('Unable to add user to organization'));
   }
 };
-
 export {
   login,
   logout,
@@ -460,4 +472,5 @@ export {
   resetPassword,
   registerInvite,
   addUserToOrganization,
+  getUserOrganizationByEmailController,
 };

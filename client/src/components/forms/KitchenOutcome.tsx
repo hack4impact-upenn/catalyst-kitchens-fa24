@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import axios from 'axios';
 import {
   Button,
@@ -25,12 +26,14 @@ import {
   Snackbar,
 } from '@mui/material';
 import { number } from 'prop-types';
+import { RootState } from '../../util/redux/store';
 
 export default function KitchenOutcome() {
   // Define the form state type
   type FormState = {
-    email: string;
+    email: string | null;
     year: Date;
+    orgId: string | null;
     shareSurvey: boolean;
     responderName: string;
     responderTitle: string;
@@ -65,7 +68,6 @@ export default function KitchenOutcome() {
     mealReimbursement: number;
     retailSocialEnterpriseRevenue: number; // match
     expansionProjectNeeds: [];
-    categoryState: Record<CategoryKey, string>;
     grossRevenueCafe: number;
     grossRevenueRestaurant: number;
     grossRevenueCatering: number;
@@ -97,15 +99,18 @@ export default function KitchenOutcome() {
     'Meals For Seniors',
     'Medically Tailored Meals',
   ];
+  const user = useSelector((state: RootState) => state.user);
   const [ageOpen, setAgeOpen] = useState(false);
   const [mealOpen, setMealOpen] = useState(false);
   const [genderOpen, setGenderOpen] = useState(false);
   const [racialOpen, setRacialOpen] = useState(false);
+  const [orgOpen, setOrgOpen] = useState(false);
   // Initialize formState with the FormState type
-  const [formState, setFormState] = useState<FormState>({
-    email: '',
+  const noFormState: FormState = {
+    email: user.email,
     year: new Date(),
-    shareSurvey: false,
+    orgId: null,
+    shareSurvey: true,
     responderName: '',
     responderTitle: '',
     organizationName: '',
@@ -139,14 +144,6 @@ export default function KitchenOutcome() {
     mealReimbursement: 0,
     retailSocialEnterpriseRevenue: 0,
     expansionProjectNeeds: [],
-    categoryState: {
-      cafe: '',
-      restaurant: '',
-      catering: '',
-      foodTruck: '',
-      wholesale: '',
-      foodSubscription: '',
-    },
     grossRevenueCafe: 0,
     grossRevenueRestaurant: 0,
     grossRevenueCatering: 0,
@@ -159,26 +156,22 @@ export default function KitchenOutcome() {
     capitalProjectDate: new Date(),
     capitalExpansionMonth: '',
     capitalExpansionYear: new Date().getFullYear(),
-  });
+  };
+  const [formState, setFormState] = useState<FormState>(noFormState);
   const months = [
-    { label: 'January', value: '01' },
-    { label: 'February', value: '02' },
-    { label: 'March', value: '03' },
-    { label: 'April', value: '04' },
-    { label: 'May', value: '05' },
-    { label: 'June', value: '06' },
-    { label: 'July', value: '07' },
-    { label: 'August', value: '08' },
-    { label: 'September', value: '09' },
+    { label: 'January', value: '1' },
+    { label: 'February', value: '2' },
+    { label: 'March', value: '3' },
+    { label: 'April', value: '4' },
+    { label: 'May', value: '5' },
+    { label: 'June', value: '6' },
+    { label: 'July', value: '7' },
+    { label: 'August', value: '8' },
+    { label: 'September', value: '9' },
     { label: 'October', value: '10' },
     { label: 'November', value: '11' },
     { label: 'December', value: '12' },
   ];
-
-  const years = Array.from(
-    { length: 20 },
-    (_, i) => new Date().getFullYear() - i,
-  );
   function validateInputs() {
     const racialPercentageSum =
       formState.mealsAmericanIndian +
@@ -223,6 +216,10 @@ export default function KitchenOutcome() {
       works = false;
       setAgeOpen(true);
     }
+    if (!formState.orgId) {
+      works = false;
+      setOrgOpen(true);
+    }
     return works;
   }
   const handleSubmit = async () => {
@@ -231,6 +228,7 @@ export default function KitchenOutcome() {
         .post('http://localhost:4000/api/kitchen_outcomes/add/', formState)
         .then((response) => {
           console.log('submitted!');
+          setFormState(noFormState);
         })
         .catch((error) => {
           console.log(error);
@@ -247,78 +245,77 @@ export default function KitchenOutcome() {
       }
       if (formState.capitalExpansionMonth && formState.capitalExpansionYear) {
         const selectedDate = new Date(
-          `${formState.capitalExpansionYear}-${
-            Number(findMonthNumerical(formState.capitalExpansionMonth)) + 1
-          }-01`,
+          `${formState.capitalExpansionYear}-${formState.capitalExpansionMonth}-01`,
         );
         setFormState({ ...formState, capitalProjectDate: selectedDate });
       }
     };
+    handleDateChange();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formState]);
+  }, [formState.capitalExpansionMonth, formState.capitalExpansionYear]);
+  useEffect(() => {
+    const fetchOrganizationId = async () => {
+      if (user.email) {
+        try {
+          axios
+            .get(`http://localhost:4000/api/auth/organization/${user.email}`)
+            .then((response) => {
+              const { data } = response;
+              setFormState({
+                ...formState,
+                orgId: data,
+              });
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        } catch (error) {
+          console.error('Error fetching organization ID:', error);
+        }
+      }
+    };
+    fetchOrganizationId();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user.email]);
+  useEffect(() => {
+    const fetchOrganizationNameById = async () => {
+      if (formState.orgId) {
+        try {
+          axios
+            .get(
+              `http://localhost:4000/api/organization/organization/name/${formState.orgId}`,
+            )
+            .then((response) => {
+              const { data } = response;
+              setFormState({
+                ...formState,
+                organizationName: data.organizationName,
+              });
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        } catch (error) {
+          console.error('Error fetching organization name by ID:', error);
+        }
+      }
+    };
+    fetchOrganizationNameById();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formState.orgId]);
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-      <h1>Submit Kitchen Outcomes</h1>
+      <h1 style={{ textAlign: 'center' }}>Submit Kitchen Outcomes</h1>
       <p>
-        Some description of the kitchen outcomes form: Lorem ipsum dolor sit
-        amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-        labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-        exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
-        dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-        proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+        Welcome to the Kitchen Outcomes Form! Thank you for taking the time to
+        provide valuable insights about your organization. This form is designed
+        to gather historical data on your food kitchen&apos;s operations,
+        enabling us to better understand your achievements, challenges, and
+        opportunities for improvement. Your input will help Catalyst Kitchens
+        enhance support for member organizations like yours and identify best
+        practices to strengthen the impact of food kitchens nationwide.
       </p>
-      <h3>Intro</h3>
-      <p>
-        Intro section description: Lorem ipsum dolor sit amet, consectetur
-        adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
-        laboris nisi ut aliquip ex ea commodo consequat.{' '}
-      </p>
-      <Box mb={2}>
-        <TextField
-          id="outlined-email"
-          onChange={(e) =>
-            setFormState({ ...formState, email: e.target.value })
-          }
-          label="Email"
-          variant="outlined"
-          fullWidth
-          required
-        />
-      </Box>
       <h4>Organization and Responder Details</h4>
-      <h5>Share Survey</h5>
-      <FormControl component="fieldset">
-        <FormLabel component="legend">Select an Option</FormLabel>
-        <RadioGroup
-          aria-label="yes-no"
-          name="yesNo"
-          value={formState.shareSurvey ? 'yes' : 'no'}
-          onChange={(e) => {
-            setFormState({
-              ...formState,
-              shareSurvey: e.target.value === 'yes',
-            });
-          }}
-          row
-        >
-          <FormControlLabel value="yes" control={<Radio />} label="Yes" />
-          <FormControlLabel value="no" control={<Radio />} label="No" />
-        </RadioGroup>
-      </FormControl>
-      <Box mb={2}>
-        <TextField
-          id="outlined-basic"
-          onChange={(e) =>
-            setFormState({ ...formState, organizationName: e.target.value })
-          }
-          label="Organization Name"
-          variant="outlined"
-          fullWidth
-          required
-        />
-      </Box>
       <Box mb={2}>
         <TextField
           id="outlined-basic"
@@ -343,12 +340,12 @@ export default function KitchenOutcome() {
       </Box>
       <h4>Hunger Relief Impact Funding</h4>
       <p>
-        Hunger Relief Meals ServedTotal number of meals prepared for low income
-        individuals in 2023 by your organization.Hunger Relief Meals are
+        Hunger Relief Meals Served: Total number of meals prepared for low
+        income individuals in 2023 by your organization. Hunger Relief Meals are
         prepared meals - hot, cold or frozen and ready-to-eat or reheat - anddo
         not include grocery/pantry boxes. Meal kits, specific boxed mix of
         perishable and non-perishable ingredients with recipes, (e.g. “Blue
-        Apron style”), are included in communitymeals. Include all prepared
+        Apron style”), are included in community meals. Include all prepared
         meals whether sold on contract or funded through grants orfundraising.
       </p>
       <Box mb={2}>
@@ -404,9 +401,9 @@ export default function KitchenOutcome() {
       <h4>Contract Meal Revenue</h4>
       <p>
         Total combined gross revenue in {new Date().getFullYear()} from all
-        contract meal enterprises. Do not includedonated goods or revenue from
-        retail foodservice social enterprises. Retail SE data iscollected later
-        in the survey
+        contract meal enterprises. Do not include donated goods or revenue from
+        retail food service social enterprises. Retail SE data is collected
+        later in the survey
       </p>
       <Box mb={2}>
         <TextField
@@ -469,7 +466,7 @@ export default function KitchenOutcome() {
       <h4>Meal Reimbursement</h4>
       <p>
         Of meals that you get direct reimbursement for, what is your Average
-        Reimbursement permeal? This should be your average rate across all
+        Reimbursement per meal? This should be your average rate across all
         contracts, public and private. Estimate is OK.
       </p>
       <Box mb={2}>
@@ -490,11 +487,11 @@ export default function KitchenOutcome() {
 
       <h4>Hunger Relief Meal Funding Mix</h4>
       <p>
-        Please estimate what percentage of your Hunger Relief Meal Fundingcomes
-        from each of the following categories. This can be a roughestimate, but
-        the three numbers should total 100. Public fundingincludes all
+        Please estimate what percentage of your Hunger Relief Meal Funding comes
+        from each of the following categories. This can be a rough estimate, but
+        the three numbers should total 100. Public funding includes all
         government grants and contracts. Individual donations and In kind
-        contributionsshould beincluded in Private Donations
+        contributions should be included in Private Donations
       </p>
 
       <Box mb={2}>
@@ -547,9 +544,9 @@ export default function KitchenOutcome() {
       <h4>Gender</h4>
       <p>
         Please provide an estimate if exact data is not available. Leave blank
-        if you do not track.NOTE: The language below often mirrors language from
-        census categories and governmentdefinitions. If there is preferred
-        language or terminology we should use when referring to yourprogram and
+        if you do not track. NOTE: The language below often mirrors language
+        from census categories and government definitions. If there is preferred
+        language or terminology we should use when referring to your program and
         clients, please let us know by emailing info@catalystkitchens.org. All
         comments are welcome.
       </p>
@@ -1152,7 +1149,7 @@ export default function KitchenOutcome() {
               retailSocialEnterpriseRevenue: Number(e.target.value),
             })
           }
-          label="retailSocialEnterpriseReveue"
+          label="Gross Revenue from All Retail Social Enterprises"
           variant="outlined"
           fullWidth
           required
@@ -1267,6 +1264,21 @@ export default function KitchenOutcome() {
         >
           The percentages under the Hunger Relief Meal Funding Mix category do
           not add up to 100!
+        </Alert>
+      ) : (
+        // eslint-disable-next-line react/jsx-no-useless-fragment
+        <></>
+      )}
+      {orgOpen ? (
+        <Alert
+          severity="warning"
+          onClose={() => {
+            setOrgOpen(false);
+          }}
+        >
+          User is not associated with an organization. Cannot submit form at
+          this time. Please contact Catalyst Kitchens to be assigned to an
+          organization.
         </Alert>
       ) : (
         // eslint-disable-next-line react/jsx-no-useless-fragment
