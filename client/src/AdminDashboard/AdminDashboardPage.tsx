@@ -12,7 +12,9 @@ function AdminDashboardPage() {
   return (
     <ScreenGrid>
       <Grid item>
-        <Typography variant="h2">Welcome to the Admin Dashboard</Typography>
+        <Typography variant="h2">
+          Welcome to the Admin User Dashboard
+        </Typography>
       </Grid>
       <Grid item container width="60vw" justifyContent="flex-end">
         <InviteUserButton />

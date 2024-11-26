@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import axios from 'axios';
 import {
   Button,
   Box,
@@ -19,72 +21,63 @@ import {
   Select,
   MenuItem,
   InputLabel,
+  Alert,
+  Grid,
+  Snackbar,
 } from '@mui/material';
+import { number } from 'prop-types';
+import { RootState } from '../../util/redux/store';
 
 export default function KitchenOutcome() {
   // Define the form state type
   type FormState = {
-    email: string;
+    email: string | null;
+    year: Date;
+    orgId: string | null;
     shareSurvey: boolean;
     responderName: string;
     responderTitle: string;
     organizationName: string;
-    noMealsServerd: number;
-    mealTypes: {
-      childCare: boolean;
-      school: boolean;
-      soupKitchen: boolean;
-      shelter: boolean;
-      transitionalHousing: boolean;
-      senior: boolean;
-      medical: boolean;
-    };
-    mealFunding: {
-      publicFunding: number;
-      privateContracts: number;
-      privateDonations: number;
-    };
-    gender: {
-      male: number;
-      female: number;
-      nonBinary: number;
-      unknown: number;
-      transgender: number;
-    };
-    race: {
-      americanIndian: number;
-      asian: number;
-      black: number;
-      latinx: number;
-      pacificIslander: number;
-      multiracial: number;
-      white: number;
-      other: number;
-      unknown: number;
-    };
-    age: {
-      infants: number;
-      children: number;
-      adults: number;
-      seniors: number;
-      unknown: number;
-    };
+    noMealsServed: number;
+    typeOfMealsServed: string[];
+    mealFundingPublic: number;
+    mealFundingPrivateContracts: number;
+    mealFundingPrivateDonations: number;
+    mealsMale: number;
+    mealsFemale: number;
+    mealsNonBinary: number;
+    mealsGenderUnknown: number;
+    mealsTrangender: number;
+    mealsAmericanIndian: number;
+    mealsAsian: number;
+    mealsBlack: number;
+    mealsLatinx: number;
+    mealsNativeHawaiian: number;
+    mealsMultiRacial: number;
+    mealsWhite: number;
+    mealsOtherRace: number;
+    mealsRaceUnknown: number;
+    mealsInfants: number;
+    mealsChildren: number;
+    mealsAdults: number;
+    mealsSeniors: number;
+    mealsAgeUnknown: number;
     contractMealRevenue: number;
     costPerMeal: number;
     foodCostPercentage: number;
     mealReimbursement: number;
-    retailSocialEnterpriseRevenue: number;
-    expansionProjectNeeds: {
-      howStart: boolean;
-      planCost: boolean;
-      fundraisingStrat: boolean;
-      constructionCosts: boolean;
-      equipment: boolean;
-      operatingExpenses: boolean;
-    };
-    categoryState: Record<CategoryKey, string>;
-    capitalExpansionProject: string;
-    capitalProjectSize: number;
+    retailSocialEnterpriseRevenue: number; // match
+    expansionProjectNeeds: [];
+    grossRevenueCafe: number;
+    grossRevenueRestaurant: number;
+    grossRevenueCatering: number;
+    grossRevenueFoodTruck: number;
+    grossRevenueWholesale: number;
+    grossRevenueFoodSubscription: number;
+    capitalExpansionProjects: string;
+    capitalExpansionProjectNeeds: string[]; // match
+    capitalProjectSize: number; // match
+    capitalProjectDate: Date; // match
     capitalExpansionMonth: string;
     capitalExpansionYear: number;
   };
@@ -97,192 +90,232 @@ export default function KitchenOutcome() {
     | 'foodTruck'
     | 'wholesale'
     | 'foodSubscription';
-
+  const MEAL_TYPES = [
+    'Childcare Meals',
+    'School Meals',
+    'Soup Kitchen (onsite)',
+    'Shelter Meals (offsite)',
+    'Meals for Supportive/Transitional Housing',
+    'Meals For Seniors',
+    'Medically Tailored Meals',
+  ];
+  const user = useSelector((state: RootState) => state.user);
+  const [ageOpen, setAgeOpen] = useState(false);
+  const [mealOpen, setMealOpen] = useState(false);
+  const [genderOpen, setGenderOpen] = useState(false);
+  const [racialOpen, setRacialOpen] = useState(false);
+  const [orgOpen, setOrgOpen] = useState(false);
   // Initialize formState with the FormState type
-  const [formState, setFormState] = React.useState<FormState>({
-    email: '',
-    shareSurvey: false,
+  const noFormState: FormState = {
+    email: user.email,
+    year: new Date(),
+    orgId: null,
+    shareSurvey: true,
     responderName: '',
     responderTitle: '',
     organizationName: '',
-    noMealsServerd: 0,
-    mealTypes: {
-      childCare: false,
-      school: false,
-      soupKitchen: false,
-      shelter: false,
-      transitionalHousing: false,
-      senior: false,
-      medical: false,
-    },
-    mealFunding: {
-      publicFunding: 0,
-      privateContracts: 0,
-      privateDonations: 0,
-    },
-    gender: {
-      male: 0,
-      female: 0,
-      nonBinary: 0,
-      unknown: 0,
-      transgender: 0,
-    },
-    race: {
-      americanIndian: 0,
-      asian: 0,
-      black: 0,
-      latinx: 0,
-      pacificIslander: 0,
-      multiracial: 0,
-      white: 0,
-      other: 0,
-      unknown: 0,
-    },
-    age: {
-      infants: 0,
-      children: 0,
-      adults: 0,
-      seniors: 0,
-      unknown: 0,
-    },
+    noMealsServed: 0,
+    typeOfMealsServed: [],
+    mealFundingPrivateContracts: 0,
+    mealFundingPrivateDonations: 0,
+    mealFundingPublic: 0,
+    mealsMale: 0,
+    mealsFemale: 0,
+    mealsNonBinary: 0,
+    mealsGenderUnknown: 0,
+    mealsTrangender: 0,
+    mealsAmericanIndian: 0,
+    mealsAsian: 0,
+    mealsBlack: 0,
+    mealsLatinx: 0,
+    mealsNativeHawaiian: 0,
+    mealsMultiRacial: 0,
+    mealsWhite: 0,
+    mealsOtherRace: 0,
+    mealsRaceUnknown: 0,
+    mealsInfants: 0,
+    mealsChildren: 0,
+    mealsAdults: 0,
+    mealsSeniors: 0,
+    mealsAgeUnknown: 0,
     contractMealRevenue: 0,
     costPerMeal: 0,
     foodCostPercentage: 0,
     mealReimbursement: 0,
     retailSocialEnterpriseRevenue: 0,
-    expansionProjectNeeds: {
-      howStart: false,
-      planCost: false,
-      fundraisingStrat: false,
-      constructionCosts: false,
-      equipment: false,
-      operatingExpenses: false,
-    },
-    categoryState: {
-      cafe: '',
-      restaurant: '',
-      catering: '',
-      foodTruck: '',
-      wholesale: '',
-      foodSubscription: '',
-    },
-    capitalExpansionProject: '',
+    expansionProjectNeeds: [],
+    grossRevenueCafe: 0,
+    grossRevenueRestaurant: 0,
+    grossRevenueCatering: 0,
+    grossRevenueFoodTruck: 0,
+    grossRevenueWholesale: 0,
+    grossRevenueFoodSubscription: 0,
+    capitalExpansionProjects: '',
+    capitalExpansionProjectNeeds: [],
     capitalProjectSize: 0,
+    capitalProjectDate: new Date(),
     capitalExpansionMonth: '',
     capitalExpansionYear: new Date().getFullYear(),
-  });
-
-  // Update the categories object
-  const categories: Record<string, CategoryKey> = {
-    Cafe: 'cafe',
-    Restaurant: 'restaurant',
-    Catering: 'catering',
-    'Food Truck': 'foodTruck',
-    'Consumer Packaged Goods': 'wholesale',
-    'Food or Meal Subscription Services': 'foodSubscription',
   };
-
-  const revenueRanges = [
-    { label: 'Less than $100K', value: 'lessThan100K' },
-    { label: '$100K to $250K', value: '100Kto250K' },
-    { label: '$250K to $500K', value: '250Kto500K' },
-    { label: '$500K to $1M', value: '500Kto1M' },
-    { label: 'Over $1M', value: 'over1M' },
-    { label: 'No Enterprise', value: 'noEnterprise' },
-  ];
-
+  const [formState, setFormState] = useState<FormState>(noFormState);
   const months = [
-    { label: 'January', value: '01' },
-    { label: 'February', value: '02' },
-    { label: 'March', value: '03' },
-    { label: 'April', value: '04' },
-    { label: 'May', value: '05' },
-    { label: 'June', value: '06' },
-    { label: 'July', value: '07' },
-    { label: 'August', value: '08' },
-    { label: 'September', value: '09' },
+    { label: 'January', value: '1' },
+    { label: 'February', value: '2' },
+    { label: 'March', value: '3' },
+    { label: 'April', value: '4' },
+    { label: 'May', value: '5' },
+    { label: 'June', value: '6' },
+    { label: 'July', value: '7' },
+    { label: 'August', value: '8' },
+    { label: 'September', value: '9' },
     { label: 'October', value: '10' },
     { label: 'November', value: '11' },
     { label: 'December', value: '12' },
   ];
-
-  const years = Array.from(
-    { length: 20 },
-    (_, i) => new Date().getFullYear() - i,
-  );
-
-  function handleCategoryChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const { value, name } = e.target;
-    const category = categories[name as keyof typeof categories];
-    setFormState({
-      ...formState,
-      categoryState: { ...formState.categoryState, [category]: value },
-    });
+  function validateInputs() {
+    const racialPercentageSum =
+      formState.mealsAmericanIndian +
+      formState.mealsAsian +
+      formState.mealsBlack +
+      formState.mealsLatinx +
+      formState.mealsNativeHawaiian +
+      formState.mealsMultiRacial +
+      formState.mealsWhite +
+      formState.mealsOtherRace +
+      formState.mealsRaceUnknown;
+    const genderPercentageSum =
+      formState.mealsFemale +
+      formState.mealsMale +
+      formState.mealsNonBinary +
+      formState.mealsGenderUnknown +
+      formState.mealsTrangender;
+    const mealFundingSum =
+      formState.mealFundingPublic +
+      formState.mealFundingPrivateContracts +
+      formState.mealFundingPrivateDonations;
+    const ageGroupSum =
+      formState.mealsInfants +
+      formState.mealsChildren +
+      formState.mealsAdults +
+      formState.mealsSeniors +
+      formState.mealsAgeUnknown;
+    let works = true;
+    if (racialPercentageSum !== 100) {
+      works = false;
+      setRacialOpen(true);
+    }
+    if (genderPercentageSum !== 100) {
+      works = false;
+      setGenderOpen(true);
+    }
+    if (mealFundingSum !== 100) {
+      works = false;
+      setMealOpen(true);
+    }
+    if (ageGroupSum !== 100) {
+      works = false;
+      setAgeOpen(true);
+    }
+    if (!formState.orgId) {
+      works = false;
+      setOrgOpen(true);
+    }
+    return works;
   }
-
+  const handleSubmit = async () => {
+    if (validateInputs()) {
+      axios
+        .post('http://localhost:4000/api/kitchen_outcomes/add/', formState)
+        .then((response) => {
+          console.log('submitted!');
+          setFormState(noFormState);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+  };
+  useEffect(() => {
+    const handleDateChange = () => {
+      function findMonthNumerical(month: string) {
+        const monthObject = months.find(
+          (m) => m.label.toLowerCase() === month.toLowerCase(),
+        );
+        return monthObject?.value;
+      }
+      if (formState.capitalExpansionMonth && formState.capitalExpansionYear) {
+        const selectedDate = new Date(
+          `${formState.capitalExpansionYear}-${formState.capitalExpansionMonth}-01`,
+        );
+        setFormState({ ...formState, capitalProjectDate: selectedDate });
+      }
+    };
+    handleDateChange();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formState.capitalExpansionMonth, formState.capitalExpansionYear]);
+  useEffect(() => {
+    const fetchOrganizationId = async () => {
+      if (user.email) {
+        try {
+          axios
+            .get(`http://localhost:4000/api/auth/organization/${user.email}`)
+            .then((response) => {
+              const { data } = response;
+              setFormState({
+                ...formState,
+                orgId: data,
+              });
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        } catch (error) {
+          console.error('Error fetching organization ID:', error);
+        }
+      }
+    };
+    fetchOrganizationId();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user.email]);
+  useEffect(() => {
+    const fetchOrganizationNameById = async () => {
+      if (formState.orgId) {
+        try {
+          axios
+            .get(
+              `http://localhost:4000/api/organization/organization/name/${formState.orgId}`,
+            )
+            .then((response) => {
+              const { data } = response;
+              setFormState({
+                ...formState,
+                organizationName: data.organizationName,
+              });
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        } catch (error) {
+          console.error('Error fetching organization name by ID:', error);
+        }
+      }
+    };
+    fetchOrganizationNameById();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formState.orgId]);
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-      <h1>Submit Kitchen Outcomes</h1>
+      <h1 style={{ textAlign: 'center' }}>Submit Kitchen Outcomes</h1>
       <p>
-        Some description of the kitchen outcomes form: Lorem ipsum dolor sit
-        amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-        labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-        exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
-        dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-        proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+        Welcome to the Kitchen Outcomes Form! Thank you for taking the time to
+        provide valuable insights about your organization. This form is designed
+        to gather historical data on your food kitchen&apos;s operations,
+        enabling us to better understand your achievements, challenges, and
+        opportunities for improvement. Your input will help Catalyst Kitchens
+        enhance support for member organizations like yours and identify best
+        practices to strengthen the impact of food kitchens nationwide.
       </p>
-      <h3>Intro</h3>
-      <p>
-        Intro section description: Lorem ipsum dolor sit amet, consectetur
-        adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
-        laboris nisi ut aliquip ex ea commodo consequat.{' '}
-      </p>
-      <Box mb={2}>
-        <TextField
-          id="outlined-email"
-          onChange={(e) =>
-            setFormState({ ...formState, email: e.target.value })
-          }
-          label="Email"
-          variant="outlined"
-          fullWidth
-          required
-        />
-      </Box>
       <h4>Organization and Responder Details</h4>
-      <h5>Share Survey</h5>
-      <FormControl component="fieldset">
-        <FormLabel component="legend">Select an Option</FormLabel>
-        <RadioGroup
-          aria-label="yes-no"
-          name="yesNo"
-          value={formState.shareSurvey ? 'yes' : 'no'}
-          onChange={(e) => {
-            setFormState({
-              ...formState,
-              shareSurvey: e.target.value === 'yes',
-            });
-          }}
-          row
-        >
-          <FormControlLabel value="yes" control={<Radio />} label="Yes" />
-          <FormControlLabel value="no" control={<Radio />} label="No" />
-        </RadioGroup>
-      </FormControl>
-      <Box mb={2}>
-        <TextField
-          id="outlined-basic"
-          onChange={(e) =>
-            setFormState({ ...formState, organizationName: e.target.value })
-          }
-          label="Organization Name"
-          variant="outlined"
-          fullWidth
-          required
-        />
-      </Box>
       <Box mb={2}>
         <TextField
           id="outlined-basic"
@@ -307,12 +340,12 @@ export default function KitchenOutcome() {
       </Box>
       <h4>Hunger Relief Impact Funding</h4>
       <p>
-        Hunger Relief Meals ServedTotal number of meals prepared for low income
-        individuals in 2023 by your organization.Hunger Relief Meals are
+        Hunger Relief Meals Served: Total number of meals prepared for low
+        income individuals in 2023 by your organization. Hunger Relief Meals are
         prepared meals - hot, cold or frozen and ready-to-eat or reheat - anddo
         not include grocery/pantry boxes. Meal kits, specific boxed mix of
         perishable and non-perishable ingredients with recipes, (e.g. “Blue
-        Apron style”), are included in communitymeals. Include all prepared
+        Apron style”), are included in community meals. Include all prepared
         meals whether sold on contract or funded through grants orfundraising.
       </p>
       <Box mb={2}>
@@ -325,7 +358,7 @@ export default function KitchenOutcome() {
           onChange={(e) =>
             setFormState({
               ...formState,
-              noMealsServerd: Number(e.target.value),
+              noMealsServed: Number(e.target.value),
             })
           }
         />
@@ -338,134 +371,39 @@ export default function KitchenOutcome() {
       <FormControl component="fieldset">
         <FormLabel component="legend">Select Meal Services Provided</FormLabel>
         <FormGroup>
-          <FormControlLabel
-            control={
-              <Checkbox
-                onChange={(e) => {
-                  setFormState({
-                    ...formState,
-                    mealTypes: {
-                      ...formState.mealTypes,
-                      childCare: e.target.checked,
-                    },
-                  });
-                }}
-                name="childcareMeals"
-              />
-            }
-            label="Childcare Meals"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                onChange={(e) => {
-                  setFormState({
-                    ...formState,
-                    mealTypes: {
-                      ...formState.mealTypes,
-                      school: e.target.checked,
-                    },
-                  });
-                }}
-                name="schoolMeals"
-              />
-            }
-            label="School Meals"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                onChange={(e) => {
-                  setFormState({
-                    ...formState,
-                    mealTypes: {
-                      ...formState.mealTypes,
-                      soupKitchen: e.target.checked,
-                    },
-                  });
-                }}
-                name="soupKitchen"
-              />
-            }
-            label="Soup Kitchen (onsite)"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                onChange={(e) => {
-                  setFormState({
-                    ...formState,
-                    mealTypes: {
-                      ...formState.mealTypes,
-                      shelter: e.target.checked,
-                    },
-                  });
-                }}
-                name="shelterMeals"
-              />
-            }
-            label="Shelter Meals (offsite)"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                onChange={(e) => {
-                  setFormState({
-                    ...formState,
-                    mealTypes: {
-                      ...formState.mealTypes,
-                      transitionalHousing: e.target.checked,
-                    },
-                  });
-                }}
-                name="supportiveHousingMeals"
-              />
-            }
-            label="Meals for Supportive/Transitional Housing"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                onChange={(e) => {
-                  setFormState({
-                    ...formState,
-                    mealTypes: {
-                      ...formState.mealTypes,
-                      senior: e.target.checked,
-                    },
-                  });
-                }}
-                name="seniorMeals"
-              />
-            }
-            label="Meals For Seniors"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                onChange={(e) => {
-                  setFormState({
-                    ...formState,
-                    mealTypes: {
-                      ...formState.mealTypes,
-                      medical: e.target.checked,
-                    },
-                  });
-                }}
-                name="medicallyTailoredMeals"
-              />
-            }
-            label="Medically Tailored Meals"
-          />
+          {MEAL_TYPES.map((mealType) => (
+            <FormControlLabel
+              key={mealType}
+              control={
+                <Checkbox
+                  checked={formState.typeOfMealsServed.includes(mealType)}
+                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                    setFormState((prevState) => {
+                      const updatedMeals = event.target.checked
+                        ? [...prevState.typeOfMealsServed, mealType]
+                        : prevState.typeOfMealsServed.filter(
+                            (type) => type !== mealType,
+                          );
+                      return {
+                        ...prevState,
+                        typeOfMealsServed: updatedMeals,
+                      };
+                    });
+                  }}
+                  name={mealType}
+                />
+              }
+              label={mealType}
+            />
+          ))}
         </FormGroup>
       </FormControl>
-
       <h4>Contract Meal Revenue</h4>
       <p>
         Total combined gross revenue in {new Date().getFullYear()} from all
-        contract meal enterprises. Do not includedonated goods or revenue from
-        retail foodservice social enterprises. Retail SE data iscollected later
-        in the survey
+        contract meal enterprises. Do not include donated goods or revenue from
+        retail food service social enterprises. Retail SE data is collected
+        later in the survey
       </p>
       <Box mb={2}>
         <TextField
@@ -528,7 +466,7 @@ export default function KitchenOutcome() {
       <h4>Meal Reimbursement</h4>
       <p>
         Of meals that you get direct reimbursement for, what is your Average
-        Reimbursement permeal? This should be your average rate across all
+        Reimbursement per meal? This should be your average rate across all
         contracts, public and private. Estimate is OK.
       </p>
       <Box mb={2}>
@@ -549,11 +487,11 @@ export default function KitchenOutcome() {
 
       <h4>Hunger Relief Meal Funding Mix</h4>
       <p>
-        Please estimate what percentage of your Hunger Relief Meal Fundingcomes
-        from each of the following categories. This can be a roughestimate, but
-        the three numbers should total 100. Public fundingincludes all
+        Please estimate what percentage of your Hunger Relief Meal Funding comes
+        from each of the following categories. This can be a rough estimate, but
+        the three numbers should total 100. Public funding includes all
         government grants and contracts. Individual donations and In kind
-        contributionsshould beincluded in Private Donations
+        contributions should be included in Private Donations
       </p>
 
       <Box mb={2}>
@@ -566,10 +504,7 @@ export default function KitchenOutcome() {
           onChange={(e) => {
             setFormState({
               ...formState,
-              mealFunding: {
-                ...formState.mealFunding,
-                publicFunding: Number(e.target.value),
-              },
+              mealFundingPublic: Number(e.target.value),
             });
           }}
         />
@@ -584,10 +519,7 @@ export default function KitchenOutcome() {
           onChange={(e) => {
             setFormState({
               ...formState,
-              mealFunding: {
-                ...formState.mealFunding,
-                privateContracts: Number(e.target.value),
-              },
+              mealFundingPrivateContracts: Number(e.target.value),
             });
           }}
         />
@@ -602,10 +534,7 @@ export default function KitchenOutcome() {
           onChange={(e) => {
             setFormState({
               ...formState,
-              mealFunding: {
-                ...formState.mealFunding,
-                privateDonations: Number(e.target.value),
-              },
+              mealFundingPrivateDonations: Number(e.target.value),
             });
           }}
         />
@@ -615,9 +544,9 @@ export default function KitchenOutcome() {
       <h4>Gender</h4>
       <p>
         Please provide an estimate if exact data is not available. Leave blank
-        if you do not track.NOTE: The language below often mirrors language from
-        census categories and governmentdefinitions. If there is preferred
-        language or terminology we should use when referring to yourprogram and
+        if you do not track. NOTE: The language below often mirrors language
+        from census categories and government definitions. If there is preferred
+        language or terminology we should use when referring to your program and
         clients, please let us know by emailing info@catalystkitchens.org. All
         comments are welcome.
       </p>
@@ -631,7 +560,7 @@ export default function KitchenOutcome() {
           onChange={(e) => {
             setFormState({
               ...formState,
-              gender: { ...formState.gender, female: Number(e.target.value) },
+              mealsFemale: Number(e.target.value),
             });
           }}
         />
@@ -646,7 +575,7 @@ export default function KitchenOutcome() {
           onChange={(e) => {
             setFormState({
               ...formState,
-              gender: { ...formState.gender, male: Number(e.target.value) },
+              mealsMale: Number(e.target.value),
             });
           }}
         />
@@ -661,10 +590,7 @@ export default function KitchenOutcome() {
           onChange={(e) => {
             setFormState({
               ...formState,
-              gender: {
-                ...formState.gender,
-                nonBinary: Number(e.target.value),
-              },
+              mealsNonBinary: Number(e.target.value),
             });
           }}
         />
@@ -679,7 +605,7 @@ export default function KitchenOutcome() {
           onChange={(e) => {
             setFormState({
               ...formState,
-              gender: { ...formState.gender, unknown: Number(e.target.value) },
+              mealsGenderUnknown: Number(e.target.value),
             });
           }}
         />
@@ -694,10 +620,7 @@ export default function KitchenOutcome() {
           onChange={(e) => {
             setFormState({
               ...formState,
-              gender: {
-                ...formState.gender,
-                transgender: Number(e.target.value),
-              },
+              mealsGenderUnknown: Number(e.target.value),
             });
           }}
         />
@@ -718,10 +641,7 @@ export default function KitchenOutcome() {
           onChange={(e) => {
             setFormState({
               ...formState,
-              race: {
-                ...formState.race,
-                americanIndian: Number(e.target.value),
-              },
+              mealsAmericanIndian: Number(e.target.value),
             });
           }}
         />
@@ -736,10 +656,7 @@ export default function KitchenOutcome() {
           onChange={(e) => {
             setFormState({
               ...formState,
-              race: {
-                ...formState.race,
-                asian: Number(e.target.value),
-              },
+              mealsAsian: Number(e.target.value),
             });
           }}
         />
@@ -754,10 +671,7 @@ export default function KitchenOutcome() {
           onChange={(e) => {
             setFormState({
               ...formState,
-              race: {
-                ...formState.race,
-                black: Number(e.target.value),
-              },
+              mealsBlack: Number(e.target.value),
             });
           }}
         />
@@ -772,10 +686,7 @@ export default function KitchenOutcome() {
           onChange={(e) => {
             setFormState({
               ...formState,
-              race: {
-                ...formState.race,
-                latinx: Number(e.target.value),
-              },
+              mealsLatinx: Number(e.target.value),
             });
           }}
         />
@@ -790,10 +701,7 @@ export default function KitchenOutcome() {
           onChange={(e) => {
             setFormState({
               ...formState,
-              race: {
-                ...formState.race,
-                pacificIslander: Number(e.target.value),
-              },
+              mealsNativeHawaiian: Number(e.target.value),
             });
           }}
         />
@@ -808,10 +716,7 @@ export default function KitchenOutcome() {
           onChange={(e) => {
             setFormState({
               ...formState,
-              race: {
-                ...formState.race,
-                multiracial: Number(e.target.value),
-              },
+              mealsMultiRacial: Number(e.target.value),
             });
           }}
         />
@@ -826,10 +731,7 @@ export default function KitchenOutcome() {
           onChange={(e) => {
             setFormState({
               ...formState,
-              race: {
-                ...formState.race,
-                white: Number(e.target.value),
-              },
+              mealsWhite: Number(e.target.value),
             });
           }}
         />
@@ -844,10 +746,7 @@ export default function KitchenOutcome() {
           onChange={(e) => {
             setFormState({
               ...formState,
-              race: {
-                ...formState.race,
-                other: Number(e.target.value),
-              },
+              mealsOtherRace: Number(e.target.value),
             });
           }}
         />
@@ -862,10 +761,7 @@ export default function KitchenOutcome() {
           onChange={(e) => {
             setFormState({
               ...formState,
-              race: {
-                ...formState.race,
-                unknown: Number(e.target.value),
-              },
+              mealsRaceUnknown: Number(e.target.value),
             });
           }}
         />
@@ -886,7 +782,7 @@ export default function KitchenOutcome() {
           onChange={(e) => {
             setFormState({
               ...formState,
-              age: { ...formState.age, infants: Number(e.target.value) },
+              mealsInfants: Number(e.target.value),
             });
           }}
         />
@@ -901,7 +797,7 @@ export default function KitchenOutcome() {
           onChange={(e) => {
             setFormState({
               ...formState,
-              age: { ...formState.age, children: Number(e.target.value) },
+              mealsChildren: Number(e.target.value),
             });
           }}
         />
@@ -916,7 +812,7 @@ export default function KitchenOutcome() {
           onChange={(e) => {
             setFormState({
               ...formState,
-              age: { ...formState.age, adults: Number(e.target.value) },
+              mealsAdults: Number(e.target.value),
             });
           }}
         />
@@ -931,7 +827,7 @@ export default function KitchenOutcome() {
           onChange={(e) => {
             setFormState({
               ...formState,
-              age: { ...formState.age, seniors: Number(e.target.value) },
+              mealsSeniors: Number(e.target.value),
             });
           }}
         />
@@ -946,7 +842,7 @@ export default function KitchenOutcome() {
           onChange={(e) => {
             setFormState({
               ...formState,
-              age: { ...formState.age, unknown: Number(e.target.value) },
+              mealsAgeUnknown: Number(e.target.value),
             });
           }}
         />
@@ -963,36 +859,36 @@ export default function KitchenOutcome() {
         </FormLabel>
         <RadioGroup
           name="capitalExpansionProject"
-          value={formState.capitalExpansionProject}
+          value={formState.capitalExpansionProjects}
           onChange={(e) =>
             setFormState({
               ...formState,
-              capitalExpansionProject: e.target.value,
+              capitalExpansionProjects: e.target.value,
             })
           }
         >
           <FormControlLabel
-            value="earlyStages"
+            value="We are in early stages of planning a capital expansion"
             control={<Radio />}
             label="We are in early stages of planning a capital expansion"
           />
           <FormControlLabel
-            value="fundraising"
+            value="We have a capital expansion plan and are fundraising"
             control={<Radio />}
             label="We have a capital expansion plan and are fundraising"
           />
           <FormControlLabel
-            value="fullyFunded"
+            value="We have a fully funded capital expansion plan"
             control={<Radio />}
             label="We have a fully funded capital expansion plan"
           />
           <FormControlLabel
-            value="completed"
+            value="We have recently completed or will soon complete the project"
             control={<Radio />}
             label="We have recently completed or will soon complete the project"
           />
           <FormControlLabel
-            value="noPlans"
+            value="We have no future plans or projects underway"
             control={<Radio />}
             label="We have no future plans or projects underway"
           />
@@ -1026,6 +922,60 @@ export default function KitchenOutcome() {
         What is the projected month and year by which you want to have this
         project completed? Estimate is OK.
       </p>
+      <Grid container spacing={2}>
+        {/* Month Selector */}
+        <Grid item xs={6}>
+          <TextField
+            select
+            fullWidth
+            label="Month"
+            value={formState.capitalExpansionMonth}
+            onChange={(e) => {
+              setFormState({
+                ...formState,
+                capitalExpansionMonth: e.target.value,
+              });
+            }}
+          >
+            {months.map((m) => (
+              <MenuItem key={m.label} value={m.value}>
+                {m.label}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+
+        {/* Year Selector */}
+        <Grid item xs={6}>
+          <TextField
+            type="number"
+            label="Year"
+            value={formState.capitalExpansionYear}
+            onChange={(e) => {
+              setFormState({
+                ...formState,
+                capitalExpansionYear: Number(e.target.value),
+              });
+            }}
+            fullWidth
+            inputProps={{
+              min: 1900, // Optional: Restrict input to realistic years
+              max: 2100,
+            }}
+          />
+        </Grid>
+      </Grid>
+
+      {/* Display the Selected Date */}
+      {formState.capitalProjectDate && (
+        <p>
+          Selected Date:{' '}
+          {formState.capitalProjectDate.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+          })}
+        </p>
+      )}
       <div>
         <FormControl component="fieldset" fullWidth margin="normal">
           <FormLabel component="legend">
@@ -1033,80 +983,40 @@ export default function KitchenOutcome() {
           </FormLabel>
           <RadioGroup
             name="capitalExpansionProject"
-            value={formState.capitalExpansionProject}
+            value={formState.capitalExpansionProjects}
             onChange={(e) =>
               setFormState({
                 ...formState,
-                capitalExpansionProject: e.target.value,
+                capitalExpansionProjects: e.target.value,
               })
             }
           >
             <FormControlLabel
-              value="earlyStages"
+              value="We are in early stages of planning a capital expansion"
               control={<Radio />}
               label="We are in early stages of planning a capital expansion"
             />
             <FormControlLabel
-              value="fundraising"
+              value="We have a capital expansion plan and are fundraising"
               control={<Radio />}
               label="We have a capital expansion plan and are fundraising"
             />
             <FormControlLabel
-              value="fullyFunded"
+              value="We have a fully funded capital expansion plan"
               control={<Radio />}
               label="We have a fully funded capital expansion plan"
             />
             <FormControlLabel
-              value="completed"
+              value="We have recently completed or will soon complete the project"
               control={<Radio />}
               label="We have recently completed or will soon complete the project"
             />
             <FormControlLabel
-              value="noPlans"
+              value="We have no future plans or projects underway"
               control={<Radio />}
               label="We have no future plans or projects underway"
             />
           </RadioGroup>
-        </FormControl>
-
-        <FormControl fullWidth margin="normal">
-          <InputLabel>Month</InputLabel>
-          <Select
-            label="Month"
-            value={formState.capitalExpansionMonth}
-            onChange={(e) =>
-              setFormState({
-                ...formState,
-                capitalExpansionMonth: e.target.value,
-              })
-            }
-          >
-            {months.map((month) => (
-              <MenuItem key={month.value} value={month.value}>
-                {month.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <FormControl fullWidth margin="normal">
-          <InputLabel>Year</InputLabel>
-          <Select
-            label="Year"
-            value={formState.capitalExpansionYear}
-            onChange={(e) =>
-              setFormState({
-                ...formState,
-                capitalExpansionYear: parseInt(e.target.value.toString(), 10),
-              })
-            }
-          >
-            {years.map((year) => (
-              <MenuItem key={year} value={year}>
-                {year}
-              </MenuItem>
-            ))}
-          </Select>
         </FormControl>
       </div>
 
@@ -1120,74 +1030,49 @@ export default function KitchenOutcome() {
           Select the forms of support you need
         </FormLabel>
         <FormGroup>
-          <FormControlLabel
-            control={
-              <Checkbox
-                onChange={(e) => {
-                  setFormState({
-                    ...formState,
-                    expansionProjectNeeds: {
-                      ...formState.expansionProjectNeeds,
-                      howStart: e.target.checked,
-                    },
-                  });
-                }}
-                name="howStart"
-              />
-            }
-            label="How do I even start?"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                onChange={(e) => {
-                  setFormState({
-                    ...formState,
-                    expansionProjectNeeds: {
-                      ...formState.expansionProjectNeeds,
-                      planCost: e.target.checked,
-                    },
-                  });
-                }}
-                name="planCost"
-              />
-            }
-            label="Planning Cost Expenses"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                onChange={(e) => {
-                  setFormState({
-                    ...formState,
-                    expansionProjectNeeds: {
-                      ...formState.expansionProjectNeeds,
-                      constructionCosts: e.target.checked,
-                    },
-                  });
-                }}
-                name="constructionCosts"
-              />
-            }
-            label="Contruction Costs"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                onChange={(e) => {
-                  setFormState({
-                    ...formState,
-                    expansionProjectNeeds: {
-                      ...formState.expansionProjectNeeds,
-                      fundraisingStrat: e.target.checked,
-                    },
-                  });
-                }}
-                name="fundraisingStrat"
-              />
-            }
-            label="Creating fundraising strategy"
-          />
+          {[
+            { label: 'How do we even start?', value: 'How do we even start?' },
+            {
+              label: 'Planning cost expenses',
+              value: 'Planning cost expenses',
+            },
+            {
+              label: 'Creating fundraising strategy',
+              value: 'Creating fundraising strategy',
+            },
+            { label: 'Construction costs', value: 'Construction costs' },
+            {
+              label: 'Equipment (heavy or small)',
+              value: 'Equipment (heavy or small)',
+            },
+            { label: 'Operating expenses', value: 'Operating expenses' },
+            { label: 'Other', value: 'Other' },
+          ].map((option) => (
+            <FormControlLabel
+              key={option.value}
+              control={
+                <Checkbox
+                  checked={formState.capitalExpansionProjectNeeds.includes(
+                    option.value,
+                  )}
+                  onChange={(e) => {
+                    const { capitalExpansionProjectNeeds } = formState;
+                    const updateNeeds = e.target.checked
+                      ? [...capitalExpansionProjectNeeds, option.value]
+                      : capitalExpansionProjectNeeds.filter(
+                          (need: any) => need !== option.value,
+                        );
+                    setFormState({
+                      ...formState,
+                      capitalExpansionProjectNeeds: updateNeeds,
+                    });
+                  }}
+                  name={option.value}
+                />
+              }
+              label={option.label}
+            />
+          ))}
         </FormGroup>
       </FormControl>
 
@@ -1264,55 +1149,141 @@ export default function KitchenOutcome() {
               retailSocialEnterpriseRevenue: Number(e.target.value),
             })
           }
-          label="retailSocialEnterpriseReveue"
+          label="Gross Revenue from All Retail Social Enterprises"
           variant="outlined"
           fullWidth
           required
         />
       </Box>
 
-      <h4>Gross Revenue, Retail Social Enterprise</h4>
-      <p>description</p>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Category</TableCell>
-            {revenueRanges.map((range) => (
-              <TableCell key={range.value}>{range.label}</TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {Object.keys(categories).map((category) => (
-            <TableRow key={category}>
-              <TableCell>{category}</TableCell>
-              {revenueRanges.map((range) => (
-                <TableCell key={range.value}>
-                  <FormControl component="fieldset">
-                    <RadioGroup
-                      row
-                      aria-label={category}
-                      name={category}
-                      value={
-                        formState.categoryState[categories[category]] || ''
-                      }
-                      // eslint-disable-next-line react/jsx-no-bind
-                      onChange={handleCategoryChange}
-                    >
-                      <FormControlLabel
-                        value={range.value}
-                        control={<Radio />}
-                        label=""
-                      />
-                    </RadioGroup>
-                  </FormControl>
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-
+      {[
+        {
+          label: 'Cafe',
+          description:
+            'Estimate on revenue generated from food prepared on site with counter service; a limited number of items are made to order. Food may be consumed on or off premises.',
+          stateKey: 'grossRevenueCafe',
+        },
+        {
+          label: 'Restaurant',
+          description:
+            'Estimate on revenue generated from food prepared onsite with most items prepared to order and predominantly intended for on-premise consumption. Orders typically taken at the table though not required.',
+          stateKey: 'grossRevenueRestaurant',
+        },
+        {
+          label: 'Catering',
+          description:
+            'Estimate on revenue generated from on or offsite catering; DO NOT report catering data which are part of a café or restaurant and included in totals above.',
+          stateKey: 'grossRevenueCatering',
+        },
+        {
+          label: 'Food Truck',
+          description:
+            'Estimate on revenue generated from retail or free meal service prepared and served from a mobile kitchen.',
+          stateKey: 'grossRevenueFoodTruck',
+        },
+        {
+          label: 'Consumer Packaged Goods',
+          description:
+            'Estimate on revenue generated from prepared and/or packaged food and beverages sold to third-party resellers or direct to public. Include ready-to-eat foods and products that can be branded or not branded.',
+          stateKey: 'grossRevenueWholesale',
+        },
+        {
+          label: 'Food or Meal Subscription Services',
+          description:
+            'Estimate on revenue generated from prepared and/or packaged meals sold at retail prices to individuals or families at regular intervals such as weekly or monthly pickups or deliveries (e.g., in the style of Blue Apron or other analogous services).',
+          stateKey: 'grossRevenueFoodSubscription',
+        },
+      ].map(({ label, description, stateKey }) => (
+        <div key={stateKey}>
+          <h5>{label}</h5>
+          <p>{description}</p>
+          <Box mb={2}>
+            <TextField
+              id={`outlined-${stateKey}`}
+              label={`Gross Revenue (${label})`}
+              variant="outlined"
+              type="number"
+              fullWidth
+              onChange={(e) => {
+                setFormState({
+                  ...formState,
+                  [stateKey]: Number(e.target.value),
+                });
+              }}
+            />
+          </Box>
+        </div>
+      ))}
+      {racialOpen ? (
+        <Alert
+          severity="warning"
+          onClose={() => {
+            setRacialOpen(false);
+          }}
+        >
+          The percentages under the Hunger Relief Demographics Race and
+          Ethnicity category do not add up to 100!
+        </Alert>
+      ) : (
+        // eslint-disable-next-line react/jsx-no-useless-fragment
+        <></>
+      )}
+      {ageOpen ? (
+        <Alert
+          severity="warning"
+          onClose={() => {
+            setAgeOpen(false);
+          }}
+        >
+          The percentages under the Age Groups category do not add up to 100!
+        </Alert>
+      ) : (
+        // eslint-disable-next-line react/jsx-no-useless-fragment
+        <></>
+      )}
+      {genderOpen ? (
+        <Alert
+          severity="warning"
+          onClose={() => {
+            setGenderOpen(false);
+          }}
+        >
+          The percentages under the Hunger Relief Demographics Gender category
+          do not add up to 100!
+        </Alert>
+      ) : (
+        // eslint-disable-next-line react/jsx-no-useless-fragment
+        <></>
+      )}
+      {mealOpen ? (
+        <Alert
+          severity="warning"
+          onClose={() => {
+            setMealOpen(false);
+          }}
+        >
+          The percentages under the Hunger Relief Meal Funding Mix category do
+          not add up to 100!
+        </Alert>
+      ) : (
+        // eslint-disable-next-line react/jsx-no-useless-fragment
+        <></>
+      )}
+      {orgOpen ? (
+        <Alert
+          severity="warning"
+          onClose={() => {
+            setOrgOpen(false);
+          }}
+        >
+          User is not associated with an organization. Cannot submit form at
+          this time. Please contact Catalyst Kitchens to be assigned to an
+          organization.
+        </Alert>
+      ) : (
+        // eslint-disable-next-line react/jsx-no-useless-fragment
+        <></>
+      )}
       <div
         style={{
           display: 'flex',
@@ -1328,7 +1299,7 @@ export default function KitchenOutcome() {
             color: '#F5F5F5',
             width: '100%',
           }}
-          onClick={() => console.log(formState)}
+          onClick={handleSubmit}
         >
           Submit Kitchen Data
         </Button>

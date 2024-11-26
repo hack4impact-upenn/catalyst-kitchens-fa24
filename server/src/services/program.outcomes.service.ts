@@ -13,10 +13,19 @@ const getProgramOutcomesByOrgId = async (orgId: string) => {
 
 // Get a singular project outcomes data point by org_id and year
 const getOneProgramOutcomes = async (year: Date, orgId: string) => {
+  console.log('Service - Getting program outcomes for:', { year, orgId });
+  const startDate = new Date(Date.UTC(year.getFullYear(), 0, 1));
+  const endDate = new Date(Date.UTC(year.getFullYear() + 1, 0, 1));
+
   const outcomes = await ProgramOutcomes.findOne({
     orgId,
-    year,
+    year: {
+      $gte: startDate,
+      $lt: endDate,
+    },
   }).exec();
+
+  console.log('Service - Found program outcomes:', outcomes);
   return outcomes;
 };
 
@@ -27,6 +36,14 @@ const getAllProgramOutcomesByOrg = async (orgId: string) => {
   ]).exec();
   return outcomes;
 };
+
+const getDistinctYearsByOrgId = async (orgId: string): Promise<number[]> => {
+  console.log('Service - Getting years for orgId:', orgId);
+  const outcomes = await ProgramOutcomes.find({ orgId }, ['year']);
+  const years = outcomes.map((outcome: any) => outcome.year.getUTCFullYear());
+  return [...new Set(years)].sort((a, b) => b - a);
+};
+
 // Get all program outcomes of a given year
 const getAllProgramOutcomesByYear = async (year: Date) => {
   const outcomes = await ProgramOutcomes.find({ year }).exec();
@@ -57,6 +74,70 @@ const deleteProgramOutcomeById = async (id: string) => {
   }
 };
 
+const getNetworkAverage = async (
+  field: string,
+  year: number,
+): Promise<number | null> => {
+  const startDate = new Date(Date.UTC(year, 0, 1));
+  const endDate = new Date(Date.UTC(year + 1, 0, 1));
+
+  try {
+    console.log('Service - Getting network average for:', {
+      field,
+      year,
+      startDate,
+      endDate,
+    });
+    const result = await ProgramOutcomes.aggregate([
+      {
+        $match: {
+          year: { $gte: startDate, $lt: endDate },
+          [field]: { $exists: true, $ne: null },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          average: { $avg: `$${field}` },
+        },
+      },
+    ]);
+    console.log('Service - Network average result:', result);
+    return result.length > 0 ? result[0].average : null;
+  } catch (error) {
+    console.error(`Error calculating network average for ${field}:`, error);
+    throw new Error(`Unable to calculate network average for ${field}`);
+  }
+};
+
+const getFieldValuesByYear = async (
+  orgId: string,
+  field: keyof IProgramOutcomes,
+): Promise<Map<number, number | null>> => {
+  try {
+    const outcomes = await ProgramOutcomes.find(
+      {
+        orgId,
+        [field]: { $exists: true },
+      },
+      ['year', field],
+    ).exec();
+
+    const valuesByYear = new Map<number, number | null>();
+
+    outcomes.forEach((outcome: any) => {
+      const year = outcome.year.getUTCFullYear();
+      const value = outcome[field] as number | null;
+      valuesByYear.set(year, value);
+    });
+
+    return valuesByYear;
+  } catch (error) {
+    console.error(`Error getting ${field} values by year:`, error);
+    throw error;
+  }
+};
+
 export {
   getProgramOutcomesByOrgId,
   getOneProgramOutcomes,
@@ -64,4 +145,7 @@ export {
   addProgramOutcomes,
   getAllProgramOutcomesByOrg,
   deleteProgramOutcomeById,
+  getDistinctYearsByOrgId,
+  getNetworkAverage,
+  getFieldValuesByYear,
 };

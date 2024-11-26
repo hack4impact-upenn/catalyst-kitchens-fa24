@@ -1,6 +1,8 @@
 import React from 'react';
-import { Outlet, Navigate } from 'react-router-dom';
+import { Outlet, Navigate, Form } from 'react-router-dom';
+import { Person, PieChart, TableChart } from '@mui/icons-material';
 import { useData } from './api.tsx';
+import Sidebar from '../components/Sidebar.tsx';
 
 interface IDynamicElementProps {
   unAuthPath: string;
@@ -22,7 +24,22 @@ function UnauthenticatedRoutesWrapper() {
 function ProtectedRoutesWrapper() {
   const data = useData('auth/authstatus');
   if (data === null) return null;
-  return !data.error ? <Outlet /> : <Navigate to="/" />;
+
+  const links = [
+    { name: 'Data Viz', icon: PieChart, to: '/kitchen-outcome-viz-test' },
+    { name: 'Submit Data', icon: Form, to: '/kitchen-outcome-test' },
+  ];
+
+  return !data.error ? (
+    <div style={{ display: 'flex' }}>
+      <Sidebar links={links} />
+      <div style={{ marginLeft: '250px', padding: '20px', flexGrow: 1 }}>
+        <Outlet />
+      </div>
+    </div>
+  ) : (
+    <Navigate to="/" />
+  );
 }
 /**
  * A wrapper component whose children routes which can only be navigated to if the user is an admin.
@@ -30,7 +47,27 @@ function ProtectedRoutesWrapper() {
 function AdminRoutesWrapper() {
   const data = useData('admin/adminstatus');
   if (data === null) return null;
-  return !data.error ? <Outlet /> : <Navigate to="/" />;
+
+  const links = [
+    { name: 'Data Viz', icon: PieChart, to: '/kitchen-outcome-viz-test' },
+    {
+      name: 'Organization Dashboard',
+      icon: TableChart,
+      to: '/organizations',
+    },
+    { name: 'User Dashboard', icon: Person, to: '/users' },
+  ];
+
+  return !data.error ? (
+    <div style={{ display: 'flex' }}>
+      <Sidebar links={links} />
+      <div style={{ marginLeft: '250px', padding: '20px', flexGrow: 1 }}>
+        <Outlet />
+      </div>
+    </div>
+  ) : (
+    <Navigate to="/" />
+  );
 }
 
 /**

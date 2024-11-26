@@ -1,7 +1,7 @@
 import React from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import theme from './assets/theme.ts';
@@ -27,75 +27,70 @@ import KitchenOutcome from './components/forms/KitchenOutcome.tsx';
 import KitchenOutcomeViz from './components/KitchenOutcomeViz.tsx';
 import ProgramOutcome from './components/forms/ProgramOutcome.tsx';
 import OrgAdminPage from './AdminDashboard/OrgAdminPage.tsx';
+import ProgramOutcomesVisualization from './components/ProgramOutcomesViz';
+
+// Router Configuration
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <DynamicRedirect unAuthPath="/login" authPath="/home" />,
+  },
+  {
+    path: '/',
+    element: <UnauthenticatedRoutesWrapper />, // Wrapper for unauthenticated routes
+    children: [
+      { path: 'signup', element: <SignUpPage /> },
+      { path: 'kitchen-outcome-viz-test', element: <KitchenOutcomeViz /> },
+      {
+        path: 'program-outcomes-viz-test',
+        element: <ProgramOutcomesVisualization />,
+      },
+      { path: 'program-outcome-test', element: <ProgramOutcome /> },
+      { path: 'login', element: <LoginPage /> },
+      { path: 'verify-account/:token', element: <VerifyAccountPage /> },
+      { path: 'email-reset', element: <EmailResetPasswordPage /> },
+      { path: 'reset-password/:token', element: <ResetPasswordPage /> },
+    ],
+  },
+  {
+    path: '/',
+    element: <ProtectedRoutesWrapper />, // Wrapper for authenticated routes
+    children: [
+      { path: 'home', element: <HomePage /> },
+      { path: 'kitchen-outcome-test', element: <KitchenOutcome /> },
+    ],
+  },
+  {
+    path: '/',
+    element: <AdminRoutesWrapper />, // Wrapper for admin routes
+    children: [
+      { path: 'users', element: <AdminDashboardPage /> },
+      { path: 'organizations', element: <OrgAdminPage /> },
+    ],
+  },
+  {
+    path: '/invite/:token',
+    element: <InviteRegisterPage />,
+  },
+  {
+    path: '*',
+    element: <NotFoundPage />,
+  },
+]);
 
 function App() {
   return (
     <div className="App">
-      <BrowserRouter>
-        <Provider store={store}>
-          <PersistGate loading={null} persistor={persistor}>
-            <ThemeProvider theme={theme}>
-              <CssBaseline>
-                <AlertPopup />
-                <Routes>
-                  {/* Routes accessed only if user is not authenticated */}
-                  <Route element={<UnauthenticatedRoutesWrapper />}>
-                    <Route path="/signup" element={<SignUpPage />} />
-                    <Route
-                      path="/kitchen-outcome-test"
-                      element={<KitchenOutcome />}
-                    />
-                    <Route
-                      path="/kitchen-outcome-viz-test"
-                      element={<KitchenOutcomeViz />}
-                    />
-                    <Route
-                      path="/program-outcome-test"
-                      element={<ProgramOutcome />}
-                    />
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route
-                      path="/verify-account/:token"
-                      element={<VerifyAccountPage />}
-                    />
-                    <Route
-                      path="/email-reset"
-                      element={<EmailResetPasswordPage />}
-                    />
-                    <Route
-                      path="/reset-password/:token"
-                      element={<ResetPasswordPage />}
-                    />
-                  </Route>
-                  <Route
-                    path="/invite/:token"
-                    element={<InviteRegisterPage />}
-                  />
-                  {/* Routes accessed only if user is authenticated */}
-                  <Route element={<ProtectedRoutesWrapper />}>
-                    <Route path="/home" element={<HomePage />} />
-                  </Route>
-                  <Route element={<AdminRoutesWrapper />}>
-                    <Route path="/users" element={<AdminDashboardPage />} />
-                    <Route path="/organizations" element={<OrgAdminPage />} />
-                  </Route>
-
-                  {/* Route which redirects to a different page depending on if the user is an authenticated or not by utilizing the DynamicRedirect component */}
-                  <Route
-                    path="/"
-                    element={
-                      <DynamicRedirect unAuthPath="/login" authPath="/home" />
-                    }
-                  />
-
-                  {/* Route which is accessed if no other route is matched */}
-                  <Route path="*" element={<NotFoundPage />} />
-                </Routes>
-              </CssBaseline>
-            </ThemeProvider>
-          </PersistGate>
-        </Provider>
-      </BrowserRouter>
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <ThemeProvider theme={theme}>
+            <CssBaseline>
+              <AlertPopup />
+              <RouterProvider router={router} />
+            </CssBaseline>
+          </ThemeProvider>
+        </PersistGate>
+      </Provider>
     </div>
   );
 }
