@@ -26,7 +26,7 @@ import {
   Snackbar,
 } from '@mui/material';
 import { number } from 'prop-types';
-import { RootState } from '../../util/redux/store';
+import { RootState } from '../util/redux/store';
 
 export default function KitchenOutcome() {
   // Define the form state type

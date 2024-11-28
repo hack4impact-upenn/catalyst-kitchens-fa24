@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
   Button,
@@ -23,9 +23,12 @@ import {
   InputLabel,
 } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { postData } from '../../util/api';
+import { useSelector } from 'react-redux';
+import { postData } from '../util/api';
+import { RootState } from '../util/redux/store';
 
 export default function ProgramOutcome() {
+  const user = useSelector((state: RootState) => state.user);
   enum YouthEnrollmentStructure {
     Staggered = 'Staggered',
     Single = 'Single',
@@ -33,6 +36,7 @@ export default function ProgramOutcome() {
   }
   type FormState = {
     emailAddress: string;
+    orgId: string;
     shareSurvey: boolean;
     organizationName: string;
     responderName: string;
@@ -190,6 +194,7 @@ export default function ProgramOutcome() {
   };
   const noState: FormState = {
     emailAddress: '',
+    orgId: '',
     shareSurvey: false,
     organizationName: '',
     responderName: '',
@@ -279,6 +284,56 @@ export default function ProgramOutcome() {
     alumniHiredByOrg: undefined,
   };
   const [formState, setFormState] = React.useState<FormState>(noState);
+  useEffect(() => {
+    const fetchOrganizationId = async () => {
+      if (user.email) {
+        try {
+          axios
+            .get(`http://localhost:4000/api/auth/organization/${user.email}`)
+            .then((response) => {
+              const { data } = response;
+              setFormState({
+                ...formState,
+                orgId: data,
+              });
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        } catch (error) {
+          console.error('Error fetching organization ID:', error);
+        }
+      }
+    };
+    fetchOrganizationId();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user.email]);
+  useEffect(() => {
+    const fetchOrganizationNameById = async () => {
+      if (formState.orgId) {
+        try {
+          axios
+            .get(
+              `http://localhost:4000/api/organization/organization/name/${formState.orgId}`,
+            )
+            .then((response) => {
+              const { data } = response;
+              setFormState({
+                ...formState,
+                organizationName: data.organizationName,
+              });
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        } catch (error) {
+          console.error('Error fetching organization name by ID:', error);
+        }
+      }
+    };
+    fetchOrganizationNameById();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formState.orgId]);
   const validateInputs = () => {
     // Add validation logic here:
     // ex:
@@ -286,8 +341,10 @@ export default function ProgramOutcome() {
     // if (!adultProgram || !minimumWage || !jobTypeFoodService) {
     //   return false;
     // }
-
-    return true;
+    if (formState.orgId.length > 0) {
+      return true;
+    }
+    return false;
   };
   const handleSubmit = async () => {
     if (validateInputs()) {
@@ -297,9 +354,9 @@ export default function ProgramOutcome() {
           youthOutcomesMeasure:
             formState.youthOutcomesMeasure?.join(', ') || '',
         };
-
-        const response = await postData('program_outcomes/', formData);
+        const response = await postData('program_outcomes/new', formData);
         console.log('Program outcome submitted successfully:', response);
+        setFormState(noState);
         // Handle success (e.g., show a success message, reset form, etc.)
       } catch (error) {
         console.error('Error submitting program outcome:', error);
@@ -369,19 +426,7 @@ export default function ProgramOutcome() {
         <a href="info@catalystkitchens.org">info@catalystkitchens.org</a>. All
         comments are welcome.
       </p>
-      <Box mb={2}>
-        <TextField
-          id="outlined-email"
-          onChange={(e) =>
-            setFormState({ ...formState, emailAddress: e.target.value })
-          }
-          label="Email"
-          variant="outlined"
-          fullWidth
-          required
-        />
-      </Box>
-      <h3>Organization Name & Details</h3>
+      <h3>Organization Details</h3>
       <Box mb={2}>
         <h4>Share Survey</h4>
         Are you open to sharing your outcomes data with other members? We will
@@ -402,18 +447,6 @@ export default function ProgramOutcome() {
             />
           }
           label="Share Survey"
-        />
-      </Box>
-      <Box mb={2}>
-        <TextField
-          id="outlined-organization-name"
-          onChange={(e) =>
-            setFormState({ ...formState, organizationName: e.target.value })
-          }
-          label="Organization Name"
-          variant="outlined"
-          fullWidth
-          required
         />
       </Box>
       <Box mb={2}>

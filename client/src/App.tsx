@@ -23,11 +23,13 @@ import ResetPasswordPage from './Authentication/ResetPasswordPage.tsx';
 import AlertPopup from './components/AlertPopup.tsx';
 import InviteRegisterPage from './Authentication/InviteRegisterPage.tsx';
 import SignUpPage from './SignUp/SignUpPage.tsx';
-import KitchenOutcome from './components/forms/KitchenOutcome.tsx';
-import KitchenOutcomeViz from './components/KitchenOutcomeViz.tsx';
-import ProgramOutcome from './components/forms/ProgramOutcome.tsx';
+import KitchenOutcome from './SubmissionForms/KitchenOutcome.tsx';
+import KitchenOutcomeViz from './Visualizations/KitchenOutcomeViz.tsx';
+import ProgramOutcome from './SubmissionForms/ProgramOutcome.tsx';
 import OrgAdminPage from './AdminDashboard/OrgAdminPage.tsx';
-import ProgramOutcomesVisualization from './components/ProgramOutcomesViz';
+import ProgramOutcomesVisualization from './Visualizations/ProgramOutcomesViz.tsx';
+import SubmissionsHome from './Intermediate/Submissions.tsx';
+import VisualizationHome from './Intermediate/Visualizations.tsx';
 
 // Router Configuration
 const router = createBrowserRouter([
@@ -40,12 +42,6 @@ const router = createBrowserRouter([
     element: <UnauthenticatedRoutesWrapper />, // Wrapper for unauthenticated routes
     children: [
       { path: 'signup', element: <SignUpPage /> },
-      { path: 'kitchen-outcome-viz-test', element: <KitchenOutcomeViz /> },
-      {
-        path: 'program-outcomes-viz-test',
-        element: <ProgramOutcomesVisualization />,
-      },
-      { path: 'program-outcome-test', element: <ProgramOutcome /> },
       { path: 'login', element: <LoginPage /> },
       { path: 'verify-account/:token', element: <VerifyAccountPage /> },
       { path: 'email-reset', element: <EmailResetPasswordPage /> },
@@ -57,7 +53,15 @@ const router = createBrowserRouter([
     element: <ProtectedRoutesWrapper />, // Wrapper for authenticated routes
     children: [
       { path: 'home', element: <HomePage /> },
-      { path: 'kitchen-outcome-test', element: <KitchenOutcome /> },
+      { path: 'kitchen-outcomes', element: <KitchenOutcome /> },
+      { path: 'program-outcomes', element: <ProgramOutcome /> },
+      { path: 'outcome-form', element: <SubmissionsHome /> },
+      { path: 'outcome-viz', element: <VisualizationHome /> },
+      { path: 'kitchen-outcomes-viz', element: <KitchenOutcomeViz /> },
+      {
+        path: 'program-outcomes-viz',
+        element: <ProgramOutcomesVisualization />,
+      },
     ],
   },
   {
