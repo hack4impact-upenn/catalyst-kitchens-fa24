@@ -26,8 +26,8 @@ function ProtectedRoutesWrapper() {
   if (data === null) return null;
 
   const links = [
-    { name: 'Data Viz', icon: PieChart, to: '/kitchen-outcome-viz-test' },
-    { name: 'Submit Data', icon: Form, to: '/kitchen-outcome-test' },
+    { name: 'Data Viz', icon: PieChart, to: '/outcome-viz' },
+    { name: 'Submit Data', icon: Form, to: '/outcome-form' },
   ];
 
   return !data.error ? (
@@ -49,7 +49,7 @@ function AdminRoutesWrapper() {
   if (data === null) return null;
 
   const links = [
-    { name: 'Data Viz', icon: PieChart, to: '/kitchen-outcome-viz-test' },
+    { name: 'Data Viz', icon: PieChart, to: '/outcome-viz' },
     {
       name: 'Organization Dashboard',
       icon: TableChart,
