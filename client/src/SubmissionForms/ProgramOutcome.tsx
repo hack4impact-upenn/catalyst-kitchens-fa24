@@ -159,7 +159,7 @@ export default function ProgramOutcome() {
     fundingPercentFromSocialEnterpriseOrGeneratedRevenue?: number;
     SNAPEAndT?: 'Yes' | 'No But' | 'No And';
     WIOA?: 'Yes' | 'No But' | 'No And';
-    curriculum?: 'All' | 'Part';
+    curriculum?: 'All' | 'Part' | 'None';
     programCertifications?:
       | 'ACF Quality/Approved Program'
       | 'DOL approved apprenticeship'
@@ -369,7 +369,7 @@ export default function ProgramOutcome() {
   };
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-      <h1>Submit Program Outcomes</h1>
+      <h1>Submit Program Outcomes for {formState.organizationName}</h1>
       <p>
         Thank you for sharing your Program and Kitchen outcomes. This year we
         have split the survey into two forms.{' '}
@@ -381,7 +381,7 @@ export default function ProgramOutcome() {
         <b>
           There is a separate survey for kitchen details including your hunger
           relief efforts:{' '}
-          <Link to="/kitchen-outcome-test">Kitchen Outcomes Survey</Link>.
+          <Link to="/kitchen-outcomes">Kitchen Outcomes Survey</Link>.
         </b>
         <br />
         <br />
@@ -1361,7 +1361,6 @@ export default function ProgramOutcome() {
           </Box>
         </div>
       )}
-
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1378,41 +1377,15 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
-      <Box mb={2}>
-        <TextField
-          fullWidth
-          type="number"
-          label="Trainees Percent Female"
-          value={formState.traineePercentFemale || ''}
-          onChange={(e) => {
-            setFormState({
-              ...formState,
-              traineePercentFemale: e.target.value
-                ? parseFloat(e.target.value)
-                : undefined,
-            });
-          }}
-        />
-      </Box>
-
-      <Box mb={2}>
-        <TextField
-          fullWidth
-          type="number"
-          label="Trainees Percent Male"
-          value={formState.traineePercentMale || ''}
-          onChange={(e) => {
-            setFormState({
-              ...formState,
-              traineePercentMale: e.target.value
-                ? parseFloat(e.target.value)
-                : undefined,
-            });
-          }}
-        />
-      </Box>
-
+      <h3>Trainee Gender Demographics</h3>
+      <p>
+        This section will cover the gender demographics of trainees that your
+        programs serve. If your organization does not track these statistics
+        closely then try to provide your best estimate on these populations.
+        When providing your estimates, be sure to make them add to 100.
+      </p>
+      <h4>% of Trainees that identify as Non-Binary</h4>
+      <p>What is the percentage of trainees that identify as non-binary?</p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1429,7 +1402,8 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>% of Trainees that identify as Transgender</h4>
+      <p>What is the percentage of trainees that identify as transgender?</p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1446,7 +1420,53 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>% of Trainees that identify as Female</h4>
+      <p>What is the percentage of trainees that identify as female?</p>
+      <Box mb={2}>
+        <TextField
+          fullWidth
+          type="number"
+          label="Trainees Percent Female"
+          value={formState.traineePercentFemale || ''}
+          onChange={(e) => {
+            setFormState({
+              ...formState,
+              traineePercentFemale: e.target.value
+                ? parseFloat(e.target.value)
+                : undefined,
+            });
+          }}
+        />
+      </Box>
+      <h4>% of Trainees that identify as Male</h4>
+      <p>What is the percentage of trainees that identify as male?</p>
+      <Box mb={2}>
+        <TextField
+          fullWidth
+          type="number"
+          label="Trainees Percent Male"
+          value={formState.traineePercentMale || ''}
+          onChange={(e) => {
+            setFormState({
+              ...formState,
+              traineePercentMale: e.target.value
+                ? parseFloat(e.target.value)
+                : undefined,
+            });
+          }}
+        />
+      </Box>
+      <h3>Trainee Racial Demographics</h3>
+      <p>
+        This section will cover the racial demographics of trainees that your
+        programs serve. If your organization does not track these statistics
+        closely then try to provide your best estimate on these populations.
+        When providing your estimates, be sure to make them add to 100.
+      </p>
+      <h4>% of Trainees that identify as American Indian</h4>
+      <p>
+        What is the percentage of trainees that identify as American Indian?
+      </p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1463,7 +1483,8 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>% of Trainees that identify as Asian</h4>
+      <p>What is the percentage of trainees that identify as Asian?</p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1480,7 +1501,8 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>% of Trainees that identify as Black</h4>
+      <p>What is the percentage of trainees that identify as Black?</p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1497,7 +1519,8 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>% of Trainees that identify as Latinx</h4>
+      <p>What is the percentage of trainees that identify as Latinx?</p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1514,7 +1537,10 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>% of Trainees that identify as Native Hawaiian</h4>
+      <p>
+        What is the percentage of trainees that identify as Native Hawaiian?
+      </p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1531,7 +1557,8 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>% of Trainees that identify as Multi-Racial</h4>
+      <p>What is the percentage of trainees that identify as Multi-Racial?</p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1548,7 +1575,8 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>% of Trainees that identify as White</h4>
+      <p>What is the percentage of trainees that identify as White?</p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1565,7 +1593,8 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>% of Trainees that identify as Other Race</h4>
+      <p>What is the percentage of trainees that identify as Other Race?</p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1582,7 +1611,8 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>% of Trainees that identify as Race Unknown</h4>
+      <p>What is the percentage of trainees that identify as Race Unknown?</p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1599,7 +1629,24 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h3>Barriers Experienced by Trainees</h3>
+      <p>
+        Enter % students experiencing any of the barriers below. Ex: 70%
+        homeless, 40% reentry, 25% in recovery, etc. Does not need to add up to
+        100% as trainees may experience multiple barriers. Approximate
+        percentages are OK. NOTE: The language below often mirrors language from
+        census categories and government definitions. If there is preferred
+        language or terminology we should use when referring to your program and
+        clients, please let us know by emailing{' '}
+        <a href="info@catalystkitchens.org">info@catalystkitchens.org</a>. All
+        comments are welcome.
+      </p>
+      <h4>Barrier: Returning Citizens/Formerly Incarcerated Persons</h4>
+      <p>
+        Percentage of trainee population who have been recently released from
+        incarceration, are on probation, have a criminal record, or are
+        otherwise justice involved.
+      </p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1620,7 +1667,8 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>Barrier: Physical Disability</h4>
+      <p>Percentage of trainee population who have physical disabilities.</p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1637,7 +1685,11 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>Barrier: Intellectual or Developmental Disability</h4>
+      <p>
+        Percentage of trainee population who have intellectual or developmental
+        disabilities.
+      </p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1654,7 +1706,11 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>Barrier: Unhoused</h4>
+      <p>
+        Percentage of trainee population who are unhoused at time of enrollment,
+        are in transitional housing, or housing insecure.
+      </p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1671,7 +1727,11 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>Barrier: Mental Health</h4>
+      <p>
+        Percentage of trainee population who have a mental/psychological
+        disorder.
+      </p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1688,7 +1748,10 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>Barrier: New Americans</h4>
+      <p>
+        Percentage of trainee population who are recent immigrants or refugees.
+      </p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1705,7 +1768,11 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>Barrier: In Recovery</h4>
+      <p>
+        Percentage of trainee population who are in recovery or have a history
+        of substance abuse.
+      </p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1722,7 +1789,8 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>Barrier: Veteran</h4>
+      <p>Percentage of trainee population who are veterans.</p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1751,9 +1819,14 @@ export default function ProgramOutcome() {
       | 'Partner agency'
       | 'In-house'
       | 'Not provided'; */}
+      <h3>WRAP AROUND SERVICES</h3>
+      <p>
+        This section asks about which wrap around services your organization
+        either provides in house or facilitates access to.
+      </p>
       <Box mb={2}>
         <FormControl fullWidth>
-          <InputLabel>Wraparound Housing</InputLabel>
+          <InputLabel>Wrap Around Housing</InputLabel>
           <Select
             name="wrapAroundHousing"
             value={formState.wrapAroundServicesHousing}
@@ -1779,7 +1852,7 @@ export default function ProgramOutcome() {
       </Box>
       <Box mb={2}>
         <FormControl fullWidth>
-          <InputLabel>Wraparound Lifeskills</InputLabel>
+          <InputLabel>Wrap Around Lifeskills</InputLabel>
           <Select
             name="wrapAroundLifeSkills"
             value={
@@ -1808,7 +1881,7 @@ export default function ProgramOutcome() {
       </Box>
       <Box mb={2}>
         <FormControl fullWidth>
-          <InputLabel>Wraparound Case Management</InputLabel>
+          <InputLabel>Wrap Around Case Management</InputLabel>
           <Select
             name="wrapAroundCaseManagement"
             value={formState.wrapAroundServicesCaseManagement}
@@ -1834,7 +1907,7 @@ export default function ProgramOutcome() {
       </Box>
       <Box mb={2}>
         <FormControl fullWidth>
-          <InputLabel>Wraparound Job Search</InputLabel>
+          <InputLabel>Wrap Around Job Search</InputLabel>
           <Select
             name="wrapAroundJobSearch"
             value={formState.wrapAroundServicesJobSearchAndPlacement}
@@ -1912,7 +1985,7 @@ export default function ProgramOutcome() {
       </Box>
       <Box mb={2}>
         <FormControl fullWidth>
-          <InputLabel>Wraparound Healthcare</InputLabel>
+          <InputLabel>Wrap Around Healthcare</InputLabel>
           <Select
             name="wrapAroundHealthcare"
             value={formState.wrapAroundServicesHealthcareAllOther}
@@ -1938,7 +2011,7 @@ export default function ProgramOutcome() {
       </Box>
       <Box mb={2}>
         <FormControl fullWidth>
-          <InputLabel>Wraparound Childcare</InputLabel>
+          <InputLabel>Wrap Around Childcare</InputLabel>
           <Select
             name="wrapAroundChildcare"
             value={formState.wrapAroundServicesChildcare}
@@ -1964,7 +2037,7 @@ export default function ProgramOutcome() {
       </Box>
       <Box mb={2}>
         <FormControl fullWidth>
-          <InputLabel>Wraparound Transportation</InputLabel>
+          <InputLabel>Wrap Around Transportation</InputLabel>
           <Select
             name="wrapAroundTransportation"
             value={formState.wrapAroundServicesTransportation}
@@ -1988,6 +2061,10 @@ export default function ProgramOutcome() {
           </Select>
         </FormControl>
       </Box>
+      <h3>
+        If there are any wrap around services that you provide that you do not
+        see in the above list, please list them down below.
+      </h3>
       <Box mb={2}>
         <TextField
           label="Other Wraparound Services"
@@ -2002,6 +2079,26 @@ export default function ProgramOutcome() {
         />
       </Box>
       {/* Funding Fields */}
+      <h3>Funding Mix for Programs</h3>
+      <p>
+        Please estimate what percentage of your Training Program Funding comes
+        from each of the following categories. These can be rough estimates, but
+        the three numbers should total 100. <br /> <br />
+        Public Funding includes all government funding (except as noted below
+        for social enterprise).
+        <br />
+        <br />
+        Private Funding includes individual donations and in kind contributions.{' '}
+        <br />
+        <br />
+        Social Enterprise and Generated Revenues are the gross contributions to
+        budget from work completed by your kitchens and foodservice operations,
+        and includes contracts with public agencies that pay per meal or are for
+        a fixed amount for period of meal coverage. Please exclude revenues from
+        operations that have no involvement with the training program or
+        graduates.
+      </p>
+      <h4>Funding: % from public funding</h4>
       <Box mb={2}>
         <TextField
           label="Public Funding"
@@ -2016,6 +2113,7 @@ export default function ProgramOutcome() {
           fullWidth
         />
       </Box>
+      <h4>Funding: % from private funding</h4>
       <Box mb={2}>
         <TextField
           label="Private Funding"
@@ -2030,6 +2128,7 @@ export default function ProgramOutcome() {
           fullWidth
         />
       </Box>
+      <h4>Funding: % from social enterprise or generated revenue</h4>
       <Box mb={2}>
         <TextField
           label="Social Enterprise Funding"
@@ -2047,6 +2146,8 @@ export default function ProgramOutcome() {
         />
       </Box>
       {/* SNAP E&T and WIOA */}
+      <h4>SNAP E&T</h4>
+      <p>Do you currently receive SNAP E&T funds?</p>
       <Box mb={2}>
         <FormControl fullWidth>
           <InputLabel>SNAP E&T</InputLabel>
@@ -2060,12 +2161,18 @@ export default function ProgramOutcome() {
               })
             }
           >
-            <MenuItem value="Yes">Yes</MenuItem>
-            <MenuItem value="No But">No But</MenuItem>
-            <MenuItem value="No And">No And</MenuItem>
+            <MenuItem value="Yes">Yes, we receive SNAP E&T funds</MenuItem>
+            <MenuItem value="No But">
+              No, but we would like to be able to access SNAP E&T funding
+            </MenuItem>
+            <MenuItem value="No And">
+              No, and we have applied and been rejected in the past
+            </MenuItem>
           </Select>
         </FormControl>
       </Box>
+      <h4>WIOA</h4>
+      <p>Do you currently receive WIOA funds?</p>
       <Box mb={2}>
         <FormControl fullWidth>
           <InputLabel>WIOA</InputLabel>
@@ -2079,13 +2186,22 @@ export default function ProgramOutcome() {
               })
             }
           >
-            <MenuItem value="Yes">Yes</MenuItem>
-            <MenuItem value="No But">No But</MenuItem>
-            <MenuItem value="No And">No And</MenuItem>
+            <MenuItem value="Yes">Yes, we receive WIOA funds</MenuItem>
+            <MenuItem value="No But">
+              No, but we would like to be able to access WIOA funding
+            </MenuItem>
+            <MenuItem value="No And">
+              No, and we have do not have interest in the funding
+            </MenuItem>
           </Select>
         </FormControl>
       </Box>
       {/* Curriculum */}
+      <h4>Curriculum</h4>
+      <p>
+        How much of your program includes written, organized curriculum that
+        guides teaching and learning?
+      </p>
       <Box mb={2}>
         <FormControl fullWidth>
           <InputLabel>Curriculum</InputLabel>
@@ -2095,12 +2211,17 @@ export default function ProgramOutcome() {
             onChange={(e) =>
               setFormState({
                 ...formState,
-                curriculum: e.target.value as 'All' | 'Part' | undefined,
+                curriculum: e.target.value as
+                  | 'All'
+                  | 'Part'
+                  | 'None'
+                  | undefined,
               })
             }
           >
             <MenuItem value="All">All</MenuItem>
             <MenuItem value="Part">Part</MenuItem>
+            <MenuItem value="None">None</MenuItem>
           </Select>
         </FormControl>
       </Box>
@@ -2141,9 +2262,17 @@ export default function ProgramOutcome() {
         </div>
       )}
       {/* Other Fields */}
+      <h3>Local Minimum Wage</h3>
+      <p>
+        What was your local minimum wage for most of {new Date().getFullYear()}?
+        If your city, county, and/or state minimum wages are different, please
+        list the one that reflects where most of your graduates are placed in
+        jobs. If your local minimum wage has different tiers (i.e. by size of
+        employer), list the highest rate.
+      </p>
       <Box mb={2}>
         <TextField
-          label="Minimum Wage 2023"
+          label="Minimum Wage"
           type="number"
           value={formState.minimumWage}
           onChange={(e) =>
@@ -2155,6 +2284,13 @@ export default function ProgramOutcome() {
           fullWidth
         />
       </Box>
+      <h3>Job Type: Food Service?</h3>
+      <p>
+        {' '}
+        What % of first job placements for your training programs are in food
+        service positions? Food service jobs are loosely defined as working in a
+        kitchen.
+      </p>
       <Box mb={2}>
         <FormControl fullWidth>
           <InputLabel>Job Type in Food Service</InputLabel>
@@ -2179,6 +2315,12 @@ export default function ProgramOutcome() {
           </Select>
         </FormControl>
       </Box>
+      <h4>Alumni Hired by Org</h4>
+      <p>
+        The number of alumni of your training programs that worked for your
+        organization in a <b>fulltime position</b> in {new Date().getFullYear()}
+        ? Approximate number is OK.
+      </p>
       <Box mb={2}>
         <TextField
           label="Alumni Hired By Organization"
@@ -2194,8 +2336,16 @@ export default function ProgramOutcome() {
         />
       </Box>
       <Box mt={3}>
-        <Button variant="contained" color="primary" onClick={handleSubmit}>
-          Submit
+        <Button
+          variant="contained"
+          style={{
+            backgroundColor: '#2C2C2C',
+            color: '#F5F5F5',
+            width: '100%',
+          }}
+          onClick={handleSubmit}
+        >
+          Submit Program Data
         </Button>
       </Box>
     </div>
