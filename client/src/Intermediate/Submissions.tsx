@@ -54,7 +54,7 @@ export default function VisualizationHome() {
           <Card sx={{ maxWidth: 300, boxShadow: 3 }}>
             <CardContent>
               <Typography variant="h5" component="div" gutterBottom>
-                Program Outcomes
+                Submit Program Data
               </Typography>
               <Typography variant="body2" color="text.secondary" paragraph>
                 Submit data for program outcomes to aid in performance tracking

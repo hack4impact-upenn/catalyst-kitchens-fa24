@@ -1,8 +1,16 @@
 import React from 'react';
 import { Outlet, Navigate, Form } from 'react-router-dom';
-import { Person, PieChart, TableChart } from '@mui/icons-material';
-import { useData } from './api.tsx';
+import {
+  Person,
+  PieChart,
+  TableChart,
+  ArrowUpward,
+  Add,
+} from '@mui/icons-material';
+import { useSelector } from 'react-redux';
+import { getData, useData } from './api.tsx';
 import Sidebar from '../components/Sidebar.tsx';
+import { RootState } from './redux/store';
 
 interface IDynamicElementProps {
   unAuthPath: string;
@@ -23,13 +31,24 @@ function UnauthenticatedRoutesWrapper() {
  */
 function ProtectedRoutesWrapper() {
   const data = useData('auth/authstatus');
+  const user = useSelector((state: RootState) => state.user);
+  const data2 = useData('admin/adminstatus');
   if (data === null) return null;
-
+  const validOrg = getData(`/organization/${user.email}`);
   const links = [
-    { name: 'Data Viz', icon: PieChart, to: '/outcome-viz' },
-    { name: 'Submit Data', icon: Form, to: '/outcome-form' },
+    { name: 'Data Visualization', icon: PieChart, to: '/outcome-viz' },
   ];
-
+  if (validOrg !== null) {
+    links.push({ name: 'Submit Data', icon: ArrowUpward, to: '/outcome-form' });
+  }
+  if (data2 !== null) {
+    links.push({
+      name: 'Organization Dashboard',
+      icon: TableChart,
+      to: '/organizations',
+    });
+    links.push({ name: 'User Dashboard', icon: Person, to: '/users' });
+  }
   return !data.error ? (
     <div style={{ display: 'flex' }}>
       <Sidebar links={links} />
@@ -46,18 +65,21 @@ function ProtectedRoutesWrapper() {
  */
 function AdminRoutesWrapper() {
   const data = useData('admin/adminstatus');
+  const user = useSelector((state: RootState) => state.user);
+  const validOrg = getData(`/organization/${user.email}`);
   if (data === null) return null;
-
   const links = [
-    { name: 'Data Viz', icon: PieChart, to: '/outcome-viz' },
-    {
-      name: 'Organization Dashboard',
-      icon: TableChart,
-      to: '/organizations',
-    },
-    { name: 'User Dashboard', icon: Person, to: '/users' },
+    { name: 'Data Visualization', icon: PieChart, to: '/outcome-viz' },
   ];
-
+  if (validOrg !== null) {
+    links.push({ name: 'Submit Data', icon: ArrowUpward, to: '/outcome-form' });
+  }
+  links.push({
+    name: 'Organization Dashboard',
+    icon: TableChart,
+    to: '/organizations',
+  });
+  links.push({ name: 'User Dashboard', icon: Person, to: '/users' });
   return !data.error ? (
     <div style={{ display: 'flex' }}>
       <Sidebar links={links} />

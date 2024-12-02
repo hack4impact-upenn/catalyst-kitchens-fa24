@@ -1,6 +1,6 @@
 import express from 'express';
 import { isAuthenticated } from '../controllers/auth.middleware';
-
+import { isAdmin } from '../controllers/admin.middleware';
 import {
   getOneProgramOutcomesController,
   getAllProgramOutcomesByYearController,
@@ -14,13 +14,37 @@ import {
 
 const router = express.Router();
 
-router.get('/network-average/:field/:year', getNetworkAverageController);
-router.get('/org/:orgId/years', getDistinctYearsByOrgIdController);
-router.get('/org/:orgId/all', getAllProgramOutcomesByOrgController);
-router.get('/org/:orgId/:year', getOneProgramOutcomesController);
-router.delete('/org/:id', deleteProgramOutcomeByIdController);
-router.get('/year/:year', getAllProgramOutcomesByYearController);
-router.post('/new', addProgramOutcomesController);
-router.get('/field-values/:orgId/:field', getFieldValuesByYearController);
+router.get(
+  '/network-average/:field/:year',
+  isAuthenticated,
+  getNetworkAverageController,
+);
+router.get(
+  '/org/:orgId/years',
+  isAuthenticated,
+  getDistinctYearsByOrgIdController,
+);
+router.get(
+  '/org/:orgId/all',
+  isAuthenticated,
+  getAllProgramOutcomesByOrgController,
+);
+router.get(
+  '/org/:orgId/:year',
+  isAuthenticated,
+  getOneProgramOutcomesController,
+);
+router.delete('/org/:id', isAdmin, deleteProgramOutcomeByIdController);
+router.get(
+  '/year/:year',
+  isAuthenticated,
+  getAllProgramOutcomesByYearController,
+);
+router.post('/new', isAuthenticated, addProgramOutcomesController);
+router.get(
+  '/field-values/:orgId/:field',
+  isAuthenticated,
+  getFieldValuesByYearController,
+);
 
 export default router;

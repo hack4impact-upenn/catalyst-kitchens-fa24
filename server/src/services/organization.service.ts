@@ -34,10 +34,35 @@ const getOrganizationById = async (
     throw error;
   }
 };
+const addOrganization = async (
+  status: string,
+  street: string,
+  city: string,
+  state: string,
+  zip: string,
+  organizationName: string,
+) => {
+  const newOrg = new Organization({
+    status,
+    street,
+    city,
+    state,
+    zip,
+    organizationName,
+  });
+  let res = newOrg;
+  try {
+    res = await newOrg.save();
+  } catch (error) {
+    throw new Error('Unable to add new organization');
+  }
+  return res;
+};
 
 export {
   getOrganizationByName,
   getAllOrganizations,
   getOrganizationById,
   getOrganizationNameById,
+  addOrganization,
 };
