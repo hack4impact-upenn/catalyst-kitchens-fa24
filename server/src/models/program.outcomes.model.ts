@@ -60,12 +60,12 @@ const ProgramOutcomesSchema = new mongoose.Schema({
   },
   youthEnrollmentStructure: {
     type: String,
-    enum: ['Staggered', 'Single', 'Both'],
+    enum: ['Staggered', 'Single', 'Other'],
     required: false,
   },
   youthCompensation: {
     type: String,
-    enum: ['Hourly', 'Stipend', 'None'],
+    enum: ['HourlyMin', 'HourlyAboveMin', 'Stipend', 'None'],
     required: false,
   },
   youthTrainedDefinition: {
@@ -75,6 +75,7 @@ const ProgramOutcomesSchema = new mongoose.Schema({
       '2-4 day provisional period',
       'One week provisional period',
       'Two week provisional period',
+      'Other',
     ],
     required: false,
   },
@@ -161,11 +162,11 @@ const ProgramOutcomesSchema = new mongoose.Schema({
   },
   adultEnrollmentStructure: {
     type: String,
-    enum: ['Single Cohort', 'Staggered'],
+    enum: ['Single Cohort', 'Staggered', 'Other'],
   },
   adultCompensation: {
     type: String,
-    enum: ['Hourly', 'Stipend', 'None'],
+    enum: ['HourlyMin', 'HourlyAboveMin', 'Stipend', 'None'],
   },
   adultTrainedDefinition: {
     type: String,
@@ -178,7 +179,12 @@ const ProgramOutcomesSchema = new mongoose.Schema({
     ],
   },
   adultGraduatedDefinition: {
-    type: Number,
+    type: String,
+    enum: [
+      'All weeks of program',
+      'Early exit for employment allowed',
+      'Other',
+    ],
     required: false,
   },
   traineeAge: {
@@ -467,7 +473,7 @@ interface IProgramOutcomes {
   adultEnrollmentStructure?: string;
   adultCompensation?: string;
   adultTrainedDefinition?: string;
-  adultGraduatedDefinition?: number;
+  adultGraduatedDefinition?: string;
   traineeAge?: number;
   traineePercentFemale?: number;
   traineePercentMale?: number;
