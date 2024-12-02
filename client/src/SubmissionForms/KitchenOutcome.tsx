@@ -108,7 +108,7 @@ export default function KitchenOutcome() {
   // Initialize formState with the FormState type
   const noFormState: FormState = {
     email: user.email,
-    year: new Date(),
+    year: new Date(new Date().getFullYear()),
     orgId: null,
     shareSurvey: true,
     responderName: '',

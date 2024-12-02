@@ -58,11 +58,40 @@ const addOrganization = async (
   }
   return res;
 };
-
+const editOrganization = async (
+  status: string,
+  organizationName: string,
+  id: string,
+  street: string,
+  city: string,
+  state: string,
+  zip: string,
+) => {
+  try {
+    const res = await Organization.updateOne(
+      { _id: id },
+      {
+        $set: {
+          organizationName,
+          status,
+          street,
+          city,
+          state,
+          zip,
+        },
+      },
+    );
+    console.log('Organization correctly updated!');
+    return res;
+  } catch (error) {
+    throw new Error('Unable to update organization');
+  }
+};
 export {
   getOrganizationByName,
   getAllOrganizations,
   getOrganizationById,
   getOrganizationNameById,
   addOrganization,
+  editOrganization,
 };

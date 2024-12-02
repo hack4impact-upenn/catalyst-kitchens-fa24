@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import React, { useEffect, useState } from 'react';
 import {
   Grid,
@@ -129,11 +130,14 @@ function KitchenOutcomesVisualization() {
   };
 
   const [surveyData, setSurveyData] = useState<SurveyData | null>(null);
-
-  const [orgList, setOrgList] = useState<string[] | null>(null);
+  type OrgVal = {
+    name: string;
+    id: string;
+  };
+  const [orgList, setOrgList] = useState<OrgVal[] | null>(null);
   const [yearList, setYearList] = useState<number[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [orgName, setOrgName] = useState('');
+  const [orgName, setOrgName] = useState<string | undefined>('');
   const [orgId, setOrgId] = useState('');
   const [year, setYear] = useState<number | ''>('');
 
@@ -144,23 +148,14 @@ function KitchenOutcomesVisualization() {
     'Organization Info',
   ];
   useEffect(() => {
-    const findOrgId = async () => {
-      try {
-        const response = await getData(`organization/name/${orgName}`);
-        // eslint-disable-next-line no-underscore-dangle
-        setOrgId(response.data._id);
-      } catch (error) {
-        console.error('Error fetching specific organization id', error);
-      }
-    };
-    findOrgId();
-  }, [orgName]);
-  useEffect(() => {
     const fetchOrgList = async () => {
       try {
         const response = await getData(`organization/organizations`);
         const organizationNames = response.data.map(
-          (org: { organizationName: string }) => org.organizationName,
+          (org: { organizationName: string; _id: string }) => ({
+            name: org.organizationName,
+            id: org._id,
+          }),
         );
         setOrgList(organizationNames);
       } catch (error) {
@@ -174,8 +169,11 @@ function KitchenOutcomesVisualization() {
   useEffect(() => {
     const fetchOutcomes = async () => {
       if (!orgId) return;
+      if (!year) return;
       try {
         const response = await getData(`kitchen_outcomes/${year}/${orgId}`);
+        console.log(response);
+        console.log(orgId);
         setSurveyData(response.data);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -189,19 +187,23 @@ function KitchenOutcomesVisualization() {
       if (!orgId) return;
       try {
         const response = await getData(`kitchen_outcomes/get/years/${orgId}`);
+        console.log('Years response:', response.data);
         setYearList(response.data);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
     settingYearList();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orgId]);
   const handleOrgSelection = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     event.preventDefault();
     const selectedOrg = event.target.value;
-    setOrgName(selectedOrg);
+    setOrgId(selectedOrg);
+    setYear('');
+    setOrgName(orgList?.find((org) => org.id === selectedOrg)?.name);
   };
   const [chartData, setChartData] = useState<{
     ageData: {
@@ -571,12 +573,12 @@ function KitchenOutcomesVisualization() {
             select
             size="small" // Make the field smaller
             fullWidth
-            value={orgName}
+            value={orgId}
             onChange={handleOrgSelection}
           >
             {orgList?.map((org) => (
-              <MenuItem key={org} value={org}>
-                {org}
+              <MenuItem key={org.id} value={org.id}>
+                {org.name}
               </MenuItem>
             )) ?? []}
           </TextField>
@@ -590,6 +592,7 @@ function KitchenOutcomesVisualization() {
             fullWidth
             value={year}
             onChange={(event) => {
+              console.log(event.target.value);
               setYear(Number(event.target.value));
             }}
             disabled={!orgName || yearList.length === 0}

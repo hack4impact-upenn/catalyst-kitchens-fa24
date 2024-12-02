@@ -23,7 +23,9 @@ const getOneKitchenOutcomesController = async (
     next(ApiError.missingFields(['year', 'orgId']));
     return;
   }
-  const yearDate = new Date(year);
+  console.log('Year', year);
+  const adjustedYear = parseInt(year, 10) + 1;
+  const yearDate = new Date(Date.UTC(adjustedYear, 0, 1));
   return getOneKitchenOutcomes(yearDate, orgId)
     .then((kitchenOutcomes: unknown) => {
       res.status(StatusCode.OK).send(kitchenOutcomes);

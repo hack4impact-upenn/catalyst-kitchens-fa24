@@ -6,6 +6,7 @@ import {
   getOrgById,
   getOrganizationNameByIdController,
   addOrganizationController,
+  editOrganizationController,
 } from '../controllers/organization.controller';
 import { isAdmin } from '../controllers/admin.middleware';
 
@@ -15,6 +16,7 @@ router.get('/name/:name', isAuthenticated, getOrgByName);
 router.get('/organizations', isAuthenticated, getAll);
 router.get('/id/:id', isAuthenticated, getOrgById);
 router.post('/new', isAdmin, addOrganizationController);
+router.post('/edit', isAdmin, editOrganizationController);
 
 router.get(
   '/organization/name/:id',

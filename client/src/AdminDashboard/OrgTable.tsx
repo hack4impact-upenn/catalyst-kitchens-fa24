@@ -1,9 +1,11 @@
+/* eslint-disable react/jsx-no-useless-fragment */
 import React, { useEffect, useState } from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Snackbar from '@mui/material/Snackbar';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Grid } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { deleteData, getData } from '../util/api.tsx';
 import { PaginationTable, TColumn } from '../components/PaginationTable.tsx';
 
@@ -34,6 +36,9 @@ function OrgTable() {
     { _id: string; organizationName: string }[]
   >([]);
   const [selectedOrgId, setSelectedOrgId] = useState<string>('No Org');
+  const [selectedOrgName, setSelectedOrgName] = useState<string | undefined>(
+    undefined,
+  );
   const [kitchenOutcomes, setKitchenOutcomes] = useState<IKitchenOutcomes[]>(
     [],
   );
@@ -47,6 +52,7 @@ function OrgTable() {
     message: '',
     open: false,
   });
+  const navigate = useNavigate();
 
   const columns: TColumn[] = [
     { id: 'date', label: 'Date' },
@@ -74,7 +80,10 @@ function OrgTable() {
       return;
     }
     setSelectedOrgId(organizationId);
-
+    setSelectedOrgName(
+      // eslint-disable-next-line no-underscore-dangle
+      organizations.find((org) => org._id === organizationId)?.organizationName,
+    );
     try {
       const [kitchenRes, programRes] = await Promise.all([
         getData(`kitchen_outcomes/get/all/${organizationId}`),
@@ -196,8 +205,45 @@ function OrgTable() {
           </MenuItem>
         ))}
       </Select>
+      {selectedOrgId !== 'No Org' ? (
+        <Grid item>
+          <Button
+            fullWidth
+            variant="contained"
+            onClick={() => {
+              navigate(`/organizations-update/${selectedOrgId}`);
+            }}
+            style={{
+              backgroundColor: 'black',
+              color: 'white',
+              marginTop: '20px',
+              marginBottom: '20px',
+            }}
+          >
+            View and Update {selectedOrgName} Organization Information
+          </Button>
+        </Grid>
+      ) : (
+        <></>
+      )}
       {/* Outcomes Table */}
       <PaginationTable rows={createOutcomeRows()} columns={columns} />
+      <Grid item>
+        <Button
+          fullWidth
+          variant="contained"
+          onClick={() => {
+            navigate('/organizations-add');
+          }}
+          style={{
+            backgroundColor: 'black',
+            color: 'white',
+            marginTop: '20px',
+          }}
+        >
+          Add Organization
+        </Button>
+      </Grid>
       {/* Notification Snackbar */}
       <Snackbar
         open={notification.open}

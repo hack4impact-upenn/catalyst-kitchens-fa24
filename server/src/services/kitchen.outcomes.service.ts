@@ -5,10 +5,21 @@ import {
 } from '../models/kitchen.outcomes.model.ts';
 
 const getOneKitchenOutcomes = async (year: Date, orgId: string) => {
+  console.log('Year', year.getFullYear());
+  const startDate = new Date(Date.UTC(year.getFullYear(), 0, 1));
+  const endDate = new Date(
+    Date.UTC(year.getFullYear(), 11, 31, 23, 59, 59, 999),
+  );
   const outcomes = await KitchenOutcomes.findOne({
     orgId,
-    year,
+    year: {
+      $gte: startDate,
+      $lt: endDate,
+    },
   }).exec();
+  console.log(startDate);
+  console.log(endDate);
+  console.log('Service - Found kitchen outcomes:', outcomes);
   return outcomes;
 };
 const getAllKitchenOutcomesByOrg = async (orgId: string) => {
