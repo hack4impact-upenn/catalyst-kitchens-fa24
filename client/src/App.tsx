@@ -31,6 +31,7 @@ import ProgramOutcomesVisualization from './Visualizations/ProgramOutcomesViz.ts
 import SubmissionsHome from './Intermediate/Submissions.tsx';
 import VisualizationHome from './Intermediate/Visualizations.tsx';
 import AddOrganization from './AddOrganization/AddOrganization.tsx';
+import EditOrganization from './EditOrganization/EditOrganization.tsx';
 
 // Router Configuration
 const router = createBrowserRouter([
@@ -72,6 +73,7 @@ const router = createBrowserRouter([
       { path: 'users', element: <AdminDashboardPage /> },
       { path: 'organizations', element: <OrgAdminPage /> },
       { path: 'organizations-add', element: <AddOrganization /> },
+      { path: 'organizations-update/:orgId', element: <EditOrganization /> },
     ],
   },
   {

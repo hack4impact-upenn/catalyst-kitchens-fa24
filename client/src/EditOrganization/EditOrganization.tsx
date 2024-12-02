@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   TextField,
   Button,
@@ -10,26 +10,11 @@ import {
   Typography,
 } from '@mui/material';
 import { textAlign } from '@mui/system';
-import { postData } from '../util/api';
+import { useParams } from 'react-router-dom';
+import { postData, getData } from '../util/api';
 
-export default function AddOrganization() {
-  type FormState = {
-    organizationName: string;
-    status: string;
-    street: string;
-    city: string;
-    state: string;
-    zip: string;
-  };
-
-  const defaultState: FormState = {
-    organizationName: '',
-    status: 'Member',
-    street: '',
-    city: '',
-    state: '',
-    zip: '',
-  };
+export default function EditOrganization() {
+  const { orgId } = useParams();
   const states = [
     { name: 'Alabama', abbreviation: 'AL' },
     { name: 'Alaska', abbreviation: 'AK' },
@@ -82,7 +67,51 @@ export default function AddOrganization() {
     { name: 'Wisconsin', abbreviation: 'WI' },
     { name: 'Wyoming', abbreviation: 'WY' },
   ];
+  type FormState = {
+    organizationName: string;
+    status: string;
+    street: string;
+    city: string;
+    state: string;
+    zip: string;
+    id: string | undefined;
+  };
+
+  const defaultState: FormState = {
+    organizationName: '',
+    status: 'Member',
+    street: '',
+    city: '',
+    state: '',
+    zip: '',
+    id: orgId,
+  };
   const [newOrg, setNewOrg] = useState<FormState>(defaultState);
+  useEffect(() => {
+    const getOrgInformation = async () => {
+      if (orgId) {
+        const result = await getData(`organization/id/${orgId}`);
+        console.log(result);
+        if (result) {
+          const { data } = result;
+          setNewOrg({
+            ...newOrg,
+            organizationName: data?.organizationName,
+            street: data?.street,
+            city: data?.city,
+            state: data?.state,
+            zip: data?.zip,
+          });
+        } else {
+          console.log('No available organization');
+        }
+      } else {
+        console.log('No defined organization id');
+      }
+    };
+    getOrgInformation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orgId]);
   const validateInputs = () => {
     return (
       newOrg.state.length > 0 &&
@@ -95,15 +124,16 @@ export default function AddOrganization() {
     if (validateInputs()) {
       try {
         console.log(newOrg);
-        const response = await postData('organization/new', newOrg);
-        console.log('Organization Submitted Successfully: ', response);
+        const response = await postData('organization/edit', newOrg);
+        if (response.data) {
+          console.log('Organization Submitted Successfully: ', response.data);
+        }
         setNewOrg(defaultState);
       } catch (error) {
         console.error('Error submitting program outcome:', error);
       }
     }
   };
-
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto' }}>
       <Grid
@@ -114,7 +144,9 @@ export default function AddOrganization() {
         style={{ marginTop: '20px' }}
       >
         <Grid item xs={12}>
-          <h1 style={{ textAlign: 'center' }}>Add New Organization</h1>
+          <h1 style={{ textAlign: 'center' }}>
+            Update Organization Information
+          </h1>
         </Grid>
 
         <Grid item xs={12} sm={6}>
@@ -197,7 +229,7 @@ export default function AddOrganization() {
               color: 'white',
             }}
           >
-            Submit
+            Update Organization Information
           </Button>
         </Grid>
       </Grid>

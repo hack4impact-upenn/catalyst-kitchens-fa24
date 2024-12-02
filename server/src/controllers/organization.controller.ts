@@ -8,6 +8,7 @@ import {
   getOrganizationNameById,
   getOrganizationById,
   addOrganization,
+  editOrganization,
 } from '../services/organization.service.ts';
 
 const getOrgByName = async (
@@ -104,10 +105,40 @@ const getOrgById = async (
     next(ApiError.internal('Unable to retrieve organization by ID'));
   }
 };
+const editOrganizationController = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) => {
+  const { id, organizationName, status, street, city, state, zip } = req.body;
+  if (!id) {
+    next(ApiError.missingFields(['id']));
+  }
+  try {
+    //     (alias) editOrganization(status: string, organizationName: string, id: string, street: string, city: string, state: string, zip: string): Promise<UpdateResult>
+    // import editOrganization
+    const org = await editOrganization(
+      status,
+      organizationName,
+      id,
+      street,
+      city,
+      state,
+      zip,
+    );
+    if (!res) {
+      next(ApiError.notFound('Organization could not be found and edited'));
+    }
+    res.status(StatusCode.OK).send(org);
+  } catch (error) {
+    next(ApiError.internal('Unable to retrieve organization by ID'));
+  }
+};
 export {
   getOrgByName,
   getAll,
   getOrganizationNameByIdController,
   getOrgById,
   addOrganizationController,
+  editOrganizationController,
 };
