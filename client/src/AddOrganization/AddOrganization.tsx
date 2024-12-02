@@ -7,6 +7,7 @@ import {
   Select,
   MenuItem,
   Grid,
+  Snackbar,
   Typography,
 } from '@mui/material';
 import { textAlign } from '@mui/system';
@@ -83,6 +84,16 @@ export default function AddOrganization() {
     { name: 'Wyoming', abbreviation: 'WY' },
   ];
   const [newOrg, setNewOrg] = useState<FormState>(defaultState);
+  type Notification = {
+    message: string;
+    open: boolean;
+  };
+  const defaultNotification: Notification = {
+    message: 'Organization has been successfully added',
+    open: false,
+  };
+  const [notificationEdit, setNotificationEdit] =
+    useState<Notification>(defaultNotification);
   const validateInputs = () => {
     return (
       newOrg.state.length > 0 &&
@@ -96,7 +107,10 @@ export default function AddOrganization() {
       try {
         console.log(newOrg);
         const response = await postData('organization/new', newOrg);
-        console.log('Organization Submitted Successfully: ', response);
+        if (response.data) {
+          console.log('Organization Submitted Successfully: ', response);
+          setNotificationEdit({ ...notificationEdit, open: true });
+        }
         setNewOrg(defaultState);
       } catch (error) {
         console.error('Error submitting program outcome:', error);
@@ -201,6 +215,14 @@ export default function AddOrganization() {
           </Button>
         </Grid>
       </Grid>
+      <Snackbar
+        open={notificationEdit.open}
+        autoHideDuration={3000}
+        onClose={() => {
+          setNotificationEdit({ ...notificationEdit, open: false });
+        }}
+        message={notificationEdit.message}
+      />
     </div>
   );
 }

@@ -220,7 +220,7 @@ function OrgTable() {
               marginBottom: '20px',
             }}
           >
-            Update {selectedOrgName} Organization Information
+            View and Update {selectedOrgName} Organization Information
           </Button>
         </Grid>
       ) : (

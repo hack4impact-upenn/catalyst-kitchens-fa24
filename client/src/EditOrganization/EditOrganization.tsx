@@ -7,6 +7,7 @@ import {
   Select,
   MenuItem,
   Grid,
+  Snackbar,
   Typography,
 } from '@mui/material';
 import { textAlign } from '@mui/system';
@@ -87,6 +88,16 @@ export default function EditOrganization() {
     id: orgId,
   };
   const [newOrg, setNewOrg] = useState<FormState>(defaultState);
+  type Notification = {
+    message: string;
+    open: boolean;
+  };
+  const defaultNotification: Notification = {
+    message: 'Organization Information has been successfully edited',
+    open: false,
+  };
+  const [notificationEdit, setNotificationEdit] =
+    useState<Notification>(defaultNotification);
   useEffect(() => {
     const getOrgInformation = async () => {
       if (orgId) {
@@ -127,6 +138,7 @@ export default function EditOrganization() {
         const response = await postData('organization/edit', newOrg);
         if (response.data) {
           console.log('Organization Submitted Successfully: ', response.data);
+          setNotificationEdit({ ...notificationEdit, open: true });
         }
         setNewOrg(defaultState);
       } catch (error) {
@@ -144,9 +156,7 @@ export default function EditOrganization() {
         style={{ marginTop: '20px' }}
       >
         <Grid item xs={12}>
-          <h1 style={{ textAlign: 'center' }}>
-            Update Organization Information
-          </h1>
+          <h1 style={{ textAlign: 'center' }}>Organization Information</h1>
         </Grid>
 
         <Grid item xs={12} sm={6}>
@@ -233,6 +243,14 @@ export default function EditOrganization() {
           </Button>
         </Grid>
       </Grid>
+      <Snackbar
+        open={notificationEdit.open}
+        autoHideDuration={3000}
+        onClose={() => {
+          setNotificationEdit({ ...notificationEdit, open: false });
+        }}
+        message={notificationEdit.message}
+      />
     </div>
   );
 }
