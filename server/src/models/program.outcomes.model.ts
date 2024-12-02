@@ -362,7 +362,7 @@ const ProgramOutcomesSchema = new mongoose.Schema({
   },
   SNAPEAndT: {
     type: String,
-    enum: ['Yes', 'No But', 'No And'],
+    enum: ['Yes', 'NoButInterested', 'NoNotInterested', 'NoRejected'],
   },
   WIOA: {
     type: String,
@@ -370,34 +370,44 @@ const ProgramOutcomesSchema = new mongoose.Schema({
   },
   curriculum: {
     type: String,
-    enum: ['All', 'Part'],
+    enum: ['All', 'Part', 'None'],
   },
-  programCertifications: {
-    type: String,
-    enum: [
-      'ACF Quality/Approved Program',
-      'DOL approved apprenticeship',
-      'State Association apprenticeship',
-      'Local or State Dept. of Education or Community College',
-      'Other',
-    ],
-  },
+  programCertifications: [
+    {
+      type: String,
+      enum: [
+        'ACF Quality/Approved Program',
+        'DOL approved apprenticeship',
+        'DOL approved pre-apprenticeship',
+        'State Association apprenticeship',
+        'State Association pre-apprenticeship',
+        'Local or State Dept. of Education or Community College',
+        'Other',
+      ],
+    },
+  ],
   otherProgramCertifications: {
     type: String,
   },
-  participantCertifications: {
-    type: String,
-    enum: [
-      'Basic Food Safety (eg ServSafe Handler or similar)',
-      'Advanced Food Safety',
-      'Credit toward Comm College ACF Certification',
-      'NRA (eg Pro Start)',
-      'AHLEI (eg Kitchen Cook)',
-      'Guest Service Gold',
-      'Certified Guest Service Professional, etc.)',
-      'Other',
-    ],
-  },
+  participantCertifications: [
+    {
+      type: String,
+      enum: [
+        'Basic Food Safety (eg ServSafe Handler or similar)',
+        'Advanced Food Safety (eg ServSafe Manager or similar)',
+        'Credit toward Comm College',
+        'ACF Certification (eg Fundamental Cook)',
+        'NRA (eg Pro Start)',
+        'AHLEI (eg Kitchen Cook, Guest Service Gold, Certified Guest Service Professional, etc.)',
+        'Nutrition',
+        'Allergen',
+        'Customer Services',
+        'Alcohol Services',
+        'Non-foodservice certification (including CLA/CLT, CDL, NSC, etc)',
+        'Other',
+      ],
+    },
+  ],
   otherParticipantCertifications: {
     type: String,
   },
@@ -413,23 +423,25 @@ const ProgramOutcomesSchema = new mongoose.Schema({
   },
   jobType: {
     type: String,
-    enum: ['1-25%', '26-50%', '51-75%', '76-100%'],
+    enum: ['1-25%', '26-50%', '51-75%', '76-100%', 'Not Tracked'],
     required: false,
   },
-  jobCategory: {
-    type: String,
-    enum: [
-      'Food Service: restaurant, cafe',
-      'Food Service: institutional',
-      'Food Service: grocery',
-      'Customer Service and Retail',
-      'Transportation & warehousing',
-      'healthcare & social ssistance',
-      'safety & maintenance',
-      'Construction',
-      'Other',
-    ],
-  },
+  jobCategory: [
+    {
+      type: String,
+      enum: [
+        'Food Service: Restaurant, Cafe',
+        'Food Service: Institutional (Senior Living, Corporate Dining, etc.)',
+        'Food Service: Grocery',
+        'Customer Service and Retail',
+        'Transportation & Warehousing',
+        'Healthcare & Social Assistance',
+        'Safety & Maintenance',
+        'Construction',
+        'Other',
+      ],
+    },
+  ],
   alumniHiredByOrg: {
     type: Number,
   },
@@ -512,15 +524,15 @@ interface IProgramOutcomes {
   SNAPEAndT?: string;
   WIOA?: string;
   curriculum?: string;
-  programCertifications?: string;
+  programCertifications?: string[];
   otherProgramCertifications?: string;
-  participantCertifications?: string;
+  participantCertifications?: string[];
   otherParticipantCertifications?: string;
   internshipOrExternship?: boolean;
   internshipOrExternshipDescription?: string;
   minimumWage?: number;
   jobType?: string;
-  jobCategory?: string;
+  jobCategory?: string[];
   alumniHiredByOrg?: number;
 }
 

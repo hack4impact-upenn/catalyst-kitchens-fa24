@@ -28,6 +28,43 @@ import { postData } from '../util/api';
 import { RootState } from '../util/redux/store';
 
 export default function ProgramOutcome() {
+  const PROGRAM_CERTIFICATIONS = [
+    'ACF Quality/Approved Program',
+    'DOL approved apprenticeship',
+    'DOL approved pre-apprenticeship',
+    'State Association apprenticeship',
+    'State Association pre-apprenticeship',
+    'Local or State Dept. of Education or Community College',
+    'Other',
+  ];
+
+  const PARTICIPANT_CERTIFICATIONS = [
+    'Basic Food Safety (eg ServSafe Handler or similar)',
+    'Advanced Food Safety (eg ServSafe Manager or similar)',
+    'Credit toward Comm College',
+    'ACF Certification (eg Fundamental Cook)',
+    'NRA (eg Pro Start)',
+    'AHLEI (eg Kitchen Cook, Guest Service Gold, Certified Guest Service Professional, etc.)',
+    'Nutrition',
+    'Allergen',
+    'Customer Services',
+    'Alcohol Services',
+    'Non-foodservice certification (including CLA/CLT, CDL, NSC, etc)',
+    'Other',
+  ];
+
+  const JOB_CATEGORIES = [
+    'Food Service: Restaurant, Cafe',
+    'Food Service: Institutional (Senior Living, Corporate Dining, etc.)',
+    'Food Service: Grocery',
+    'Customer Service and Retail',
+    'Transportation & Warehousing',
+    'Healthcare & Social Assistance',
+    'Safety & Maintenance',
+    'Construction',
+    'Other',
+  ];
+
   const user = useSelector((state: RootState) => state.user);
   enum YouthEnrollmentStructure {
     Staggered = 'Staggered',
@@ -162,39 +199,18 @@ export default function ProgramOutcome() {
     fundingPercentFromPublicFunding?: number;
     fundingPercentFromPrivateFunding?: number;
     fundingPercentFromSocialEnterpriseOrGeneratedRevenue?: number;
-    SNAPEAndT?: 'Yes' | 'No But' | 'No And';
+    SNAPEAndT?: 'Yes' | 'NoButInterested' | 'NoNotInterested' | 'NoRejected';
     WIOA?: 'Yes' | 'No But' | 'No And';
     curriculum?: 'All' | 'Part' | 'None';
-    programCertifications?:
-      | 'ACF Quality/Approved Program'
-      | 'DOL approved apprenticeship'
-      | 'State Association apprenticeship'
-      | 'Local or State Dept. of Education or Community College'
-      | 'Other';
+    programCertifications: string[];
     otherProgramCertifications?: string;
-    participantCertifications?:
-      | 'Basic Food Safety'
-      | 'Advanced Food Safety'
-      | 'Credit toward Comm College'
-      | 'ACF Certification'
-      | 'NRA'
-      | 'AHLEI'
-      | 'Other';
+    participantCertifications: string[];
     otherParticipantCertifications?: string;
     internshipOrExternship?: boolean;
     internshipOrExternshipDescription?: string;
     minimumWage?: number;
-    jobType?: '1-25%' | '26-50%' | '51-75%' | '76-100%';
-    jobCategory?:
-      | 'Food Service: restaurant, cafe'
-      | 'Food Service: institutional'
-      | 'Food Service: grocery'
-      | 'Customer Service and Retail'
-      | 'Transportation & warehousing'
-      | 'Healthcare & social assistance'
-      | 'Safety & maintenance'
-      | 'Construction'
-      | 'Other';
+    jobType?: '1-25%' | '26-50%' | '51-75%' | '76-100%' | 'Not Tracked';
+    jobCategory: string[];
     alumniHiredByOrg?: number;
   };
   const noState: FormState = {
@@ -278,15 +294,15 @@ export default function ProgramOutcome() {
     SNAPEAndT: undefined,
     WIOA: undefined,
     curriculum: undefined,
-    programCertifications: undefined,
+    programCertifications: [],
     otherProgramCertifications: '',
-    participantCertifications: undefined,
+    participantCertifications: [],
     otherParticipantCertifications: '',
     internshipOrExternship: false,
     internshipOrExternshipDescription: '',
     minimumWage: undefined,
     jobType: undefined,
-    jobCategory: undefined,
+    jobCategory: [],
     alumniHiredByOrg: undefined,
   };
   const [formState, setFormState] = React.useState<FormState>(noState);
@@ -867,9 +883,7 @@ export default function ProgramOutcome() {
                 <MenuItem value="Two week provisional period">
                   Two week provisional period
                 </MenuItem>
-                <MenuItem value="Other">
-                  Other
-                </MenuItem>
+                <MenuItem value="Other">Other</MenuItem>
               </Select>
             </FormControl>
           </Box>
@@ -1405,6 +1419,40 @@ export default function ProgramOutcome() {
                 </MenuItem>
                 <MenuItem value="Two week provisional period">
                   Two week provisional period
+                </MenuItem>
+                <MenuItem value="Other">Other</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+          <Box mb={2}>
+            <h4>Adult: Graduated definition</h4>
+            How do you define <b>graduated</b> in your adult program? Select the
+            option below that best describes your methodology for counting
+            number of graduates.{' '}
+            <b>To count as graduated a student must complete:</b>
+            <br />
+            <br />
+            <FormControl fullWidth>
+              <InputLabel id="adult-graduated-definition-label">
+                Adult Graduated Definition
+              </InputLabel>
+              <Select
+                labelId="adult-graduated-definition-label"
+                value={formState.adultGraduatedDefinition || ''}
+                onChange={(e) => {
+                  setFormState({
+                    ...formState,
+                    adultGraduatedDefinition: e.target
+                      .value as keyof (typeof formState)['adultGraduatedDefinition'],
+                  });
+                }}
+                label="Adult Graduated Definition"
+              >
+                <MenuItem value="All weeks of program">
+                  All weeks of program
+                </MenuItem>
+                <MenuItem value="Early exit for employment allowed">
+                  Early exit for employment allowed
                 </MenuItem>
                 <MenuItem value="Other">Other</MenuItem>
               </Select>
@@ -2264,16 +2312,23 @@ export default function ProgramOutcome() {
             onChange={(e) =>
               setFormState({
                 ...formState,
-                SNAPEAndT: e.target.value as 'Yes' | 'No But' | 'No And',
+                SNAPEAndT: e.target.value as
+                  | 'Yes'
+                  | 'NoButInterested'
+                  | 'NoNotInterested'
+                  | 'NoRejected',
               })
             }
           >
             <MenuItem value="Yes">Yes, we receive SNAP E&T funds</MenuItem>
-            <MenuItem value="No But">
+            <MenuItem value="NoButInterested">
               No, but we would like to be able to access SNAP E&T funding
             </MenuItem>
-            <MenuItem value="No And">
+            <MenuItem value="NoNotInterested">
               No, and we have do not have interest in the funding
+            </MenuItem>
+            <MenuItem value="NoRejected">
+              No, and we have applied and been rejected in the past
             </MenuItem>
           </Select>
         </FormControl>
@@ -2319,15 +2374,143 @@ export default function ProgramOutcome() {
             onChange={(e) =>
               setFormState({
                 ...formState,
-                curriculum: e.target.value as 'All' | 'Part' | undefined,
+                curriculum: e.target.value as 'All' | 'Part' | 'None',
               })
             }
           >
             <MenuItem value="All">All</MenuItem>
             <MenuItem value="Part">Part</MenuItem>
+            <MenuItem value="None">None</MenuItem>
           </Select>
         </FormControl>
       </Box>
+
+      <h4>Program Certifications</h4>
+      <p>
+        What certifications does your culinary program(s) currently hold? Check
+        all that apply. These are certifications that your program holds.
+        Individual certifications for students are listed in the following
+        question
+      </p>
+      <FormControl component="fieldset">
+        <FormLabel component="legend">Check All That Apply.</FormLabel>
+        <FormGroup>
+          {PROGRAM_CERTIFICATIONS.map((certification) => (
+            <FormControlLabel
+              key={certification}
+              control={
+                <Checkbox
+                  checked={formState.programCertifications.includes(
+                    certification,
+                  )}
+                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                    setFormState((prevState) => {
+                      const updatedCertifications = event.target.checked
+                        ? [...prevState.programCertifications, certification]
+                        : prevState.programCertifications.filter(
+                            (type) => type !== certification,
+                          );
+                      return {
+                        ...prevState,
+                        programCertifications: updatedCertifications,
+                      };
+                    });
+                  }}
+                  name={certification}
+                />
+              }
+              label={certification}
+            />
+          ))}
+        </FormGroup>
+      </FormControl>
+      <Box mb={2}>
+        <h4>Other Program Certifications</h4>
+        <p>
+          If you checked &quot;Other&quot; above, list any additional Program
+          Certifications here.{' '}
+          <b>Please separate multiple items with a semicolon.</b>
+        </p>
+        <TextField
+          id="outlined-other-program-certifications"
+          onChange={(e) =>
+            setFormState({
+              ...formState,
+              otherProgramCertifications: e.target.value,
+            })
+          }
+          label="Other Program Certifications"
+          variant="outlined"
+          fullWidth
+        />
+      </Box>
+
+      <h4>Participant Certifications</h4>
+      <p>
+        What certifications do you offer program participants? Check all that
+        apply.{' '}
+        <b>
+          Select the options below that are closest to your participant
+          certifications.
+        </b>{' '}
+        If necessary, you may list additional items in the next question.
+      </p>
+      <FormControl component="fieldset">
+        <FormLabel component="legend">Check All That Apply.</FormLabel>
+        <FormGroup>
+          {PARTICIPANT_CERTIFICATIONS.map((certification) => (
+            <FormControlLabel
+              key={certification}
+              control={
+                <Checkbox
+                  checked={formState.participantCertifications.includes(
+                    certification,
+                  )}
+                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                    setFormState((prevState) => {
+                      const updatedCertifications = event.target.checked
+                        ? [
+                            ...prevState.participantCertifications,
+                            certification,
+                          ]
+                        : prevState.participantCertifications.filter(
+                            (type) => type !== certification,
+                          );
+                      return {
+                        ...prevState,
+                        participantCertifications: updatedCertifications,
+                      };
+                    });
+                  }}
+                  name={certification}
+                />
+              }
+              label={certification}
+            />
+          ))}
+        </FormGroup>
+      </FormControl>
+      <Box mb={2}>
+        <h4>Other Participant Certifications</h4>
+        <p>
+          If you offer any certification opportunities for students that are not
+          listed above, please add those here.{' '}
+          <b>Please separate multiple items with a semicolon.</b>
+        </p>
+        <TextField
+          id="outlined-other-participant-certifications"
+          onChange={(e) =>
+            setFormState({
+              ...formState,
+              otherParticipantCertifications: e.target.value,
+            })
+          }
+          label="Other Participant Certifications"
+          variant="outlined"
+          fullWidth
+        />
+      </Box>
+
       {/* Internship/Externship */}
       <h4>Internship or Externship</h4>
       <p>
@@ -2413,7 +2596,7 @@ export default function ProgramOutcome() {
         <FormControl fullWidth>
           <InputLabel>Job Type in Food Service</InputLabel>
           <Select
-            name="jobTypeFoodService"
+            name="jobType"
             value={formState.jobType}
             onChange={(e) =>
               setFormState({
@@ -2422,7 +2605,8 @@ export default function ProgramOutcome() {
                   | '1-25%'
                   | '26-50%'
                   | '51-75%'
-                  | '76-100%',
+                  | '76-100%'
+                  | 'Not Tracked',
               })
             }
           >
@@ -2430,9 +2614,47 @@ export default function ProgramOutcome() {
             <MenuItem value="26-50%">26-50%</MenuItem>
             <MenuItem value="51-75%">51-75%</MenuItem>
             <MenuItem value="76-100%">76-100%</MenuItem>
+            <MenuItem value="Not Tracked">Do not track job type</MenuItem>
           </Select>
         </FormControl>
       </Box>
+      <h4>Job Category</h4>
+      <p>
+        What job categories are you placing graduates into? Select all that
+        apply. &quot;Food Service&quot; positions refer to jobs in kitchens,
+        involved in food prep/production. &quot;Customer Service&quot; can be in
+        food service but not in food production (FOH or retail sales).
+      </p>
+      <FormControl component="fieldset">
+        <FormLabel component="legend">Check All That Apply.</FormLabel>
+        <FormGroup>
+          {JOB_CATEGORIES.map((category) => (
+            <FormControlLabel
+              key={category}
+              control={
+                <Checkbox
+                  checked={formState.jobCategory.includes(category)}
+                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                    setFormState((prevState) => {
+                      const updatedCategories = event.target.checked
+                        ? [...prevState.jobCategory, category]
+                        : prevState.jobCategory.filter(
+                            (type) => type !== category,
+                          );
+                      return {
+                        ...prevState,
+                        jobCategory: updatedCategories,
+                      };
+                    });
+                  }}
+                  name={category}
+                />
+              }
+              label={category}
+            />
+          ))}
+        </FormGroup>
+      </FormControl>
       <h4>Alumni Hired by Org</h4>
       <p>
         The number of alumni of your training programs that worked for your
