@@ -794,8 +794,8 @@ export default function ProgramOutcome() {
                 label="Youth Enrollment Structure"
               >
                 <MenuItem value={YouthEnrollmentStructure.Staggered}>
-                  Single Cohort admission (training program resets with each new
-                  group of students)
+                  Staggered Cohort admission (multiple, overlapping cohorts
+                  enrolled)
                 </MenuItem>
                 <MenuItem value={YouthEnrollmentStructure.Single}>
                   Single Cohort admission (training program resets with each new
@@ -1341,6 +1341,7 @@ export default function ProgramOutcome() {
                   Staggered Cohort admission (multiple, overlapping cohorts
                   enrolled)
                 </MenuItem>
+                <MenuItem value="Other">Other</MenuItem>
               </Select>
             </FormControl>
           </Box>
