@@ -7,6 +7,7 @@ import {
   getAllOrganizations,
   getOrganizationNameById,
   getOrganizationById,
+  addOrganization,
 } from '../services/organization.service.ts';
 
 const getOrgByName = async (
@@ -51,6 +52,20 @@ const getOrganizationNameByIdController = async (
       );
     });
 };
+const addOrganizationController = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) => {
+  const { status, street, city, zip, state, organizationName } = req.body;
+  addOrganization(status, street, city, state, zip, organizationName)
+    .then((org: unknown) => {
+      res.status(StatusCode.OK).send(org);
+    })
+    .catch(() => {
+      next(ApiError.internal('Unable to add the organization'));
+    });
+};
 const getAll = async (
   req: express.Request,
   res: express.Response,
@@ -89,4 +104,10 @@ const getOrgById = async (
     next(ApiError.internal('Unable to retrieve organization by ID'));
   }
 };
-export { getOrgByName, getAll, getOrganizationNameByIdController, getOrgById };
+export {
+  getOrgByName,
+  getAll,
+  getOrganizationNameByIdController,
+  getOrgById,
+  addOrganizationController,
+};

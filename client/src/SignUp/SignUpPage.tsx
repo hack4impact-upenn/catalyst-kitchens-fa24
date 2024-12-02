@@ -281,46 +281,6 @@ function SignUpPage() {
                 </Typography>
               </Grid>
               <FormRow>
-                <Grid
-                  item
-                  container
-                  justifyContent="center"
-                  sx={{ mb: 2, ml: 2, color: 'white' }}
-                >
-                  <FormControl component="fieldset">
-                    <RadioGroup
-                      row
-                      name="role"
-                      value={values.role}
-                      onChange={(e) => setValue('role', e.target.value)}
-                    >
-                      <FormControlLabel
-                        value="admin"
-                        control={
-                          <Radio
-                            sx={{
-                              color: 'white',
-                              '&.Mui-checked': { color: 'white' },
-                            }}
-                          />
-                        }
-                        label="Admin"
-                      />
-                      <FormControlLabel
-                        value="member"
-                        control={
-                          <Radio
-                            sx={{
-                              color: 'white',
-                              '&.Mui-checked': { color: 'white' },
-                            }}
-                          />
-                        }
-                        label="Member Chapter"
-                      />
-                    </RadioGroup>
-                  </FormControl>
-                </Grid>
                 <Grid item width=".5">
                   <InputLabel
                     style={{

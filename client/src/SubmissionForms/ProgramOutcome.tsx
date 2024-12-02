@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
   Button,
@@ -22,9 +22,13 @@ import {
   MenuItem,
   InputLabel,
 } from '@mui/material';
-import { postData } from '../../util/api';
+import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { postData } from '../util/api';
+import { RootState } from '../util/redux/store';
 
 export default function ProgramOutcome() {
+  const user = useSelector((state: RootState) => state.user);
   enum YouthEnrollmentStructure {
     Staggered = 'Staggered',
     Single = 'Single',
@@ -32,6 +36,7 @@ export default function ProgramOutcome() {
   }
   type FormState = {
     emailAddress: string;
+    orgId: string;
     shareSurvey: boolean;
     organizationName: string;
     responderName: string;
@@ -154,7 +159,7 @@ export default function ProgramOutcome() {
     fundingPercentFromSocialEnterpriseOrGeneratedRevenue?: number;
     SNAPEAndT?: 'Yes' | 'No But' | 'No And';
     WIOA?: 'Yes' | 'No But' | 'No And';
-    curriculum?: 'All' | 'Part';
+    curriculum?: 'All' | 'Part' | 'None';
     programCertifications?:
       | 'ACF Quality/Approved Program'
       | 'DOL approved apprenticeship'
@@ -189,6 +194,7 @@ export default function ProgramOutcome() {
   };
   const noState: FormState = {
     emailAddress: '',
+    orgId: '',
     shareSurvey: false,
     organizationName: '',
     responderName: '',
@@ -278,6 +284,56 @@ export default function ProgramOutcome() {
     alumniHiredByOrg: undefined,
   };
   const [formState, setFormState] = React.useState<FormState>(noState);
+  useEffect(() => {
+    const fetchOrganizationId = async () => {
+      if (user.email) {
+        try {
+          axios
+            .get(`http://localhost:4000/api/auth/organization/${user.email}`)
+            .then((response) => {
+              const { data } = response;
+              setFormState({
+                ...formState,
+                orgId: data,
+              });
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        } catch (error) {
+          console.error('Error fetching organization ID:', error);
+        }
+      }
+    };
+    fetchOrganizationId();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user.email]);
+  useEffect(() => {
+    const fetchOrganizationNameById = async () => {
+      if (formState.orgId) {
+        try {
+          axios
+            .get(
+              `http://localhost:4000/api/organization/organization/name/${formState.orgId}`,
+            )
+            .then((response) => {
+              const { data } = response;
+              setFormState({
+                ...formState,
+                organizationName: data.organizationName,
+              });
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        } catch (error) {
+          console.error('Error fetching organization name by ID:', error);
+        }
+      }
+    };
+    fetchOrganizationNameById();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formState.orgId]);
   const validateInputs = () => {
     // Add validation logic here:
     // ex:
@@ -285,8 +341,10 @@ export default function ProgramOutcome() {
     // if (!adultProgram || !minimumWage || !jobTypeFoodService) {
     //   return false;
     // }
-
-    return true;
+    if (formState.orgId.length > 0) {
+      return true;
+    }
+    return false;
   };
   const handleSubmit = async () => {
     if (validateInputs()) {
@@ -296,9 +354,9 @@ export default function ProgramOutcome() {
           youthOutcomesMeasure:
             formState.youthOutcomesMeasure?.join(', ') || '',
         };
-
-        const response = await postData('program_outcomes/', formData);
+        const response = await postData('program_outcomes/new', formData);
         console.log('Program outcome submitted successfully:', response);
+        setFormState(noState);
         // Handle success (e.g., show a success message, reset form, etc.)
       } catch (error) {
         console.error('Error submitting program outcome:', error);
@@ -311,31 +369,74 @@ export default function ProgramOutcome() {
   };
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-      <h1>Submit Program Outcomes</h1>
+      <h1>Submit Program Outcomes for {formState.organizationName}</h1>
       <p>
-        Please fill out the following form to submit your program outcomes for
-        Catalyst Kitchen analysis
+        Thank you for sharing your Program and Kitchen outcomes. This year we
+        have split the survey into two forms.{' '}
+        <b>This is the Programs Outcomes Survey.</b> Here we ask about the
+        structure of your foodservice training programs, details about the
+        people who participate in them, and your program outcomes.
+        <br />
+        <br />
+        <b>
+          There is a separate survey for kitchen details including your hunger
+          relief efforts:{' '}
+          <Link to="/kitchen-outcomes">Kitchen Outcomes Survey</Link>.
+        </b>
+        <br />
+        <br />
+        <b>Collecting outcomes enables our collective fundraising</b>
+        <br />
+        Submitting annual outcomes keeps you in good standing as a member of the
+        network so that when we receive those major funds, your organization
+        will be included as we distribute that support across the country.
+        <br />
+        <br />
+        <b>
+          Calendar year data for the current year is preferred but not required
+        </b>
+        <br />
+        Please submit data for the current calendar year if you are able. If you
+        operate on non-calendar operating years, and calendar year data is
+        difficult to produce, you may submit your most recent 12 months of
+        complete data.
+        <br />
+        <br />
+        This survey has the following parts:
+        <ol>
+          <li>Organization & Responder Details</li>
+          <li>
+            Youth & Young Adult Specific Programs (16-24): Outcomes & Program
+            Structure
+          </li>
+          <li>Adult Programs (18+): Outcomes & Program Structure</li>
+          <li>Trainee Demographics & Wrap Around Services</li>
+          <li>Training Program Funding</li>
+          <li>General Program Questions</li>
+        </ol>
+        Feel free to contact us at{' '}
+        <a href="info@catalystkitchens.org">info@catalystkitchens.org</a> if you
+        have any questions or other issues with the survey.
+        <br />
+        <br />
+        NOTE: The language used in the survey often mirrors language from census
+        categories and government definitions. If there is preferred language or
+        terminology we should use when referring to your program and clients,
+        please let us know by emailing{' '}
+        <a href="info@catalystkitchens.org">info@catalystkitchens.org</a>. All
+        comments are welcome.
       </p>
-      <h3>Intro</h3>
-      <p>
-        Intro section description: Lorem ipsum dolor sit amet, consectetur
-        adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
-        laboris nisi ut aliquip ex ea commodo consequat.{' '}
-      </p>
+      <h3>Organization Details</h3>
       <Box mb={2}>
-        <TextField
-          id="outlined-email"
-          onChange={(e) =>
-            setFormState({ ...formState, emailAddress: e.target.value })
-          }
-          label="Email"
-          variant="outlined"
-          fullWidth
-          required
-        />
-      </Box>
-      <Box mb={2}>
+        <h4>Share Survey</h4>
+        Are you open to sharing your outcomes data with other members? We will
+        be preparing a number of reports from this data that will allow members
+        to benchmark their performance relative to their peers in the network.
+        While we encourage everyone to select the checkbox, if you do not select
+        the checkbox we will only include your data in aggregated reporting. It
+        may also affect your ability to access the Program Benchmark Report and
+        funds raised based on collective impact reports.
+        <br />
         <FormControlLabel
           control={
             <Checkbox
@@ -346,18 +447,6 @@ export default function ProgramOutcome() {
             />
           }
           label="Share Survey"
-        />
-      </Box>
-      <Box mb={2}>
-        <TextField
-          id="outlined-organization-name"
-          onChange={(e) =>
-            setFormState({ ...formState, organizationName: e.target.value })
-          }
-          label="Organization Name"
-          variant="outlined"
-          fullWidth
-          required
         />
       </Box>
       <Box mb={2}>
@@ -384,6 +473,14 @@ export default function ProgramOutcome() {
         />
       </Box>
       <Box mb={2}>
+        <h4>Program Costs per Trainee</h4>
+        Estimated total cost per individual <b>completing</b> your culinary
+        training programs. To calculate this figure divide gross program
+        expenses by the number of students completing your program(s). Include
+        only those enterprise expenses that have been allocated to training
+        costs.
+        <br />
+        <br />
         <TextField
           id="outlined-program-cost-per-trainee"
           type="number"
@@ -399,7 +496,23 @@ export default function ProgramOutcome() {
           required
         />
       </Box>
+      <h3>Programs: Youth and Young Adults (16-24)</h3>
+      <p>
+        In this section we will collect outcomes data for foodservice training
+        programs specifically serving Youth and Young Adults (typically ages
+        16-24).
+      </p>
       <Box mb={2}>
+        <h4>
+          Do you have a program specifically designed for and serving Youth and
+          Young Adults?
+        </h4>
+        Do you have a program specifically designed for and serving Youth and
+        Young Adults (typically ages 16-24)? Outcomes from Adult Programs will
+        be covered in a separate section to follow. If you only train young
+        people aged 18+ as part of a program open to all adults, you should
+        answer NO here and report those outcomes in the Adult Programs section.
+        <br />
         <FormControlLabel
           control={
             <Checkbox
@@ -412,12 +525,19 @@ export default function ProgramOutcome() {
               }
             />
           }
-          label="Youth Program"
+          label="Has Youth Program"
         />
       </Box>
       {formState.programDesignedForYouthAndAdults && (
         <div id="youthProgramFields">
           <Box mb={2}>
+            <h4>Youth: Trained</h4>
+            Total # of youth who participated in foodservice job training
+            programming in 2023 or during the most recent 12-month period for
+            which you have complete data. This is the{' '}
+            <b>total number enrolled</b> in all your youth specific programs.
+            <br />
+            <br />
             <TextField
               id="outlined-youth-trained"
               type="number"
@@ -433,6 +553,13 @@ export default function ProgramOutcome() {
             />
           </Box>
           <Box mb={2}>
+            <h4>Youth: Program Retention Rate</h4>
+            <b>Percentage</b> of enrolled youth graduating from (completing)
+            foodservice job training programs. Use the most recent 12-month
+            period for which you have data, and enter the rate at which this
+            occurs, i.e. 74 for 74%.
+            <br />
+            <br />
             <TextField
               id="outlined-youth-program-retention-rate"
               type="number"
@@ -448,6 +575,14 @@ export default function ProgramOutcome() {
             />
           </Box>
           <Box mb={2}>
+            <h4>Youth: Positive Outcomes (job placement and/or education)</h4>
+            The <b>percentage</b> of youth program <b>graduates</b> who find
+            employment or are in education or training activities after
+            completion of the program. Use the most recent 12-month period for
+            which you have data, and enter the rate at which this occurs, i.e.
+            74 for 74%.
+            <br />
+            <br />
             <TextField
               id="outlined-youth-positive-outcomes"
               type="number"
@@ -463,6 +598,12 @@ export default function ProgramOutcome() {
             />
           </Box>
           <Box mb={2}>
+            <h4>Youth: Wage</h4>
+            Average starting hourly wage ($/hour) of trainees gaining employment
+            who completed the program. Use the most recent 12-month period for
+            which you have data.
+            <br />
+            <br />
             <TextField
               id="outlined-youth-wage"
               type="number"
@@ -477,7 +618,24 @@ export default function ProgramOutcome() {
               fullWidth
             />
           </Box>
+          <h4>Employment retention: Youth</h4>
+          Percent of all Youth Program graduates who found employment and
+          remained employed for 3/6/12 months past original job start date. Job
+          held at each stage does not need to be with the same employer.
+          <br />
+          <br />
+          Use the average rate for the most recent 12 months of complete data.
+          <br />
+          <br />
+          <b>
+            Leave blank if you do not track for the time period in question.
+          </b>
           <Box mb={2}>
+            <h4>Youth: Job Retention 3 Months</h4>
+            Please enter the % of youth program graduates who were still
+            employed 3 months after placement.
+            <br />
+            <br />
             <TextField
               id="outlined-youth-job-retention-3-months"
               type="number"
@@ -493,6 +651,11 @@ export default function ProgramOutcome() {
             />
           </Box>
           <Box mb={2}>
+            <h4>Youth: Job Retention 6 Months</h4>
+            Please enter the % of youth program graduates who were still
+            employed 6 months after placement.
+            <br />
+            <br />
             <TextField
               id="outlined-youth-job-retention-6-months"
               type="number"
@@ -508,6 +671,11 @@ export default function ProgramOutcome() {
             />
           </Box>
           <Box mb={2}>
+            <h4>Youth: Job Retention 12 Months/1 Year</h4>
+            Please enter the % of youth program graduates who were still
+            employed 12 months after placement.
+            <br />
+            <br />
             <TextField
               id="outlined-youth-job-retention-12-months"
               type="number"
@@ -523,6 +691,11 @@ export default function ProgramOutcome() {
             />
           </Box>
           <Box mb={2}>
+            <h4>Youth: Job Retention 2 Years</h4>
+            Please enter the % of youth program graduates who were still
+            employed 2 years after placement.
+            <br />
+            <br />
             <TextField
               id="outlined-youth-job-retention-2-years"
               type="number"
@@ -537,7 +710,14 @@ export default function ProgramOutcome() {
               fullWidth
             />
           </Box>
+          <h4>PROGRAM STRUCTURE: Youth and Young Adult Programs</h4>
           <Box mb={2}>
+            <h4>Youth program (weeks)</h4>
+            Please enter the total length of the program in weeks. If you have
+            multiple youth programs, please enter number for your
+            primary/largest program
+            <br />
+            <br />
             <TextField
               id="outlined-youth-program-weeks"
               type="number"
@@ -553,6 +733,12 @@ export default function ProgramOutcome() {
             />
           </Box>
           <Box mb={2}>
+            <h4>Youth program (hours)</h4>
+            Please enter the total length of the program in hours. If you have
+            multiple youth programs, please enter hours for your primary/largest
+            program
+            <br />
+            <br />
             <TextField
               id="outlined-youth-program-hours"
               type="number"
@@ -586,10 +772,12 @@ export default function ProgramOutcome() {
                 label="Youth Enrollment Structure"
               >
                 <MenuItem value={YouthEnrollmentStructure.Staggered}>
-                  Staggered
+                  Single Cohort admission (training program resets with each new
+                  group of students)
                 </MenuItem>
                 <MenuItem value={YouthEnrollmentStructure.Single}>
-                  Single
+                  Single Cohort admission (training program resets with each new
+                  group of students)
                 </MenuItem>
                 <MenuItem value={YouthEnrollmentStructure.Both}>Both</MenuItem>
               </Select>
@@ -597,6 +785,11 @@ export default function ProgramOutcome() {
           </Box>
           {/* Youth Compensation */}
           <Box mb={2}>
+            <h4>Youth Compensation</h4>
+            How do you provide direct financial support to students? If it
+            changes throughout your program, please check all that apply.
+            <br />
+            <br />
             <FormControl fullWidth>
               <InputLabel id="youth-compensation-label">
                 Youth Compensation
@@ -616,13 +809,24 @@ export default function ProgramOutcome() {
                 }
                 label="Youth Compensation"
               >
-                <MenuItem value="Hourly">Hourly</MenuItem>
-                <MenuItem value="Stipend">Stipend</MenuItem>
-                <MenuItem value="None">None</MenuItem>
+                <MenuItem value="Hourly">Hourly - Minimum Wage</MenuItem>
+                <MenuItem value="Stipend">
+                  Stipend - fixed or variable cash disbursement
+                </MenuItem>
+                <MenuItem value="None">
+                  No Direct Monetary Compensation
+                </MenuItem>
               </Select>
             </FormControl>
           </Box>
           <Box mb={2}>
+            <h4>Youth: Trained definition</h4>
+            How do you define <b>enrolled</b> in your youth program? Select the
+            option below that best describes your methodology for counting
+            number of enrollees.{' '}
+            <b>To count as enrolled a student must complete:</b>
+            <br />
+            <br />
             <FormControl fullWidth>
               <InputLabel id="youth-trained-definition-label">
                 Youth Trained Definition
@@ -654,8 +858,14 @@ export default function ProgramOutcome() {
               </Select>
             </FormControl>
           </Box>
-
           <Box mb={2}>
+            <h4>Youth: Graduated definition</h4>
+            How do you define <b>graduated</b> in your youth program? Select the
+            option below that best describes your methodology for counting
+            number of graduates.{' '}
+            <b>To count as graduated a student must complete:</b>
+            <br />
+            <br />
             <FormControl fullWidth>
               <InputLabel id="youth-graduated-definition-label">
                 Youth Graduated Definition
@@ -683,6 +893,10 @@ export default function ProgramOutcome() {
             </FormControl>
           </Box>
           <Box mb={2}>
+            How do you measure successful youth outcomes? Check all that you
+            actively track.
+            <br />
+            <br />
             <FormControl fullWidth>
               <InputLabel id="measure-youth-outcomes-label">
                 Measure Youth Outcomes
@@ -717,7 +931,14 @@ export default function ProgramOutcome() {
           </Box>
         </div>
       )}
+      <h3>Programs: Adults</h3>
+      <p>
+        This section is for reporting on Adult Training Programs. Please do not
+        include data reported in the previous Youth Outcomes section where you
+        may have reported on youth specific training programs.
+      </p>
       <Box mb={2}>
+        <h4>Do you have a program(s) that serve Adults (18+)?</h4>
         <FormControlLabel
           control={
             <Checkbox
@@ -735,7 +956,19 @@ export default function ProgramOutcome() {
       </Box>
       {formState.programsThatServeAdults && (
         <div id="adultProgramFields">
+          <h3>PROGRAM OUTCOMES: Programs Serving Adults (18+)</h3>
+          <p>
+            If you have multiple adult programs, please combine those outcomes
+            for the following questions.
+          </p>
           <Box mb={2}>
+            <h4>Adults: Trained</h4>
+            Total # of adults who participated in foodservice job training
+            programming during the most recent 12-month period for which you
+            have data. This is <b>the total number enrolled</b> in all your
+            adult programs.
+            <br />
+            <br />
             <TextField
               fullWidth
               type="number"
@@ -752,6 +985,13 @@ export default function ProgramOutcome() {
             />
           </Box>
           <Box mb={2}>
+            <h4>Adults: Graduated</h4>
+            <b>Percentage</b> of enrolled adults graduating from (completing)
+            culinary training programs. Use the most recent 12-month period for
+            which you have data, and enter the rate at which this occurs, i.e.
+            74 for 74%.
+            <br />
+            <br />
             <TextField
               fullWidth
               type="number"
@@ -768,6 +1008,15 @@ export default function ProgramOutcome() {
             />
           </Box>
           <Box mb={2}>
+            <h4>
+              Adults: Positive Outcome (Job Placement or Entrepreneurship)
+            </h4>
+            The <b>percentage</b> of adult program graduates who find employment
+            or started their own business after completion of the program. Use
+            the most recent 12-month period for which you have data, and enter
+            the rate at which this occurs, i.e. 74 for 74%.
+            <br />
+            <br />
             <TextField
               fullWidth
               type="number"
@@ -784,6 +1033,14 @@ export default function ProgramOutcome() {
             />
           </Box>
           <Box mb={2}>
+            <h4>Adults: Job Placement (graduates)</h4>
+            Provide the % of adults that obtained employment{' '}
+            <b>following program completion</b>. Please include only trainees
+            that completed the program. Use the most recent 12-month period for
+            which you have data, and enter the rate at which this occurs, i.e.
+            74 for 74%.
+            <br />
+            <br />
             <TextField
               fullWidth
               type="number"
@@ -800,6 +1057,12 @@ export default function ProgramOutcome() {
             />
           </Box>
           <Box mb={2}>
+            <h4>Adults: Wage</h4>
+            Average starting hourly wage ($/hour) of adult program trainees who
+            find employment after completing the program. Use the most recent
+            12-month period for which you have data.
+            <br />
+            <br />
             <TextField
               fullWidth
               type="number"
@@ -815,7 +1078,26 @@ export default function ProgramOutcome() {
               }}
             />
           </Box>
+          <h4>Employment retention: Adults</h4>
+          Percent of all Adult Program graduates who found employment and
+          remained employed for 3/6/12 months past original job start date.
+          <br />
+          <br />
+          Percent of all Adult Program graduates who found employment and
+          remained employed for 3/6/12 months past original job start date.
+          <br />
+          <br />
+          <b>
+            Leave blank if you do not track for the time period in question.
+          </b>
+          <br />
+          <br />
           <Box mb={2}>
+            <h4>Adult: Job Retention 3 Months</h4>
+            Please enter the % of adult program graduates who were still
+            employed 3 months after placement.
+            <br />
+            <br />
             <TextField
               fullWidth
               type="number"
@@ -832,6 +1114,11 @@ export default function ProgramOutcome() {
             />
           </Box>
           <Box mb={2}>
+            <h4>Adult: Job Retention 6 Months</h4>
+            Please enter the % of adult program graduates who were still
+            employed 6 months after placement.
+            <br />
+            <br />
             <TextField
               fullWidth
               type="number"
@@ -848,6 +1135,11 @@ export default function ProgramOutcome() {
             />
           </Box>
           <Box mb={2}>
+            <h4>Adult: Job Wage 6 Months</h4>
+            What was the average wage ($/hour) of those still employed 6 months
+            after placement?
+            <br />
+            <br />
             <TextField
               fullWidth
               type="number"
@@ -864,6 +1156,11 @@ export default function ProgramOutcome() {
             />
           </Box>
           <Box mb={2}>
+            <h4>Adult: Job Retention 12 Months</h4>
+            Please enter the % of adult program graduates who were still
+            employed 12 months after placement.
+            <br />
+            <br />
             <TextField
               fullWidth
               type="number"
@@ -880,6 +1177,11 @@ export default function ProgramOutcome() {
             />
           </Box>
           <Box mb={2}>
+            <h4>Adult: Job Wage 12 Months</h4>
+            What was the average wage ($/hour) of those still employed 12 months
+            after placement?
+            <br />
+            <br />
             <TextField
               fullWidth
               type="number"
@@ -896,6 +1198,11 @@ export default function ProgramOutcome() {
             />
           </Box>
           <Box mb={2}>
+            <h4>Adult: Job Retention 24 Months</h4>
+            Please enter the % of adult program graduates who were still
+            employed 24 months after placement.
+            <br />
+            <br />
             <TextField
               fullWidth
               type="number"
@@ -912,6 +1219,11 @@ export default function ProgramOutcome() {
             />
           </Box>
           <Box mb={2}>
+            <h4>Adult: Job Wage 24 Months</h4>
+            What was the average wage ($/hour) of those still employed 24 months
+            after placement?
+            <br />
+            <br />
             <TextField
               fullWidth
               type="number"
@@ -927,6 +1239,7 @@ export default function ProgramOutcome() {
               }}
             />
           </Box>
+          <h4>PROGRAM STRUCTURE: Programs Serving Adults (18+)</h4>
           <Box mb={2}>
             <TextField
               fullWidth
@@ -1048,7 +1361,6 @@ export default function ProgramOutcome() {
           </Box>
         </div>
       )}
-
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1065,41 +1377,15 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
-      <Box mb={2}>
-        <TextField
-          fullWidth
-          type="number"
-          label="Trainees Percent Female"
-          value={formState.traineePercentFemale || ''}
-          onChange={(e) => {
-            setFormState({
-              ...formState,
-              traineePercentFemale: e.target.value
-                ? parseFloat(e.target.value)
-                : undefined,
-            });
-          }}
-        />
-      </Box>
-
-      <Box mb={2}>
-        <TextField
-          fullWidth
-          type="number"
-          label="Trainees Percent Male"
-          value={formState.traineePercentMale || ''}
-          onChange={(e) => {
-            setFormState({
-              ...formState,
-              traineePercentMale: e.target.value
-                ? parseFloat(e.target.value)
-                : undefined,
-            });
-          }}
-        />
-      </Box>
-
+      <h3>Trainee Gender Demographics</h3>
+      <p>
+        This section will cover the gender demographics of trainees that your
+        programs serve. If your organization does not track these statistics
+        closely then try to provide your best estimate on these populations.
+        When providing your estimates, be sure to make them add to 100.
+      </p>
+      <h4>% of Trainees that identify as Non-Binary</h4>
+      <p>What is the percentage of trainees that identify as non-binary?</p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1116,7 +1402,8 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>% of Trainees that identify as Transgender</h4>
+      <p>What is the percentage of trainees that identify as transgender?</p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1133,7 +1420,53 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>% of Trainees that identify as Female</h4>
+      <p>What is the percentage of trainees that identify as female?</p>
+      <Box mb={2}>
+        <TextField
+          fullWidth
+          type="number"
+          label="Trainees Percent Female"
+          value={formState.traineePercentFemale || ''}
+          onChange={(e) => {
+            setFormState({
+              ...formState,
+              traineePercentFemale: e.target.value
+                ? parseFloat(e.target.value)
+                : undefined,
+            });
+          }}
+        />
+      </Box>
+      <h4>% of Trainees that identify as Male</h4>
+      <p>What is the percentage of trainees that identify as male?</p>
+      <Box mb={2}>
+        <TextField
+          fullWidth
+          type="number"
+          label="Trainees Percent Male"
+          value={formState.traineePercentMale || ''}
+          onChange={(e) => {
+            setFormState({
+              ...formState,
+              traineePercentMale: e.target.value
+                ? parseFloat(e.target.value)
+                : undefined,
+            });
+          }}
+        />
+      </Box>
+      <h3>Trainee Racial Demographics</h3>
+      <p>
+        This section will cover the racial demographics of trainees that your
+        programs serve. If your organization does not track these statistics
+        closely then try to provide your best estimate on these populations.
+        When providing your estimates, be sure to make them add to 100.
+      </p>
+      <h4>% of Trainees that identify as American Indian</h4>
+      <p>
+        What is the percentage of trainees that identify as American Indian?
+      </p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1150,7 +1483,8 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>% of Trainees that identify as Asian</h4>
+      <p>What is the percentage of trainees that identify as Asian?</p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1167,7 +1501,8 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>% of Trainees that identify as Black</h4>
+      <p>What is the percentage of trainees that identify as Black?</p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1184,7 +1519,8 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>% of Trainees that identify as Latinx</h4>
+      <p>What is the percentage of trainees that identify as Latinx?</p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1201,7 +1537,10 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>% of Trainees that identify as Native Hawaiian</h4>
+      <p>
+        What is the percentage of trainees that identify as Native Hawaiian?
+      </p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1218,7 +1557,8 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>% of Trainees that identify as Multi-Racial</h4>
+      <p>What is the percentage of trainees that identify as Multi-Racial?</p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1235,7 +1575,8 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>% of Trainees that identify as White</h4>
+      <p>What is the percentage of trainees that identify as White?</p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1252,7 +1593,8 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>% of Trainees that identify as Other Race</h4>
+      <p>What is the percentage of trainees that identify as Other Race?</p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1269,7 +1611,8 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>% of Trainees that identify as Race Unknown</h4>
+      <p>What is the percentage of trainees that identify as Race Unknown?</p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1286,7 +1629,24 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h3>Barriers Experienced by Trainees</h3>
+      <p>
+        Enter % students experiencing any of the barriers below. Ex: 70%
+        homeless, 40% reentry, 25% in recovery, etc. Does not need to add up to
+        100% as trainees may experience multiple barriers. Approximate
+        percentages are OK. NOTE: The language below often mirrors language from
+        census categories and government definitions. If there is preferred
+        language or terminology we should use when referring to your program and
+        clients, please let us know by emailing{' '}
+        <a href="info@catalystkitchens.org">info@catalystkitchens.org</a>. All
+        comments are welcome.
+      </p>
+      <h4>Barrier: Returning Citizens/Formerly Incarcerated Persons</h4>
+      <p>
+        Percentage of trainee population who have been recently released from
+        incarceration, are on probation, have a criminal record, or are
+        otherwise justice involved.
+      </p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1307,7 +1667,8 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>Barrier: Physical Disability</h4>
+      <p>Percentage of trainee population who have physical disabilities.</p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1324,7 +1685,11 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>Barrier: Intellectual or Developmental Disability</h4>
+      <p>
+        Percentage of trainee population who have intellectual or developmental
+        disabilities.
+      </p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1341,7 +1706,11 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>Barrier: Unhoused</h4>
+      <p>
+        Percentage of trainee population who are unhoused at time of enrollment,
+        are in transitional housing, or housing insecure.
+      </p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1358,7 +1727,11 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>Barrier: Mental Health</h4>
+      <p>
+        Percentage of trainee population who have a mental/psychological
+        disorder.
+      </p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1375,7 +1748,10 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>Barrier: New Americans</h4>
+      <p>
+        Percentage of trainee population who are recent immigrants or refugees.
+      </p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1392,7 +1768,11 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>Barrier: In Recovery</h4>
+      <p>
+        Percentage of trainee population who are in recovery or have a history
+        of substance abuse.
+      </p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1409,7 +1789,8 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-
+      <h4>Barrier: Veteran</h4>
+      <p>Percentage of trainee population who are veterans.</p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1438,9 +1819,14 @@ export default function ProgramOutcome() {
       | 'Partner agency'
       | 'In-house'
       | 'Not provided'; */}
+      <h3>WRAP AROUND SERVICES</h3>
+      <p>
+        This section asks about which wrap around services your organization
+        either provides in house or facilitates access to.
+      </p>
       <Box mb={2}>
         <FormControl fullWidth>
-          <InputLabel>Wraparound Housing</InputLabel>
+          <InputLabel>Wrap Around Housing</InputLabel>
           <Select
             name="wrapAroundHousing"
             value={formState.wrapAroundServicesHousing}
@@ -1466,7 +1852,7 @@ export default function ProgramOutcome() {
       </Box>
       <Box mb={2}>
         <FormControl fullWidth>
-          <InputLabel>Wraparound Lifeskills</InputLabel>
+          <InputLabel>Wrap Around Lifeskills</InputLabel>
           <Select
             name="wrapAroundLifeSkills"
             value={
@@ -1495,7 +1881,7 @@ export default function ProgramOutcome() {
       </Box>
       <Box mb={2}>
         <FormControl fullWidth>
-          <InputLabel>Wraparound Case Management</InputLabel>
+          <InputLabel>Wrap Around Case Management</InputLabel>
           <Select
             name="wrapAroundCaseManagement"
             value={formState.wrapAroundServicesCaseManagement}
@@ -1521,7 +1907,7 @@ export default function ProgramOutcome() {
       </Box>
       <Box mb={2}>
         <FormControl fullWidth>
-          <InputLabel>Wraparound Job Search</InputLabel>
+          <InputLabel>Wrap Around Job Search</InputLabel>
           <Select
             name="wrapAroundJobSearch"
             value={formState.wrapAroundServicesJobSearchAndPlacement}
@@ -1599,7 +1985,7 @@ export default function ProgramOutcome() {
       </Box>
       <Box mb={2}>
         <FormControl fullWidth>
-          <InputLabel>Wraparound Healthcare</InputLabel>
+          <InputLabel>Wrap Around Healthcare</InputLabel>
           <Select
             name="wrapAroundHealthcare"
             value={formState.wrapAroundServicesHealthcareAllOther}
@@ -1625,7 +2011,7 @@ export default function ProgramOutcome() {
       </Box>
       <Box mb={2}>
         <FormControl fullWidth>
-          <InputLabel>Wraparound Childcare</InputLabel>
+          <InputLabel>Wrap Around Childcare</InputLabel>
           <Select
             name="wrapAroundChildcare"
             value={formState.wrapAroundServicesChildcare}
@@ -1651,7 +2037,7 @@ export default function ProgramOutcome() {
       </Box>
       <Box mb={2}>
         <FormControl fullWidth>
-          <InputLabel>Wraparound Transportation</InputLabel>
+          <InputLabel>Wrap Around Transportation</InputLabel>
           <Select
             name="wrapAroundTransportation"
             value={formState.wrapAroundServicesTransportation}
@@ -1675,6 +2061,10 @@ export default function ProgramOutcome() {
           </Select>
         </FormControl>
       </Box>
+      <h3>
+        If there are any wrap around services that you provide that you do not
+        see in the above list, please list them down below.
+      </h3>
       <Box mb={2}>
         <TextField
           label="Other Wraparound Services"
@@ -1689,6 +2079,26 @@ export default function ProgramOutcome() {
         />
       </Box>
       {/* Funding Fields */}
+      <h3>Funding Mix for Programs</h3>
+      <p>
+        Please estimate what percentage of your Training Program Funding comes
+        from each of the following categories. These can be rough estimates, but
+        the three numbers should total 100. <br /> <br />
+        Public Funding includes all government funding (except as noted below
+        for social enterprise).
+        <br />
+        <br />
+        Private Funding includes individual donations and in kind contributions.{' '}
+        <br />
+        <br />
+        Social Enterprise and Generated Revenues are the gross contributions to
+        budget from work completed by your kitchens and foodservice operations,
+        and includes contracts with public agencies that pay per meal or are for
+        a fixed amount for period of meal coverage. Please exclude revenues from
+        operations that have no involvement with the training program or
+        graduates.
+      </p>
+      <h4>Funding: % from public funding</h4>
       <Box mb={2}>
         <TextField
           label="Public Funding"
@@ -1703,6 +2113,7 @@ export default function ProgramOutcome() {
           fullWidth
         />
       </Box>
+      <h4>Funding: % from private funding</h4>
       <Box mb={2}>
         <TextField
           label="Private Funding"
@@ -1717,6 +2128,7 @@ export default function ProgramOutcome() {
           fullWidth
         />
       </Box>
+      <h4>Funding: % from social enterprise or generated revenue</h4>
       <Box mb={2}>
         <TextField
           label="Social Enterprise Funding"
@@ -1734,6 +2146,8 @@ export default function ProgramOutcome() {
         />
       </Box>
       {/* SNAP E&T and WIOA */}
+      <h4>SNAP E&T</h4>
+      <p>Do you currently receive SNAP E&T funds?</p>
       <Box mb={2}>
         <FormControl fullWidth>
           <InputLabel>SNAP E&T</InputLabel>
@@ -1747,12 +2161,18 @@ export default function ProgramOutcome() {
               })
             }
           >
-            <MenuItem value="Yes">Yes</MenuItem>
-            <MenuItem value="No But">No But</MenuItem>
-            <MenuItem value="No And">No And</MenuItem>
+            <MenuItem value="Yes">Yes, we receive SNAP E&T funds</MenuItem>
+            <MenuItem value="No But">
+              No, but we would like to be able to access SNAP E&T funding
+            </MenuItem>
+            <MenuItem value="No And">
+              No, and we have applied and been rejected in the past
+            </MenuItem>
           </Select>
         </FormControl>
       </Box>
+      <h4>WIOA</h4>
+      <p>Do you currently receive WIOA funds?</p>
       <Box mb={2}>
         <FormControl fullWidth>
           <InputLabel>WIOA</InputLabel>
@@ -1766,13 +2186,22 @@ export default function ProgramOutcome() {
               })
             }
           >
-            <MenuItem value="Yes">Yes</MenuItem>
-            <MenuItem value="No But">No But</MenuItem>
-            <MenuItem value="No And">No And</MenuItem>
+            <MenuItem value="Yes">Yes, we receive WIOA funds</MenuItem>
+            <MenuItem value="No But">
+              No, but we would like to be able to access WIOA funding
+            </MenuItem>
+            <MenuItem value="No And">
+              No, and we have do not have interest in the funding
+            </MenuItem>
           </Select>
         </FormControl>
       </Box>
       {/* Curriculum */}
+      <h4>Curriculum</h4>
+      <p>
+        How much of your program includes written, organized curriculum that
+        guides teaching and learning?
+      </p>
       <Box mb={2}>
         <FormControl fullWidth>
           <InputLabel>Curriculum</InputLabel>
@@ -1782,12 +2211,17 @@ export default function ProgramOutcome() {
             onChange={(e) =>
               setFormState({
                 ...formState,
-                curriculum: e.target.value as 'All' | 'Part' | undefined,
+                curriculum: e.target.value as
+                  | 'All'
+                  | 'Part'
+                  | 'None'
+                  | undefined,
               })
             }
           >
             <MenuItem value="All">All</MenuItem>
             <MenuItem value="Part">Part</MenuItem>
+            <MenuItem value="None">None</MenuItem>
           </Select>
         </FormControl>
       </Box>
@@ -1828,9 +2262,17 @@ export default function ProgramOutcome() {
         </div>
       )}
       {/* Other Fields */}
+      <h3>Local Minimum Wage</h3>
+      <p>
+        What was your local minimum wage for most of {new Date().getFullYear()}?
+        If your city, county, and/or state minimum wages are different, please
+        list the one that reflects where most of your graduates are placed in
+        jobs. If your local minimum wage has different tiers (i.e. by size of
+        employer), list the highest rate.
+      </p>
       <Box mb={2}>
         <TextField
-          label="Minimum Wage 2023"
+          label="Minimum Wage"
           type="number"
           value={formState.minimumWage}
           onChange={(e) =>
@@ -1842,6 +2284,13 @@ export default function ProgramOutcome() {
           fullWidth
         />
       </Box>
+      <h3>Job Type: Food Service?</h3>
+      <p>
+        {' '}
+        What % of first job placements for your training programs are in food
+        service positions? Food service jobs are loosely defined as working in a
+        kitchen.
+      </p>
       <Box mb={2}>
         <FormControl fullWidth>
           <InputLabel>Job Type in Food Service</InputLabel>
@@ -1866,6 +2315,12 @@ export default function ProgramOutcome() {
           </Select>
         </FormControl>
       </Box>
+      <h4>Alumni Hired by Org</h4>
+      <p>
+        The number of alumni of your training programs that worked for your
+        organization in a <b>fulltime position</b> in {new Date().getFullYear()}
+        ? Approximate number is OK.
+      </p>
       <Box mb={2}>
         <TextField
           label="Alumni Hired By Organization"
@@ -1881,8 +2336,16 @@ export default function ProgramOutcome() {
         />
       </Box>
       <Box mt={3}>
-        <Button variant="contained" color="primary" onClick={handleSubmit}>
-          Submit
+        <Button
+          variant="contained"
+          style={{
+            backgroundColor: '#2C2C2C',
+            color: '#F5F5F5',
+            width: '100%',
+          }}
+          onClick={handleSubmit}
+        >
+          Submit Program Data
         </Button>
       </Box>
     </div>

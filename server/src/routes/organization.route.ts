@@ -5,13 +5,20 @@ import {
   getAll,
   getOrgById,
   getOrganizationNameByIdController,
+  addOrganizationController,
 } from '../controllers/organization.controller';
+import { isAdmin } from '../controllers/admin.middleware';
 
 const router = express.Router();
 
-router.get('/name/:name', getOrgByName);
-router.get('/organizations', getAll);
-router.get('/id/:id', getOrgById);
+router.get('/name/:name', isAuthenticated, getOrgByName);
+router.get('/organizations', isAuthenticated, getAll);
+router.get('/id/:id', isAuthenticated, getOrgById);
+router.post('/new', isAdmin, addOrganizationController);
 
-router.get('/organization/name/:id', getOrganizationNameByIdController);
+router.get(
+  '/organization/name/:id',
+  isAuthenticated,
+  getOrganizationNameByIdController,
+);
 export default router;

@@ -26,7 +26,7 @@ import {
   Snackbar,
 } from '@mui/material';
 import { number } from 'prop-types';
-import { RootState } from '../../util/redux/store';
+import { RootState } from '../util/redux/store';
 
 export default function KitchenOutcome() {
   // Define the form state type
@@ -305,7 +305,9 @@ export default function KitchenOutcome() {
   }, [formState.orgId]);
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-      <h1 style={{ textAlign: 'center' }}>Submit Kitchen Outcomes</h1>
+      <h1 style={{ textAlign: 'center' }}>
+        Submit Kitchen Outcomes for {formState.organizationName}
+      </h1>
       <p>
         Welcome to the Kitchen Outcomes Form! Thank you for taking the time to
         provide valuable insights about your organization. This form is designed
@@ -342,11 +344,11 @@ export default function KitchenOutcome() {
       <p>
         Hunger Relief Meals Served: Total number of meals prepared for low
         income individuals in 2023 by your organization. Hunger Relief Meals are
-        prepared meals - hot, cold or frozen and ready-to-eat or reheat - anddo
-        not include grocery/pantry boxes. Meal kits, specific boxed mix of
-        perishable and non-perishable ingredients with recipes, (e.g. “Blue
-        Apron style”), are included in community meals. Include all prepared
-        meals whether sold on contract or funded through grants orfundraising.
+        prepared meals: hot, cold, frozen, ready-to-eat or reheat. <br /> <br />{' '}
+        They do not include grocery/pantry boxes. Meal kits, specific boxed mix
+        of perishable and non-perishable ingredients with recipes(e.g. “Blue
+        Apron style”) are included in community meals. Include all prepared
+        meals whether sold on contract or funded through grants or fundraising.
       </p>
       <Box mb={2}>
         <TextField
@@ -402,8 +404,8 @@ export default function KitchenOutcome() {
       <p>
         Total combined gross revenue in {new Date().getFullYear()} from all
         contract meal enterprises. Do not include donated goods or revenue from
-        retail food service social enterprises. Retail SE data is collected
-        later in the survey
+        retail food service social enterprises. Retail Social Enterprise data is
+        collected later in the survey.
       </p>
       <Box mb={2}>
         <TextField
@@ -424,7 +426,7 @@ export default function KitchenOutcome() {
       <h4>Cost per Meal</h4>
       <p>
         What is the average cost to produce a meal (total cost of goods, labor,
-        and overhead/totalmeals produced)?
+        and overhead/total meals produced)?
       </p>
       <Box mb={2}>
         <TextField
@@ -445,7 +447,7 @@ export default function KitchenOutcome() {
       <h4>Food Cost Percent</h4>
       <p>
         What is the food cost % for your hunger relief meals? Do not include the
-        value of donatedand recovered food in your food cost calculation
+        value of donated and recovered food in your food cost calculation.
       </p>
       <Box mb={2}>
         <TextField
@@ -491,7 +493,7 @@ export default function KitchenOutcome() {
         from each of the following categories. This can be a rough estimate, but
         the three numbers should total 100. Public funding includes all
         government grants and contracts. Individual donations and In kind
-        contributions should be included in Private Donations
+        contributions should be included in Private Donations.
       </p>
 
       <Box mb={2}>
@@ -541,14 +543,19 @@ export default function KitchenOutcome() {
       </Box>
 
       <h3>Hunger Relief Demographics</h3>
+      <p>
+        Please provide the percentage demographics of communities that your
+        Kitchen serves below. Estimates are OK but should add up to 100%.
+      </p>
       <h4>Gender</h4>
       <p>
         Please provide an estimate if exact data is not available. Leave blank
-        if you do not track. NOTE: The language below often mirrors language
-        from census categories and government definitions. If there is preferred
-        language or terminology we should use when referring to your program and
-        clients, please let us know by emailing info@catalystkitchens.org. All
-        comments are welcome.
+        if you do not track. <br />
+        NOTE: The language below often mirrors language from census categories
+        and government definitions. If there is preferred language or
+        terminology we should use when referring to your program and clients,
+        please let us know by emailing info@catalystkitchens.org. All comments
+        are welcome.
       </p>
       <Box mb={2}>
         <TextField
@@ -629,7 +636,7 @@ export default function KitchenOutcome() {
       <h4>Race and Ethnicity</h4>
       <p>
         Please provide estimate if exact data is not available. If you do not
-        collect race/ethnicity dataplease leave blank
+        collect race/ethnicity data, you can leave this section blank.
       </p>
       <Box mb={2}>
         <TextField
@@ -770,7 +777,7 @@ export default function KitchenOutcome() {
       <h4>Age Groups</h4>
       <p>
         Please provide estimate if exact data is not available. If you do not
-        collect age data please leaveblank
+        collect age data, you can leave this section blank.
       </p>
       <Box mb={2}>
         <TextField
@@ -849,9 +856,9 @@ export default function KitchenOutcome() {
       </Box>
       <h4>Capital Expansion Projects</h4>
       <p>
-        Do you have any capital expansion projects related to your foodservice
+        Do you have any capital expansion projects related to your food service
         operations or workforce training program? Select the response that best
-        describes the current state of any expansion plan
+        describes the current state of any expansion plan.
       </p>
       <FormControl component="fieldset">
         <FormLabel component="legend">
@@ -899,7 +906,7 @@ export default function KitchenOutcome() {
       <p>
         What is the size in dollars of the project plan or completed project
         referenced above, regardless of the current state of the project?
-        Estimate is OK
+        Estimate is OK.
       </p>
       <Box mb={2}>
         <TextField
@@ -1023,7 +1030,7 @@ export default function KitchenOutcome() {
       <h4>Capital Expansion Project Needs</h4>
       <p>
         What support do you need in planning or executing your capital expansion
-        project? Checkall that apply
+        project? Check all that apply.
       </p>
       <FormControl component="fieldset">
         <FormLabel component="legend">

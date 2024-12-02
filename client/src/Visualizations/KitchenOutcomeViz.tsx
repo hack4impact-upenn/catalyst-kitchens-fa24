@@ -664,38 +664,41 @@ function KitchenOutcomesVisualization() {
         </Box>
       </Box>
 
-      {/* Overlay when no organization/year selected */}
-      {(!orgName || !year) && (
-        <Box
-          sx={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            bottom: 0,
-            top: '350px', // Adjust this value to position the overlay correctly
-            bgcolor: 'rgba(255, 255, 255, 0.9)',
-            backdropFilter: 'blur(4px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-          }}
-        >
-          <Typography
-            variant="h5"
+      {/* Content */}
+      <Box sx={{ position: 'relative' }}>
+        {(!orgName || !year) && (
+          <Box
             sx={{
-              color: '#666',
-              textAlign: 'center',
-              p: 3,
-              borderRadius: 2,
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              boxShadow: '0 0 15px rgba(0,0,0,0.1)',
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: 0,
+              bottom: 0,
+              bgcolor: 'rgba(255, 255, 255, 0.9)',
+              backdropFilter: 'blur(4px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+              minHeight: '700px',
             }}
           >
-            Please Choose an Organization and Year
-          </Typography>
-        </Box>
-      )}
+            <Typography
+              variant="h5"
+              sx={{
+                color: '#666',
+                textAlign: 'center',
+                p: 3,
+                borderRadius: 2,
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                boxShadow: '0 0 15px rgba(0,0,0,0.1)',
+              }}
+            >
+              Please Choose an Organization and Year
+            </Typography>
+          </Box>
+        )}
+      </Box>
 
       {/* Content for each tab */}
       <Box sx={{ p: 2, position: 'relative' }}>
