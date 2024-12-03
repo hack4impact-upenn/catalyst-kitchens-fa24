@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios, { all } from 'axios';
 import {
   Button,
   Box,
@@ -21,6 +21,7 @@ import {
   Select,
   MenuItem,
   InputLabel,
+  Alert,
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -28,11 +29,48 @@ import { postData } from '../util/api';
 import { RootState } from '../util/redux/store';
 
 export default function ProgramOutcome() {
+  const PROGRAM_CERTIFICATIONS = [
+    'ACF Quality/Approved Program',
+    'DOL approved apprenticeship',
+    'DOL approved pre-apprenticeship',
+    'State Association apprenticeship',
+    'State Association pre-apprenticeship',
+    'Local or State Dept. of Education or Community College',
+    'Other',
+  ];
+
+  const PARTICIPANT_CERTIFICATIONS = [
+    'Basic Food Safety (eg ServSafe Handler or similar)',
+    'Advanced Food Safety (eg ServSafe Manager or similar)',
+    'Credit toward Comm College',
+    'ACF Certification (eg Fundamental Cook)',
+    'NRA (eg Pro Start)',
+    'AHLEI (eg Kitchen Cook, Guest Service Gold, Certified Guest Service Professional, etc.)',
+    'Nutrition',
+    'Allergen',
+    'Customer Services',
+    'Alcohol Services',
+    'Non-foodservice certification (including CLA/CLT, CDL, NSC, etc)',
+    'Other',
+  ];
+
+  const JOB_CATEGORIES = [
+    'Food Service: Restaurant, Cafe',
+    'Food Service: Institutional (Senior Living, Corporate Dining, etc.)',
+    'Food Service: Grocery',
+    'Customer Service and Retail',
+    'Transportation & Warehousing',
+    'Healthcare & Social Assistance',
+    'Safety & Maintenance',
+    'Construction',
+    'Other',
+  ];
+
   const user = useSelector((state: RootState) => state.user);
   enum YouthEnrollmentStructure {
     Staggered = 'Staggered',
     Single = 'Single',
-    Both = 'Both',
+    Other = 'Other',
   }
   type FormState = {
     emailAddress: string;
@@ -54,12 +92,13 @@ export default function ProgramOutcome() {
     youthProgramWeeks?: number;
     youthProgramHours?: number;
     youthEnrollmentStructure?: YouthEnrollmentStructure;
-    youthCompensation?: 'Hourly' | 'Stipend' | 'None';
+    youthCompensation?: 'HourlyMin' | 'HourlyAboveMin' | 'Stipend' | 'None';
     youthTrainedDefinition?:
       | 'The first day of program'
       | '2-4 day provisional period'
       | 'One week provisional period'
-      | 'Two week provisional period';
+      | 'Two week provisional period'
+      | 'Other';
     youthGraduatedDefinition?:
       | 'All weeks of program'
       | 'Early exit for employment allowed'
@@ -87,13 +126,17 @@ export default function ProgramOutcome() {
     adultWageTwentyFourMonths?: number;
     adultProgramWeeks?: number;
     adultProgramHours?: number;
-    adultEnrollmentStructure?: 'Single Cohort' | 'Staggered';
-    adultCompensation?: 'Hourly' | 'Stipend' | 'None';
+    adultEnrollmentStructure?: 'Single Cohort' | 'Staggered' | 'Other';
+    adultCompensation?: 'HourlyMin' | 'HourlyAboveMin' | 'Stipend' | 'None';
     adultTrainedDefinition?:
       | 'The first day of program'
       | '2-4 day provisional period'
       | 'One week provisional period'
       | 'Two week provisional period'
+      | 'Other';
+    adultGraduatedDefinition?:
+      | 'All weeks of program'
+      | 'Early exit for employment allowed'
       | 'Other';
     traineeAge?: number;
     traineePercentFemale?: number;
@@ -157,39 +200,18 @@ export default function ProgramOutcome() {
     fundingPercentFromPublicFunding?: number;
     fundingPercentFromPrivateFunding?: number;
     fundingPercentFromSocialEnterpriseOrGeneratedRevenue?: number;
-    SNAPEAndT?: 'Yes' | 'No But' | 'No And';
+    SNAPEAndT?: 'Yes' | 'NoButInterested' | 'NoNotInterested' | 'NoRejected';
     WIOA?: 'Yes' | 'No But' | 'No And';
     curriculum?: 'All' | 'Part' | 'None';
-    programCertifications?:
-      | 'ACF Quality/Approved Program'
-      | 'DOL approved apprenticeship'
-      | 'State Association apprenticeship'
-      | 'Local or State Dept. of Education or Community College'
-      | 'Other';
+    programCertifications: string[];
     otherProgramCertifications?: string;
-    participantCertifications?:
-      | 'Basic Food Safety'
-      | 'Advanced Food Safety'
-      | 'Credit toward Comm College'
-      | 'ACF Certification'
-      | 'NRA'
-      | 'AHLEI'
-      | 'Other';
+    participantCertifications: string[];
     otherParticipantCertifications?: string;
     internshipOrExternship?: boolean;
     internshipOrExternshipDescription?: string;
     minimumWage?: number;
-    jobType?: '1-25%' | '26-50%' | '51-75%' | '76-100%';
-    jobCategory?:
-      | 'Food Service: restaurant, cafe'
-      | 'Food Service: institutional'
-      | 'Food Service: grocery'
-      | 'Customer Service and Retail'
-      | 'Transportation & warehousing'
-      | 'Healthcare & social assistance'
-      | 'Safety & maintenance'
-      | 'Construction'
-      | 'Other';
+    jobType?: '1-25%' | '26-50%' | '51-75%' | '76-100%' | 'Not Tracked';
+    jobCategory: string[];
     alumniHiredByOrg?: number;
   };
   const noState: FormState = {
@@ -234,6 +256,7 @@ export default function ProgramOutcome() {
     adultEnrollmentStructure: undefined,
     adultCompensation: undefined,
     adultTrainedDefinition: undefined,
+    adultGraduatedDefinition: undefined,
     traineeAge: undefined,
     traineePercentFemale: undefined,
     traineePercentMale: undefined,
@@ -272,15 +295,15 @@ export default function ProgramOutcome() {
     SNAPEAndT: undefined,
     WIOA: undefined,
     curriculum: undefined,
-    programCertifications: undefined,
+    programCertifications: [],
     otherProgramCertifications: '',
-    participantCertifications: undefined,
+    participantCertifications: [],
     otherParticipantCertifications: '',
     internshipOrExternship: false,
     internshipOrExternshipDescription: '',
     minimumWage: undefined,
     jobType: undefined,
-    jobCategory: undefined,
+    jobCategory: [],
     alumniHiredByOrg: undefined,
   };
   const [formState, setFormState] = React.useState<FormState>(noState);
@@ -334,19 +357,535 @@ export default function ProgramOutcome() {
     fetchOrganizationNameById();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formState.orgId]);
+
+  const [errorOpen, setErrorOpen] = useState(false);
+  const [errorMessages, setErrorMessages] = useState<string[]>([]);
   const validateInputs = () => {
-    // Add validation logic here:
-    // ex:
-    // const { adultProgram, minimumWage, jobTypeFoodService } = formState;
-    // if (!adultProgram || !minimumWage || !jobTypeFoodService) {
-    //   return false;
-    // }
-    if (formState.orgId.length > 0) {
-      return true;
+    console.log('Validating inputs');
+    let hasError = false;
+    const allErrorMessages: string[] = [];
+    if (
+      formState.programCostPerTrainee !== undefined &&
+      formState.programCostPerTrainee < 0
+    ) {
+      allErrorMessages.push(
+        'Program Cost per Trainee must be a positive number.',
+      );
+      hasError = true;
     }
-    return false;
+    if (
+      formState.youthTrained !== undefined &&
+      (formState.youthTrained < 0 || !Number.isInteger(formState.youthTrained))
+    ) {
+      allErrorMessages.push('Youth Trained must be a positive integer.');
+      hasError = true;
+    }
+    if (
+      formState.youthProgramRetentionRate !== undefined &&
+      (formState.youthProgramRetentionRate < 0 ||
+        formState.youthProgramRetentionRate > 100)
+    ) {
+      allErrorMessages.push(
+        'Youth Program Retention Rate must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.youthPositiveOutcomes !== undefined &&
+      (formState.youthPositiveOutcomes < 0 ||
+        formState.youthPositiveOutcomes > 100)
+    ) {
+      allErrorMessages.push(
+        'Youth Positive Outcomes must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (formState.youthWage !== undefined && formState.youthWage < 0) {
+      allErrorMessages.push('Youth Wage must be a positive number.');
+      hasError = true;
+    }
+    if (
+      formState.youthJobRetentionThreeMonths !== undefined &&
+      (formState.youthJobRetentionThreeMonths < 0 ||
+        formState.youthJobRetentionThreeMonths > 100)
+    ) {
+      allErrorMessages.push(
+        'Youth Job Retention at Three Months must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.youthJobRetentionSixMonths !== undefined &&
+      (formState.youthJobRetentionSixMonths < 0 ||
+        formState.youthJobRetentionSixMonths > 100)
+    ) {
+      allErrorMessages.push(
+        'Youth Job Retention at Six Months must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.youthJobRetentionTwelveMonths !== undefined &&
+      (formState.youthJobRetentionTwelveMonths < 0 ||
+        formState.youthJobRetentionTwelveMonths > 100)
+    ) {
+      allErrorMessages.push(
+        'Youth Job Retention at Twelve Months must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.youthJobRetentionTwentyFourMonths !== undefined &&
+      (formState.youthJobRetentionTwentyFourMonths < 0 ||
+        formState.youthJobRetentionTwentyFourMonths > 100)
+    ) {
+      allErrorMessages.push(
+        'Youth Job Retention at Twenty Four Months must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.youthProgramWeeks !== undefined &&
+      formState.youthProgramWeeks < 0
+    ) {
+      allErrorMessages.push('Youth Program Weeks must be a positive number.');
+      hasError = true;
+    }
+    if (
+      formState.youthProgramHours !== undefined &&
+      formState.youthProgramHours < 0
+    ) {
+      allErrorMessages.push('Youth Program Hours must be a positive number.');
+      hasError = true;
+    }
+    if (
+      formState.adultsTrained !== undefined &&
+      (formState.adultsTrained < 0 ||
+        !Number.isInteger(formState.adultsTrained))
+    ) {
+      allErrorMessages.push('Adults Trained must be a positive integer.');
+      hasError = true;
+    }
+    if (
+      formState.adultsGraduated !== undefined &&
+      (formState.adultsGraduated < 0 || formState.adultsGraduated > 100)
+    ) {
+      allErrorMessages.push('Adults Graduated must be between 0 and 100.');
+      hasError = true;
+    }
+    if (
+      formState.adultPositiveOutcome !== undefined &&
+      (formState.adultPositiveOutcome < 0 ||
+        formState.adultPositiveOutcome > 100)
+    ) {
+      allErrorMessages.push(
+        'Adult Positive Outcomes must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.adultJobPlacement !== undefined &&
+      (formState.adultJobPlacement < 0 || formState.adultJobPlacement > 100)
+    ) {
+      allErrorMessages.push('Adult Job Placement must be between 0 and 100.');
+      hasError = true;
+    }
+    if (formState.adultWage !== undefined && formState.adultWage < 0) {
+      allErrorMessages.push('Adult Wage must be a positive number.');
+      hasError = true;
+    }
+    if (
+      formState.adultJobRetentionThreeMonths !== undefined &&
+      (formState.adultJobRetentionThreeMonths < 0 ||
+        formState.adultJobRetentionThreeMonths > 100)
+    ) {
+      allErrorMessages.push(
+        'Adult Job Retention at Three Months must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.adultJobRetentionSixMonths !== undefined &&
+      (formState.adultJobRetentionSixMonths < 0 ||
+        formState.adultJobRetentionSixMonths > 100)
+    ) {
+      allErrorMessages.push(
+        'Adult Job Retention at Six Months must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.adultWageAtSixMonths !== undefined &&
+      formState.adultWageAtSixMonths < 0
+    ) {
+      allErrorMessages.push(
+        'Adult Wage at Six Months must be a positive number.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.adultJobRetentionTwelveMonths !== undefined &&
+      (formState.adultJobRetentionTwelveMonths < 0 ||
+        formState.adultJobRetentionTwelveMonths > 100)
+    ) {
+      allErrorMessages.push(
+        'Adult Job Retention at Twelve Months must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.adultWageAtTwelveMonths !== undefined &&
+      formState.adultWageAtTwelveMonths < 0
+    ) {
+      allErrorMessages.push(
+        'Adult Wage at Twelve Months must be a positive number.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.adultJobRetentionTwentyFourMonths !== undefined &&
+      (formState.adultJobRetentionTwentyFourMonths < 0 ||
+        formState.adultJobRetentionTwentyFourMonths > 100)
+    ) {
+      allErrorMessages.push(
+        'Adult Job Retention at Twenty Four Months must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.adultWageTwentyFourMonths !== undefined &&
+      formState.adultWageTwentyFourMonths < 0
+    ) {
+      allErrorMessages.push(
+        'Adult Wage at Twenty Four Months must be a positive number.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.adultProgramWeeks !== undefined &&
+      formState.adultProgramWeeks < 0
+    ) {
+      allErrorMessages.push('Adult Program Weeks must be a positive number.');
+      hasError = true;
+    }
+    if (
+      formState.adultProgramHours !== undefined &&
+      formState.adultProgramHours < 0
+    ) {
+      allErrorMessages.push('Adult Program Hours must be a positive number.');
+      hasError = true;
+    }
+    if (
+      formState.traineeAge !== undefined &&
+      (formState.traineeAge < 0 || formState.traineeAge > 100)
+    ) {
+      allErrorMessages.push('Trainee Age must be between 0 and 100.');
+      hasError = true;
+    }
+    if (
+      formState.traineePercentFemale !== undefined &&
+      (formState.traineePercentFemale < 0 ||
+        formState.traineePercentFemale > 100)
+    ) {
+      allErrorMessages.push(
+        'Trainee Percent Female must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.traineePercentMale !== undefined &&
+      (formState.traineePercentMale < 0 || formState.traineePercentMale > 100)
+    ) {
+      allErrorMessages.push('Trainee Percent Male must be between 0 and 100.');
+      hasError = true;
+    }
+    if (
+      formState.traineePercentNonBinary !== undefined &&
+      (formState.traineePercentNonBinary < 0 ||
+        formState.traineePercentNonBinary > 100)
+    ) {
+      allErrorMessages.push(
+        'Trainee Percent Non-Binary must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.traineePercentFemale !== undefined &&
+      formState.traineePercentMale !== undefined &&
+      formState.traineePercentNonBinary !== undefined &&
+      formState.traineePercentFemale +
+        formState.traineePercentMale +
+        formState.traineePercentNonBinary !==
+        100
+    ) {
+      allErrorMessages.push(
+        'The sum of Trainee Percent Female, Trainee Percent Male, and Trainee Percent Non-Binary must must be 100',
+      );
+      hasError = true;
+    }
+    if (
+      formState.traineePercentTransgender !== undefined &&
+      (formState.traineePercentTransgender < 0 ||
+        formState.traineePercentTransgender > 100)
+    ) {
+      allErrorMessages.push(
+        'Trainee Percent Transgender must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.traineePercentAmericanIndian !== undefined &&
+      (formState.traineePercentAmericanIndian < 0 ||
+        formState.traineePercentAmericanIndian > 100)
+    ) {
+      allErrorMessages.push(
+        'Trainee Percent American Indian must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.traineePercentAsianOrAsianAmerican !== undefined &&
+      (formState.traineePercentAsianOrAsianAmerican < 0 ||
+        formState.traineePercentAsianOrAsianAmerican > 100)
+    ) {
+      allErrorMessages.push(
+        'Trainee Percent Asian or Asian American must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.traineePercentBlackOrAfricanAmerican !== undefined &&
+      (formState.traineePercentBlackOrAfricanAmerican < 0 ||
+        formState.traineePercentBlackOrAfricanAmerican > 100)
+    ) {
+      allErrorMessages.push(
+        'Trainee Percent Black or African American must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.traineePercentLatinaLatinoLatinx !== undefined &&
+      (formState.traineePercentLatinaLatinoLatinx < 0 ||
+        formState.traineePercentLatinaLatinoLatinx > 100)
+    ) {
+      allErrorMessages.push(
+        'Trainee Percent Latina, Latino, or Latinx must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.traineePercentNativeHawaiianPacificIslander !== undefined &&
+      (formState.traineePercentNativeHawaiianPacificIslander < 0 ||
+        formState.traineePercentNativeHawaiianPacificIslander > 100)
+    ) {
+      allErrorMessages.push(
+        'Trainee Percent Native Hawaiian or Pacific Islander must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.traineeMultiracial !== undefined &&
+      (formState.traineeMultiracial < 0 || formState.traineeMultiracial > 100)
+    ) {
+      allErrorMessages.push(
+        'Trainee Percent Multiracial must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.traineeWhite !== undefined &&
+      (formState.traineeWhite < 0 || formState.traineeWhite > 100)
+    ) {
+      allErrorMessages.push('Trainee Percent White must be between 0 and 100.');
+      hasError = true;
+    }
+    if (
+      formState.traineeOtherRace !== undefined &&
+      (formState.traineeOtherRace < 0 || formState.traineeOtherRace > 100)
+    ) {
+      allErrorMessages.push(
+        'Trainee Percent Other Race must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.traineeRaceUnknown !== undefined &&
+      (formState.traineeRaceUnknown < 0 || formState.traineeRaceUnknown > 100)
+    ) {
+      allErrorMessages.push(
+        'Trainee Percent Race Unknown must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.traineePercentAmericanIndian !== undefined &&
+      formState.traineePercentBlackOrAfricanAmerican !== undefined &&
+      formState.traineePercentAsianOrAsianAmerican !== undefined &&
+      formState.traineePercentLatinaLatinoLatinx !== undefined &&
+      formState.traineePercentNativeHawaiianPacificIslander !== undefined &&
+      formState.traineeMultiracial !== undefined &&
+      formState.traineeWhite !== undefined &&
+      formState.traineeOtherRace !== undefined &&
+      formState.traineeRaceUnknown !== undefined &&
+      formState.traineePercentAmericanIndian +
+        formState.traineePercentBlackOrAfricanAmerican +
+        formState.traineePercentAsianOrAsianAmerican +
+        formState.traineePercentLatinaLatinoLatinx +
+        formState.traineePercentNativeHawaiianPacificIslander +
+        formState.traineeMultiracial +
+        formState.traineeWhite +
+        formState.traineeOtherRace +
+        formState.traineeRaceUnknown !==
+        100
+    ) {
+      allErrorMessages.push(
+        'The sum of Trainee Percent American Indian, Trainee Percent Black or African American, Trainee Percent Asian or Asian American, Trainee Percent Latina, Latino, or Latinx, Trainee Percent Native Hawaiian or Pacific Islander, Trainee Percent Multiracial, Trainee Percent White, Trainee Percent Other Race, and Trainee Percent Race Unknown must be 100',
+      );
+      hasError = true;
+    }
+
+    if (
+      formState.barrierReturningCitizensOrFormerlyIncarceratedPersons !==
+        undefined &&
+      (formState.barrierReturningCitizensOrFormerlyIncarceratedPersons < 0 ||
+        formState.barrierReturningCitizensOrFormerlyIncarceratedPersons > 100)
+    ) {
+      allErrorMessages.push(
+        'Barrier Returning Citizens must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.barrierPhysicalDisability !== undefined &&
+      (formState.barrierPhysicalDisability < 0 ||
+        formState.barrierPhysicalDisability > 100)
+    ) {
+      allErrorMessages.push(
+        'Barrier Physical Disability must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.barrierIntellectualOrDevelopmentalDisability !== undefined &&
+      (formState.barrierIntellectualOrDevelopmentalDisability < 0 ||
+        formState.barrierIntellectualOrDevelopmentalDisability > 100)
+    ) {
+      allErrorMessages.push(
+        'Barrier Intellectual or Developmental Disability must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.barrierUnhoused !== undefined &&
+      (formState.barrierUnhoused < 0 || formState.barrierUnhoused > 100)
+    ) {
+      allErrorMessages.push('Barrier Unhoused must be between 0 and 100.');
+      hasError = true;
+    }
+    if (
+      formState.barrierMentalHealth !== undefined &&
+      (formState.barrierMentalHealth < 0 || formState.barrierMentalHealth > 100)
+    ) {
+      allErrorMessages.push('Barrier Mental Health must be between 0 and 100.');
+      hasError = true;
+    }
+    if (
+      formState.barrierNewAmericans !== undefined &&
+      (formState.barrierNewAmericans < 0 || formState.barrierNewAmericans > 100)
+    ) {
+      allErrorMessages.push('Barrier New Americans must be between 0 and 100.');
+      hasError = true;
+    }
+    if (
+      formState.barrierInRecovery !== undefined &&
+      (formState.barrierInRecovery < 0 || formState.barrierInRecovery > 100)
+    ) {
+      allErrorMessages.push('Barrier In Recovery must be between 0 and 100.');
+      hasError = true;
+    }
+    if (
+      formState.barrierVeteran !== undefined &&
+      (formState.barrierVeteran < 0 || formState.barrierVeteran > 100)
+    ) {
+      allErrorMessages.push('Barrier Veteran must be between 0 and 100.');
+      hasError = true;
+    }
+    if (
+      formState.fundingPercentFromPublicFunding !== undefined &&
+      (formState.fundingPercentFromPublicFunding < 0 ||
+        formState.fundingPercentFromPublicFunding > 100)
+    ) {
+      allErrorMessages.push(
+        'Funding Percent from Public Funding must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.fundingPercentFromPrivateFunding !== undefined &&
+      (formState.fundingPercentFromPrivateFunding < 0 ||
+        formState.fundingPercentFromPrivateFunding > 100)
+    ) {
+      allErrorMessages.push(
+        'Funding Percent from Private Funding must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.fundingPercentFromSocialEnterpriseOrGeneratedRevenue !==
+        undefined &&
+      (formState.fundingPercentFromSocialEnterpriseOrGeneratedRevenue < 0 ||
+        formState.fundingPercentFromSocialEnterpriseOrGeneratedRevenue > 100)
+    ) {
+      allErrorMessages.push(
+        'Funding Percent from Social Enterprise or Generated Revenue must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.fundingPercentFromPublicFunding !== undefined &&
+      formState.fundingPercentFromPrivateFunding !== undefined &&
+      formState.fundingPercentFromSocialEnterpriseOrGeneratedRevenue !==
+        undefined &&
+      formState.fundingPercentFromPublicFunding +
+        formState.fundingPercentFromPrivateFunding +
+        formState.fundingPercentFromSocialEnterpriseOrGeneratedRevenue !==
+        100
+    ) {
+      allErrorMessages.push(
+        'The sum of Funding Percent from Public Funding, Funding Percent from Private Funding, and Funding Percent from Social Enterprise or Generated Revenue must be 100',
+      );
+      hasError = true;
+    }
+    if (formState.minimumWage !== undefined && formState.minimumWage < 0) {
+      allErrorMessages.push('Minimum Wage must be a positive number.');
+      hasError = true;
+    }
+    if (
+      formState.alumniHiredByOrg !== undefined &&
+      (formState.alumniHiredByOrg < 0 ||
+        !Number.isInteger(formState.alumniHiredByOrg))
+    ) {
+      allErrorMessages.push(
+        'Alumni Hired by Organization must be a positive integer.',
+      );
+      hasError = true;
+    }
+
+    if (!formState.orgId) {
+      hasError = true;
+    }
+
+    if (hasError) {
+      console.log('Validation failed: Displaying error messages.');
+      setErrorOpen(true);
+      setErrorMessages(allErrorMessages);
+      return false;
+    }
+
+    return true;
   };
   const handleSubmit = async () => {
+    console.log('handling submit');
     if (validateInputs()) {
       try {
         const formData = {
@@ -363,8 +902,12 @@ export default function ProgramOutcome() {
         // Handle error (e.g., show an error message)
       }
     } else {
-      console.error('Validation failed: Please fill out all required fields.');
+      console.error('Validation failed.');
       // Handle validation failure (e.g., show a validation error message)
+      if (errorMessages.length === 0) {
+        setErrorOpen(true);
+        setErrorMessages(['Please fill out all required fields.']);
+      }
     }
   };
   return (
@@ -772,14 +1315,16 @@ export default function ProgramOutcome() {
                 label="Youth Enrollment Structure"
               >
                 <MenuItem value={YouthEnrollmentStructure.Staggered}>
-                  Single Cohort admission (training program resets with each new
-                  group of students)
+                  Staggered Cohort admission (multiple, overlapping cohorts
+                  enrolled)
                 </MenuItem>
                 <MenuItem value={YouthEnrollmentStructure.Single}>
                   Single Cohort admission (training program resets with each new
                   group of students)
                 </MenuItem>
-                <MenuItem value={YouthEnrollmentStructure.Both}>Both</MenuItem>
+                <MenuItem value={YouthEnrollmentStructure.Other}>
+                  Other
+                </MenuItem>
               </Select>
             </FormControl>
           </Box>
@@ -801,7 +1346,8 @@ export default function ProgramOutcome() {
                   setFormState({
                     ...formState,
                     youthCompensation: e.target.value as
-                      | 'Hourly'
+                      | 'HourlyMin'
+                      | 'HourlyAboveMin'
                       | 'Stipend'
                       | 'None'
                       | undefined,
@@ -809,7 +1355,10 @@ export default function ProgramOutcome() {
                 }
                 label="Youth Compensation"
               >
-                <MenuItem value="Hourly">Hourly - Minimum Wage</MenuItem>
+                <MenuItem value="HourlyMin">Hourly - Minimum Wage</MenuItem>
+                <MenuItem value="HourlyAboveMin">
+                  Hourly - Above Minimum Wage
+                </MenuItem>
                 <MenuItem value="Stipend">
                   Stipend - fixed or variable cash disbursement
                 </MenuItem>
@@ -855,6 +1404,7 @@ export default function ProgramOutcome() {
                 <MenuItem value="Two week provisional period">
                   Two week provisional period
                 </MenuItem>
+                <MenuItem value="Other">Other</MenuItem>
               </Select>
             </FormControl>
           </Box>
@@ -1240,6 +1790,12 @@ export default function ProgramOutcome() {
             />
           </Box>
           <h4>PROGRAM STRUCTURE: Programs Serving Adults (18+)</h4>
+          <h4>Adult program (weeks)</h4>
+          Please enter the total length of the program in weeks. If you have
+          multiple adult programs, please enter number for your primary/largest
+          program
+          <br />
+          <br />
           <Box mb={2}>
             <TextField
               fullWidth
@@ -1256,6 +1812,12 @@ export default function ProgramOutcome() {
               }}
             />
           </Box>
+          <h4>Adult program (hours)</h4>
+          Please enter the total length of the program in hours. If you have
+          multiple adult programs, please enter number for your primary/largest
+          program
+          <br />
+          <br />
           <Box mb={2}>
             <TextField
               fullWidth
@@ -1272,6 +1834,7 @@ export default function ProgramOutcome() {
               }}
             />
           </Box>
+          <h4>Adults: Enrollment Structure</h4>
           <Box mb={2}>
             <FormControl fullWidth>
               <InputLabel id="adults-enrollment-structure-label">
@@ -1286,16 +1849,28 @@ export default function ProgramOutcome() {
                     adultEnrollmentStructure: e.target.value as
                       | 'Single Cohort'
                       | 'Staggered'
-                      | undefined,
+                      | 'Other',
                   });
                 }}
                 label="Adults Enrollment Structure"
               >
-                <MenuItem value="Single Cohort">Single Cohort</MenuItem>
-                <MenuItem value="Staggered">Staggered</MenuItem>
+                <MenuItem value="Single Cohort">
+                  Single Cohort admission (training program resets with each new
+                  group of students)
+                </MenuItem>
+                <MenuItem value="Staggered">
+                  Staggered Cohort admission (multiple, overlapping cohorts
+                  enrolled)
+                </MenuItem>
+                <MenuItem value="Other">Other</MenuItem>
               </Select>
             </FormControl>
           </Box>
+          <h4>Adults: Compensation</h4>
+          How do you provide direct financial support to students? If it changes
+          throughout your program, please check all that apply.
+          <br />
+          <br />
           <Box mb={2}>
             <FormControl fullWidth>
               <InputLabel id="adults-compensation-label">
@@ -1308,19 +1883,31 @@ export default function ProgramOutcome() {
                   setFormState({
                     ...formState,
                     adultCompensation: e.target.value as
-                      | 'Hourly'
+                      | 'HourlyMin'
+                      | 'HourlyAboveMin'
                       | 'Stipend'
                       | 'None',
                   });
                 }}
                 label="Adults Compensation"
               >
-                <MenuItem value="Hourly">Hourly</MenuItem>
-                <MenuItem value="Stipend">Stipend</MenuItem>
-                <MenuItem value="None">None</MenuItem>
+                <MenuItem value="HourlyMin">Hourly - Minimum Wage</MenuItem>
+                <MenuItem value="HourlyAboveMin">
+                  Hourly - Above Minimum Wage
+                </MenuItem>
+                <MenuItem value="Stipend">
+                  Stipend - fixed or variable cash disbursements
+                </MenuItem>
+                <MenuItem value="None">No Monetary Compensation</MenuItem>
               </Select>
             </FormControl>
           </Box>
+          <h4>Adult: Trained Definition</h4>
+          How do you define <b>enrolled</b> in your adult program? Select the
+          option below that best describes your methodology for counting number
+          of enrollees. <b>To count as enrolled a student must complete:</b>
+          <br />
+          <br />
           <Box mb={2}>
             <FormControl fullWidth>
               <InputLabel id="adult-trained-definition-label">
@@ -1359,8 +1946,64 @@ export default function ProgramOutcome() {
               </Select>
             </FormControl>
           </Box>
+          <Box mb={2}>
+            <h4>Adult: Graduated definition</h4>
+            How do you define <b>graduated</b> in your adult program? Select the
+            option below that best describes your methodology for counting
+            number of graduates.{' '}
+            <b>To count as graduated a student must complete:</b>
+            <br />
+            <br />
+            <FormControl fullWidth>
+              <InputLabel id="adult-graduated-definition-label">
+                Adult Graduated Definition
+              </InputLabel>
+              <Select
+                labelId="adult-graduated-definition-label"
+                value={formState.adultGraduatedDefinition || ''}
+                onChange={(e) => {
+                  setFormState({
+                    ...formState,
+                    adultGraduatedDefinition: e.target
+                      .value as keyof (typeof formState)['adultGraduatedDefinition'],
+                  });
+                }}
+                label="Adult Graduated Definition"
+              >
+                <MenuItem value="All weeks of program">
+                  All weeks of program
+                </MenuItem>
+                <MenuItem value="Early exit for employment allowed">
+                  Early exit for employment allowed
+                </MenuItem>
+                <MenuItem value="Other">Other</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
         </div>
       )}
+      <h3>Trainee Demographics & Wrap Around Services</h3>
+      <p>
+        In the section, provide combined data for all your training programs.
+      </p>
+      <h4>Trainee Demographics Part I</h4>
+      <p>
+        Please provide an estimate if exact data is not available. Leave blank
+        if you do not track.
+      </p>
+      <p>
+        NOTE: The language below often mirrors language from census categories
+        and government definitions. If there is preferred language or
+        terminology we should use when referring to your program and clients,
+        please let us know by emailing{' '}
+        <a href="info@catalystkitchens.org">info@catalystkitchens.org</a>. All
+        comments are welcome.
+      </p>
+      <h4>Trainees: Age</h4>
+      <p>
+        Percentage of all individuals trained who were between 16-24 years old
+        (includes all culinary training programs).
+      </p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1377,51 +2020,10 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-      <h3>Trainee Gender Demographics</h3>
+      <h4>Trainees: % Female</h4>
       <p>
-        This section will cover the gender demographics of trainees that your
-        programs serve. If your organization does not track these statistics
-        closely then try to provide your best estimate on these populations.
-        When providing your estimates, be sure to make them add to 100.
+        What <b>percentage</b> of trainees in all programs identify as female?
       </p>
-      <h4>% of Trainees that identify as Non-Binary</h4>
-      <p>What is the percentage of trainees that identify as non-binary?</p>
-      <Box mb={2}>
-        <TextField
-          fullWidth
-          type="number"
-          label="Trainees Percent Non-Binary"
-          value={formState.traineePercentNonBinary || ''}
-          onChange={(e) => {
-            setFormState({
-              ...formState,
-              traineePercentNonBinary: e.target.value
-                ? parseFloat(e.target.value)
-                : undefined,
-            });
-          }}
-        />
-      </Box>
-      <h4>% of Trainees that identify as Transgender</h4>
-      <p>What is the percentage of trainees that identify as transgender?</p>
-      <Box mb={2}>
-        <TextField
-          fullWidth
-          type="number"
-          label="Trainees Percent Transgender"
-          value={formState.traineePercentTransgender || ''}
-          onChange={(e) => {
-            setFormState({
-              ...formState,
-              traineePercentTransgender: e.target.value
-                ? parseFloat(e.target.value)
-                : undefined,
-            });
-          }}
-        />
-      </Box>
-      <h4>% of Trainees that identify as Female</h4>
-      <p>What is the percentage of trainees that identify as female?</p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1438,8 +2040,10 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-      <h4>% of Trainees that identify as Male</h4>
-      <p>What is the percentage of trainees that identify as male?</p>
+      <h4>Trainees: % Male</h4>
+      <p>
+        What <b>percentage</b> of trainees in all programs identify as male?
+      </p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1456,16 +2060,58 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-      <h3>Trainee Racial Demographics</h3>
+      <h4>Trainees: % Non-binary</h4>
       <p>
-        This section will cover the racial demographics of trainees that your
-        programs serve. If your organization does not track these statistics
-        closely then try to provide your best estimate on these populations.
-        When providing your estimates, be sure to make them add to 100.
+        What <b>percentage</b> of trainees in all programs identify as
+        non-binary (genderqueer, gender neutral, gender fluid, or different
+        non-binary gender)?
       </p>
-      <h4>% of Trainees that identify as American Indian</h4>
+      <Box mb={2}>
+        <TextField
+          fullWidth
+          type="number"
+          label="Trainees Percent Non-Binary"
+          value={formState.traineePercentNonBinary || ''}
+          onChange={(e) => {
+            setFormState({
+              ...formState,
+              traineePercentNonBinary: e.target.value
+                ? parseFloat(e.target.value)
+                : undefined,
+            });
+          }}
+        />
+      </Box>
+      <h4>Trainees: % Transgender</h4>
       <p>
-        What is the percentage of trainees that identify as American Indian?
+        SEPARATE from the previous three questions on gender identity, what{' '}
+        <b>percentage</b> of trainees in all programs identify as transgender?
+      </p>
+      <Box mb={2}>
+        <TextField
+          fullWidth
+          type="number"
+          label="Trainees Percent Transgender"
+          value={formState.traineePercentTransgender || ''}
+          onChange={(e) => {
+            setFormState({
+              ...formState,
+              traineePercentTransgender: e.target.value
+                ? parseFloat(e.target.value)
+                : undefined,
+            });
+          }}
+        />
+      </Box>
+      <h4>Trainee Demographics Part II</h4>
+      <p>
+        Please provide estimate if exact data is not available. If you do not
+        collect race/ethnicity data please leave blank.
+      </p>
+      <h4>Trainees: % American Indian</h4>
+      <p>
+        What <b>percentage</b> of trainees in all programs identify as American
+        Indian, Alaska Native, or Indigenous?
       </p>
       <Box mb={2}>
         <TextField
@@ -1483,8 +2129,11 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-      <h4>% of Trainees that identify as Asian</h4>
-      <p>What is the percentage of trainees that identify as Asian?</p>
+      <h4>Trainees: % Asian or Asian American</h4>
+      <p>
+        What <b>percentage</b> of trainees in all programs identify as Asian or
+        Asian American?
+      </p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1501,8 +2150,11 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-      <h4>% of Trainees that identify as Black</h4>
-      <p>What is the percentage of trainees that identify as Black?</p>
+      <h4>Trainees: % Black or African American</h4>
+      <p>
+        What <b>percentage</b> of trainees in all programs identify as Black or
+        African American?
+      </p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1519,8 +2171,11 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-      <h4>% of Trainees that identify as Latinx</h4>
-      <p>What is the percentage of trainees that identify as Latinx?</p>
+      <h4>Trainees: % Latina, Latino, Latinx</h4>
+      <p>
+        What <b>percentage</b> of trainees in all programs identify as Latina,
+        Latino, Latinx?
+      </p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1537,9 +2192,10 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-      <h4>% of Trainees that identify as Native Hawaiian</h4>
+      <h4>Trainees: % Native Hawaiian/Pacific Islander</h4>
       <p>
-        What is the percentage of trainees that identify as Native Hawaiian?
+        What <b>percentage</b> of trainees in all programs identify as Native
+        Hawaiian or Pacific Islander?
       </p>
       <Box mb={2}>
         <TextField
@@ -1557,8 +2213,11 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-      <h4>% of Trainees that identify as Multi-Racial</h4>
-      <p>What is the percentage of trainees that identify as Multi-Racial?</p>
+      <h4>Trainees: % Multi-racial</h4>
+      <p>
+        What <b>percentage</b> of trainees in all programs identify as two or
+        more races or ethnicities?
+      </p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1575,8 +2234,10 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-      <h4>% of Trainees that identify as White</h4>
-      <p>What is the percentage of trainees that identify as White?</p>
+      <h4>Trainees: % White</h4>
+      <p>
+        What <b>percentage</b> of trainees in all programs identify as White?
+      </p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1593,8 +2254,11 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-      <h4>% of Trainees that identify as Other Race</h4>
-      <p>What is the percentage of trainees that identify as Other Race?</p>
+      <h4>Trainees: % Other Race</h4>
+      <p>
+        What <b>percentage</b> of trainees in all programs identify as a race or
+        ethnicity not listed here?
+      </p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1611,8 +2275,11 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-      <h4>% of Trainees that identify as Race Unknown</h4>
-      <p>What is the percentage of trainees that identify as Race Unknown?</p>
+      <h4>Trainees: % Race Unknown</h4>
+      <p>
+        What <b>percentage</b> of trainees in all programs do you not have
+        race/ethnicity data for?
+      </p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1629,22 +2296,25 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-      <h3>Barriers Experienced by Trainees</h3>
+      <h4>Barriers Experienced by Trainees</h4>
       <p>
         Enter % students experiencing any of the barriers below. Ex: 70%
         homeless, 40% reentry, 25% in recovery, etc. Does not need to add up to
         100% as trainees may experience multiple barriers. Approximate
-        percentages are OK. NOTE: The language below often mirrors language from
-        census categories and government definitions. If there is preferred
-        language or terminology we should use when referring to your program and
-        clients, please let us know by emailing{' '}
+        percentages are OK.
+      </p>
+      <p>
+        NOTE: The language below often mirrors language from census categories
+        and government definitions. If there is preferred language or
+        terminology we should use when referring to your program and clients,
+        please let us know by emailing{' '}
         <a href="info@catalystkitchens.org">info@catalystkitchens.org</a>. All
         comments are welcome.
       </p>
       <h4>Barrier: Returning Citizens/Formerly Incarcerated Persons</h4>
       <p>
-        Percentage of trainee population who have been recently released from
-        incarceration, are on probation, have a criminal record, or are
+        <b>Percentage</b> of trainee population who have been recently released
+        from incarceration, are on probation, have a criminal record, or are
         otherwise justice involved.
       </p>
       <Box mb={2}>
@@ -1668,7 +2338,9 @@ export default function ProgramOutcome() {
         />
       </Box>
       <h4>Barrier: Physical Disability</h4>
-      <p>Percentage of trainee population who have physical disabilities.</p>
+      <p>
+        <b>Percentage</b> of trainee population who have physical disabilities.
+      </p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1687,8 +2359,8 @@ export default function ProgramOutcome() {
       </Box>
       <h4>Barrier: Intellectual or Developmental Disability</h4>
       <p>
-        Percentage of trainee population who have intellectual or developmental
-        disabilities.
+        <b>Percentage</b> of trainee population who have intellectual or
+        developmental disabilities.
       </p>
       <Box mb={2}>
         <TextField
@@ -1708,8 +2380,8 @@ export default function ProgramOutcome() {
       </Box>
       <h4>Barrier: Unhoused</h4>
       <p>
-        Percentage of trainee population who are unhoused at time of enrollment,
-        are in transitional housing, or housing insecure.
+        <b>Percentage</b> of trainee population who are unhoused at time of
+        enrollment, are in transitional housing, or housing insecure.
       </p>
       <Box mb={2}>
         <TextField
@@ -1729,7 +2401,7 @@ export default function ProgramOutcome() {
       </Box>
       <h4>Barrier: Mental Health</h4>
       <p>
-        Percentage of trainee population who have a mental/psychological
+        <b>Percentage</b> of trainee population who have a mental/psychological
         disorder.
       </p>
       <Box mb={2}>
@@ -1750,7 +2422,8 @@ export default function ProgramOutcome() {
       </Box>
       <h4>Barrier: New Americans</h4>
       <p>
-        Percentage of trainee population who are recent immigrants or refugees.
+        <b>Percentage</b> of trainee population who are recent immigrants or
+        refugees.
       </p>
       <Box mb={2}>
         <TextField
@@ -1770,8 +2443,8 @@ export default function ProgramOutcome() {
       </Box>
       <h4>Barrier: In Recovery</h4>
       <p>
-        Percentage of trainee population who are in recovery or have a history
-        of substance abuse.
+        <b>Percentage</b> of trainee population who are in recovery or have a
+        history of substance abuse.
       </p>
       <Box mb={2}>
         <TextField
@@ -1790,7 +2463,9 @@ export default function ProgramOutcome() {
         />
       </Box>
       <h4>Barrier: Veteran</h4>
-      <p>Percentage of trainee population who are veterans.</p>
+      <p>
+        <b>Percentage</b> of trainee population who are veterans.
+      </p>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -1819,14 +2494,14 @@ export default function ProgramOutcome() {
       | 'Partner agency'
       | 'In-house'
       | 'Not provided'; */}
-      <h3>WRAP AROUND SERVICES</h3>
+      <h4>WRAP AROUND SERVICES</h4>
       <p>
         This section asks about which wrap around services your organization
         either provides in house or facilitates access to.
       </p>
       <Box mb={2}>
         <FormControl fullWidth>
-          <InputLabel>Wrap Around Housing</InputLabel>
+          <InputLabel>Housing</InputLabel>
           <Select
             name="wrapAroundHousing"
             value={formState.wrapAroundServicesHousing}
@@ -1852,7 +2527,7 @@ export default function ProgramOutcome() {
       </Box>
       <Box mb={2}>
         <FormControl fullWidth>
-          <InputLabel>Wrap Around Lifeskills</InputLabel>
+          <InputLabel>Life Skills / SocialEmotional Learning</InputLabel>
           <Select
             name="wrapAroundLifeSkills"
             value={
@@ -1881,7 +2556,7 @@ export default function ProgramOutcome() {
       </Box>
       <Box mb={2}>
         <FormControl fullWidth>
-          <InputLabel>Wrap Around Case Management</InputLabel>
+          <InputLabel>Case Management</InputLabel>
           <Select
             name="wrapAroundCaseManagement"
             value={formState.wrapAroundServicesCaseManagement}
@@ -1907,7 +2582,7 @@ export default function ProgramOutcome() {
       </Box>
       <Box mb={2}>
         <FormControl fullWidth>
-          <InputLabel>Wrap Around Job Search</InputLabel>
+          <InputLabel>Job Search & Placement</InputLabel>
           <Select
             name="wrapAroundJobSearch"
             value={formState.wrapAroundServicesJobSearchAndPlacement}
@@ -1933,7 +2608,7 @@ export default function ProgramOutcome() {
       </Box>
       <Box mb={2}>
         <FormControl fullWidth>
-          <InputLabel>Wrap Around Recovery Treatment</InputLabel>
+          <InputLabel>Recovery Treatment</InputLabel>
           <Select
             name="wrapAroundRecoveryTreatment"
             value={formState.wrapAroundServicesRecoveryTreatment}
@@ -1959,7 +2634,7 @@ export default function ProgramOutcome() {
       </Box>
       <Box mb={2}>
         <FormControl fullWidth>
-          <InputLabel>Wrap Around Mental Health Services</InputLabel>
+          <InputLabel>Mental Health Services</InputLabel>
           <Select
             name="wrapAroundMentalHealthServices"
             value={formState.wrapAroundServicesMentalHealthServices}
@@ -1985,7 +2660,7 @@ export default function ProgramOutcome() {
       </Box>
       <Box mb={2}>
         <FormControl fullWidth>
-          <InputLabel>Wrap Around Healthcare</InputLabel>
+          <InputLabel>Healthcare (all other)</InputLabel>
           <Select
             name="wrapAroundHealthcare"
             value={formState.wrapAroundServicesHealthcareAllOther}
@@ -2011,7 +2686,7 @@ export default function ProgramOutcome() {
       </Box>
       <Box mb={2}>
         <FormControl fullWidth>
-          <InputLabel>Wrap Around Childcare</InputLabel>
+          <InputLabel>Childcare</InputLabel>
           <Select
             name="wrapAroundChildcare"
             value={formState.wrapAroundServicesChildcare}
@@ -2037,7 +2712,7 @@ export default function ProgramOutcome() {
       </Box>
       <Box mb={2}>
         <FormControl fullWidth>
-          <InputLabel>Wrap Around Transportation</InputLabel>
+          <InputLabel>Transportation</InputLabel>
           <Select
             name="wrapAroundTransportation"
             value={formState.wrapAroundServicesTransportation}
@@ -2061,10 +2736,10 @@ export default function ProgramOutcome() {
           </Select>
         </FormControl>
       </Box>
-      <h3>
-        If there are any wrap around services that you provide that you do not
-        see in the above list, please list them down below.
-      </h3>
+      <p>
+        Other: Please specify other wrap around services your program provides
+        or facilitates access to
+      </p>
       <Box mb={2}>
         <TextField
           label="Other Wraparound Services"
@@ -2079,29 +2754,32 @@ export default function ProgramOutcome() {
         />
       </Box>
       {/* Funding Fields */}
-      <h3>Funding Mix for Programs</h3>
+      <h3>Training Program Funding</h3>
+      <h4>Funding Mix for Programs</h4>
       <p>
-        Please estimate what percentage of your Training Program Funding comes
-        from each of the following categories. These can be rough estimates, but
-        the three numbers should total 100. <br /> <br />
-        Public Funding includes all government funding (except as noted below
-        for social enterprise).
-        <br />
-        <br />
-        Private Funding includes individual donations and in kind contributions.{' '}
-        <br />
-        <br />
-        Social Enterprise and Generated Revenues are the gross contributions to
-        budget from work completed by your kitchens and foodservice operations,
-        and includes contracts with public agencies that pay per meal or are for
-        a fixed amount for period of meal coverage. Please exclude revenues from
-        operations that have no involvement with the training program or
-        graduates.
+        Please estimate what percentage of your <b>Training Program Funding</b>{' '}
+        comes from each of the following categories. These can be rough
+        estimates, but the three numbers should total 100.
       </p>
-      <h4>Funding: % from public funding</h4>
+      <p>
+        <b>Public Funding</b> includes all government funding (except as noted
+        below for social enterprise).
+      </p>
+      <p>
+        <b>Private Funding</b> includes individual donations and in kind
+        contributions.
+      </p>
+      <p>
+        <b>Social Enterprise and Generated Revenues</b> are the gross
+        contributions to budget from work completed by your kitchens and
+        foodservice operations, and includes contracts with public agencies that
+        pay per meal or are for a fixed amount for period of meal coverage.
+        Please exclude revenues from operations that have no involvement with
+        the training program or graduates.
+      </p>
       <Box mb={2}>
         <TextField
-          label="Public Funding"
+          label="Funding: % from public funding"
           type="number"
           value={formState.fundingPercentFromPublicFunding}
           onChange={(e) =>
@@ -2113,10 +2791,9 @@ export default function ProgramOutcome() {
           fullWidth
         />
       </Box>
-      <h4>Funding: % from private funding</h4>
       <Box mb={2}>
         <TextField
-          label="Private Funding"
+          label="Funding: % from private funding"
           type="number"
           value={formState.fundingPercentFromPrivateFunding}
           onChange={(e) =>
@@ -2128,10 +2805,9 @@ export default function ProgramOutcome() {
           fullWidth
         />
       </Box>
-      <h4>Funding: % from social enterprise or generated revenue</h4>
       <Box mb={2}>
         <TextField
-          label="Social Enterprise Funding"
+          label="Funding: % from social enterprise or generated revenue"
           type="number"
           value={formState.fundingPercentFromSocialEnterpriseOrGeneratedRevenue}
           onChange={(e) =>
@@ -2146,6 +2822,7 @@ export default function ProgramOutcome() {
         />
       </Box>
       {/* SNAP E&T and WIOA */}
+      <h4>FUNDING SOURCES</h4>
       <h4>SNAP E&T</h4>
       <p>Do you currently receive SNAP E&T funds?</p>
       <Box mb={2}>
@@ -2157,15 +2834,22 @@ export default function ProgramOutcome() {
             onChange={(e) =>
               setFormState({
                 ...formState,
-                SNAPEAndT: e.target.value as 'Yes' | 'No But' | 'No And',
+                SNAPEAndT: e.target.value as
+                  | 'Yes'
+                  | 'NoButInterested'
+                  | 'NoNotInterested'
+                  | 'NoRejected',
               })
             }
           >
             <MenuItem value="Yes">Yes, we receive SNAP E&T funds</MenuItem>
-            <MenuItem value="No But">
+            <MenuItem value="NoButInterested">
               No, but we would like to be able to access SNAP E&T funding
             </MenuItem>
-            <MenuItem value="No And">
+            <MenuItem value="NoNotInterested">
+              No, and we have do not have interest in the funding
+            </MenuItem>
+            <MenuItem value="NoRejected">
               No, and we have applied and been rejected in the past
             </MenuItem>
           </Select>
@@ -2197,6 +2881,7 @@ export default function ProgramOutcome() {
         </FormControl>
       </Box>
       {/* Curriculum */}
+      <h3>General Program Questions</h3>
       <h4>Curriculum</h4>
       <p>
         How much of your program includes written, organized curriculum that
@@ -2211,11 +2896,7 @@ export default function ProgramOutcome() {
             onChange={(e) =>
               setFormState({
                 ...formState,
-                curriculum: e.target.value as
-                  | 'All'
-                  | 'Part'
-                  | 'None'
-                  | undefined,
+                curriculum: e.target.value as 'All' | 'Part' | 'None',
               })
             }
           >
@@ -2225,7 +2906,141 @@ export default function ProgramOutcome() {
           </Select>
         </FormControl>
       </Box>
+
+      <h4>Program Certifications</h4>
+      <p>
+        What certifications does your culinary program(s) currently hold? Check
+        all that apply. These are certifications that your program holds.
+        Individual certifications for students are listed in the following
+        question
+      </p>
+      <FormControl component="fieldset">
+        <FormLabel component="legend">Check All That Apply.</FormLabel>
+        <FormGroup>
+          {PROGRAM_CERTIFICATIONS.map((certification) => (
+            <FormControlLabel
+              key={certification}
+              control={
+                <Checkbox
+                  checked={formState.programCertifications.includes(
+                    certification,
+                  )}
+                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                    setFormState((prevState) => {
+                      const updatedCertifications = event.target.checked
+                        ? [...prevState.programCertifications, certification]
+                        : prevState.programCertifications.filter(
+                            (type) => type !== certification,
+                          );
+                      return {
+                        ...prevState,
+                        programCertifications: updatedCertifications,
+                      };
+                    });
+                  }}
+                  name={certification}
+                />
+              }
+              label={certification}
+            />
+          ))}
+        </FormGroup>
+      </FormControl>
+      <Box mb={2}>
+        <h4>Other Program Certifications</h4>
+        <p>
+          If you checked &quot;Other&quot; above, list any additional Program
+          Certifications here.{' '}
+          <b>Please separate multiple items with a semicolon.</b>
+        </p>
+        <TextField
+          id="outlined-other-program-certifications"
+          onChange={(e) =>
+            setFormState({
+              ...formState,
+              otherProgramCertifications: e.target.value,
+            })
+          }
+          label="Other Program Certifications"
+          variant="outlined"
+          fullWidth
+        />
+      </Box>
+
+      <h4>Participant Certifications</h4>
+      <p>
+        What certifications do you offer program participants? Check all that
+        apply.{' '}
+        <b>
+          Select the options below that are closest to your participant
+          certifications.
+        </b>{' '}
+        If necessary, you may list additional items in the next question.
+      </p>
+      <FormControl component="fieldset">
+        <FormLabel component="legend">Check All That Apply.</FormLabel>
+        <FormGroup>
+          {PARTICIPANT_CERTIFICATIONS.map((certification) => (
+            <FormControlLabel
+              key={certification}
+              control={
+                <Checkbox
+                  checked={formState.participantCertifications.includes(
+                    certification,
+                  )}
+                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                    setFormState((prevState) => {
+                      const updatedCertifications = event.target.checked
+                        ? [
+                            ...prevState.participantCertifications,
+                            certification,
+                          ]
+                        : prevState.participantCertifications.filter(
+                            (type) => type !== certification,
+                          );
+                      return {
+                        ...prevState,
+                        participantCertifications: updatedCertifications,
+                      };
+                    });
+                  }}
+                  name={certification}
+                />
+              }
+              label={certification}
+            />
+          ))}
+        </FormGroup>
+      </FormControl>
+      <Box mb={2}>
+        <h4>Other Participant Certifications</h4>
+        <p>
+          If you offer any certification opportunities for students that are not
+          listed above, please add those here.{' '}
+          <b>Please separate multiple items with a semicolon.</b>
+        </p>
+        <TextField
+          id="outlined-other-participant-certifications"
+          onChange={(e) =>
+            setFormState({
+              ...formState,
+              otherParticipantCertifications: e.target.value,
+            })
+          }
+          label="Other Participant Certifications"
+          variant="outlined"
+          fullWidth
+        />
+      </Box>
+
       {/* Internship/Externship */}
+      <h4>Internship or Externship</h4>
+      <p>
+        Do you offer an internship or externship opportunity to any of your
+        trainees either before or after program completion that is either
+        offsite with a business partner or onsite in one of your kitchens or
+        enterprises?
+      </p>
       <Box mb={2}>
         <FormControlLabel
           control={
@@ -2245,6 +3060,15 @@ export default function ProgramOutcome() {
       </Box>
       {formState.internshipOrExternship && (
         <div id="internshipOrExternship">
+          <h4>Internship or Externship Description</h4>
+          <p>
+            Please describe in 1-2 sentences your internship or externship. If
+            possible, include where it happens, how long it lasts, and if it is
+            supported by wages or a stipend. While these are not standard
+            definitions, an internship is on the job, practical experience
+            usually lasting several weeks or longer, while an externship is
+            shorter and more limited (job shadowing).
+          </p>
           <Box mb={2}>
             <TextField
               label="Internship Description"
@@ -2262,17 +3086,17 @@ export default function ProgramOutcome() {
         </div>
       )}
       {/* Other Fields */}
-      <h3>Local Minimum Wage</h3>
+      <h4>Minimum Wage in Currnet Year</h4>
       <p>
-        What was your local minimum wage for most of {new Date().getFullYear()}?
-        If your city, county, and/or state minimum wages are different, please
-        list the one that reflects where most of your graduates are placed in
-        jobs. If your local minimum wage has different tiers (i.e. by size of
-        employer), list the highest rate.
+        What was your local minimum wage for most of the current year? If your
+        city, county, and/or state minimum wages are different, please list the
+        one that reflects where most of your graduates are placed in jobs. If
+        your local minimum wage has different tiers (i.e. by size of employer),
+        list the highest rate.
       </p>
       <Box mb={2}>
         <TextField
-          label="Minimum Wage"
+          label="Minimum Wage Current Year"
           type="number"
           value={formState.minimumWage}
           onChange={(e) =>
@@ -2284,9 +3108,8 @@ export default function ProgramOutcome() {
           fullWidth
         />
       </Box>
-      <h3>Job Type: Food Service?</h3>
+      <h4>Job Type: Food Service?</h4>
       <p>
-        {' '}
         What % of first job placements for your training programs are in food
         service positions? Food service jobs are loosely defined as working in a
         kitchen.
@@ -2295,7 +3118,7 @@ export default function ProgramOutcome() {
         <FormControl fullWidth>
           <InputLabel>Job Type in Food Service</InputLabel>
           <Select
-            name="jobTypeFoodService"
+            name="jobType"
             value={formState.jobType}
             onChange={(e) =>
               setFormState({
@@ -2304,7 +3127,8 @@ export default function ProgramOutcome() {
                   | '1-25%'
                   | '26-50%'
                   | '51-75%'
-                  | '76-100%',
+                  | '76-100%'
+                  | 'Not Tracked',
               })
             }
           >
@@ -2312,14 +3136,51 @@ export default function ProgramOutcome() {
             <MenuItem value="26-50%">26-50%</MenuItem>
             <MenuItem value="51-75%">51-75%</MenuItem>
             <MenuItem value="76-100%">76-100%</MenuItem>
+            <MenuItem value="Not Tracked">Do not track job type</MenuItem>
           </Select>
         </FormControl>
       </Box>
+      <h4>Job Category</h4>
+      <p>
+        What job categories are you placing graduates into? Select all that
+        apply. &quot;Food Service&quot; positions refer to jobs in kitchens,
+        involved in food prep/production. &quot;Customer Service&quot; can be in
+        food service but not in food production (FOH or retail sales).
+      </p>
+      <FormControl component="fieldset">
+        <FormLabel component="legend">Check All That Apply.</FormLabel>
+        <FormGroup>
+          {JOB_CATEGORIES.map((category) => (
+            <FormControlLabel
+              key={category}
+              control={
+                <Checkbox
+                  checked={formState.jobCategory.includes(category)}
+                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                    setFormState((prevState) => {
+                      const updatedCategories = event.target.checked
+                        ? [...prevState.jobCategory, category]
+                        : prevState.jobCategory.filter(
+                            (type) => type !== category,
+                          );
+                      return {
+                        ...prevState,
+                        jobCategory: updatedCategories,
+                      };
+                    });
+                  }}
+                  name={category}
+                />
+              }
+              label={category}
+            />
+          ))}
+        </FormGroup>
+      </FormControl>
       <h4>Alumni Hired by Org</h4>
       <p>
         The number of alumni of your training programs that worked for your
-        organization in a <b>fulltime position</b> in {new Date().getFullYear()}
-        ? Approximate number is OK.
+        organization in the current year? Approximate number is OK.
       </p>
       <Box mb={2}>
         <TextField
@@ -2335,6 +3196,17 @@ export default function ProgramOutcome() {
           fullWidth
         />
       </Box>
+      {errorOpen && (
+        <Alert
+          severity="warning"
+          onClose={() => setErrorOpen(false)}
+          style={{ marginBottom: '1rem' }}
+        >
+          {errorMessages.map((message) => (
+            <div key={message}>{message}</div>
+          ))}
+        </Alert>
+      )}
       <Box mt={3}>
         <Button
           variant="contained"
