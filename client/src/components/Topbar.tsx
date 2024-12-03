@@ -44,7 +44,7 @@ function Topbar() {
 
   return (
     <AppBar
-      position="relative"
+      position="sticky"
       sx={{
         // zIndex: (theme) => theme.zIndex.drawer + 1,
         backgroundColor: '#fff',

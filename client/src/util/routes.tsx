@@ -66,7 +66,6 @@ function ProtectedRoutesWrapper() {
         <div
           style={{
             padding: '20px',
-            marginTop: '-100px',
           }}
         >
           <Outlet />
