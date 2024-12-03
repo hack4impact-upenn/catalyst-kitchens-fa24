@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios, { all } from 'axios';
 import {
   Button,
   Box,
@@ -21,6 +21,7 @@ import {
   Select,
   MenuItem,
   InputLabel,
+  Alert,
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -356,19 +357,535 @@ export default function ProgramOutcome() {
     fetchOrganizationNameById();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formState.orgId]);
+
+  const [errorOpen, setErrorOpen] = useState(false);
+  const [errorMessages, setErrorMessages] = useState<string[]>([]);
   const validateInputs = () => {
-    // Add validation logic here:
-    // ex:
-    // const { adultProgram, minimumWage, jobTypeFoodService } = formState;
-    // if (!adultProgram || !minimumWage || !jobTypeFoodService) {
-    //   return false;
-    // }
-    if (formState.orgId.length > 0) {
-      return true;
+    console.log('Validating inputs');
+    let hasError = false;
+    const allErrorMessages: string[] = [];
+    if (
+      formState.programCostPerTrainee !== undefined &&
+      formState.programCostPerTrainee < 0
+    ) {
+      allErrorMessages.push(
+        'Program Cost per Trainee must be a positive number.',
+      );
+      hasError = true;
     }
-    return false;
+    if (
+      formState.youthTrained !== undefined &&
+      (formState.youthTrained < 0 || !Number.isInteger(formState.youthTrained))
+    ) {
+      allErrorMessages.push('Youth Trained must be a positive integer.');
+      hasError = true;
+    }
+    if (
+      formState.youthProgramRetentionRate !== undefined &&
+      (formState.youthProgramRetentionRate < 0 ||
+        formState.youthProgramRetentionRate > 100)
+    ) {
+      allErrorMessages.push(
+        'Youth Program Retention Rate must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.youthPositiveOutcomes !== undefined &&
+      (formState.youthPositiveOutcomes < 0 ||
+        formState.youthPositiveOutcomes > 100)
+    ) {
+      allErrorMessages.push(
+        'Youth Positive Outcomes must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (formState.youthWage !== undefined && formState.youthWage < 0) {
+      allErrorMessages.push('Youth Wage must be a positive number.');
+      hasError = true;
+    }
+    if (
+      formState.youthJobRetentionThreeMonths !== undefined &&
+      (formState.youthJobRetentionThreeMonths < 0 ||
+        formState.youthJobRetentionThreeMonths > 100)
+    ) {
+      allErrorMessages.push(
+        'Youth Job Retention at Three Months must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.youthJobRetentionSixMonths !== undefined &&
+      (formState.youthJobRetentionSixMonths < 0 ||
+        formState.youthJobRetentionSixMonths > 100)
+    ) {
+      allErrorMessages.push(
+        'Youth Job Retention at Six Months must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.youthJobRetentionTwelveMonths !== undefined &&
+      (formState.youthJobRetentionTwelveMonths < 0 ||
+        formState.youthJobRetentionTwelveMonths > 100)
+    ) {
+      allErrorMessages.push(
+        'Youth Job Retention at Twelve Months must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.youthJobRetentionTwentyFourMonths !== undefined &&
+      (formState.youthJobRetentionTwentyFourMonths < 0 ||
+        formState.youthJobRetentionTwentyFourMonths > 100)
+    ) {
+      allErrorMessages.push(
+        'Youth Job Retention at Twenty Four Months must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.youthProgramWeeks !== undefined &&
+      formState.youthProgramWeeks < 0
+    ) {
+      allErrorMessages.push('Youth Program Weeks must be a positive number.');
+      hasError = true;
+    }
+    if (
+      formState.youthProgramHours !== undefined &&
+      formState.youthProgramHours < 0
+    ) {
+      allErrorMessages.push('Youth Program Hours must be a positive number.');
+      hasError = true;
+    }
+    if (
+      formState.adultsTrained !== undefined &&
+      (formState.adultsTrained < 0 ||
+        !Number.isInteger(formState.adultsTrained))
+    ) {
+      allErrorMessages.push('Adults Trained must be a positive integer.');
+      hasError = true;
+    }
+    if (
+      formState.adultsGraduated !== undefined &&
+      (formState.adultsGraduated < 0 || formState.adultsGraduated > 100)
+    ) {
+      allErrorMessages.push('Adults Graduated must be between 0 and 100.');
+      hasError = true;
+    }
+    if (
+      formState.adultPositiveOutcome !== undefined &&
+      (formState.adultPositiveOutcome < 0 ||
+        formState.adultPositiveOutcome > 100)
+    ) {
+      allErrorMessages.push(
+        'Adult Positive Outcomes must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.adultJobPlacement !== undefined &&
+      (formState.adultJobPlacement < 0 || formState.adultJobPlacement > 100)
+    ) {
+      allErrorMessages.push('Adult Job Placement must be between 0 and 100.');
+      hasError = true;
+    }
+    if (formState.adultWage !== undefined && formState.adultWage < 0) {
+      allErrorMessages.push('Adult Wage must be a positive number.');
+      hasError = true;
+    }
+    if (
+      formState.adultJobRetentionThreeMonths !== undefined &&
+      (formState.adultJobRetentionThreeMonths < 0 ||
+        formState.adultJobRetentionThreeMonths > 100)
+    ) {
+      allErrorMessages.push(
+        'Adult Job Retention at Three Months must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.adultJobRetentionSixMonths !== undefined &&
+      (formState.adultJobRetentionSixMonths < 0 ||
+        formState.adultJobRetentionSixMonths > 100)
+    ) {
+      allErrorMessages.push(
+        'Adult Job Retention at Six Months must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.adultWageAtSixMonths !== undefined &&
+      formState.adultWageAtSixMonths < 0
+    ) {
+      allErrorMessages.push(
+        'Adult Wage at Six Months must be a positive number.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.adultJobRetentionTwelveMonths !== undefined &&
+      (formState.adultJobRetentionTwelveMonths < 0 ||
+        formState.adultJobRetentionTwelveMonths > 100)
+    ) {
+      allErrorMessages.push(
+        'Adult Job Retention at Twelve Months must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.adultWageAtTwelveMonths !== undefined &&
+      formState.adultWageAtTwelveMonths < 0
+    ) {
+      allErrorMessages.push(
+        'Adult Wage at Twelve Months must be a positive number.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.adultJobRetentionTwentyFourMonths !== undefined &&
+      (formState.adultJobRetentionTwentyFourMonths < 0 ||
+        formState.adultJobRetentionTwentyFourMonths > 100)
+    ) {
+      allErrorMessages.push(
+        'Adult Job Retention at Twenty Four Months must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.adultWageTwentyFourMonths !== undefined &&
+      formState.adultWageTwentyFourMonths < 0
+    ) {
+      allErrorMessages.push(
+        'Adult Wage at Twenty Four Months must be a positive number.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.adultProgramWeeks !== undefined &&
+      formState.adultProgramWeeks < 0
+    ) {
+      allErrorMessages.push('Adult Program Weeks must be a positive number.');
+      hasError = true;
+    }
+    if (
+      formState.adultProgramHours !== undefined &&
+      formState.adultProgramHours < 0
+    ) {
+      allErrorMessages.push('Adult Program Hours must be a positive number.');
+      hasError = true;
+    }
+    if (
+      formState.traineeAge !== undefined &&
+      (formState.traineeAge < 0 || formState.traineeAge > 100)
+    ) {
+      allErrorMessages.push('Trainee Age must be between 0 and 100.');
+      hasError = true;
+    }
+    if (
+      formState.traineePercentFemale !== undefined &&
+      (formState.traineePercentFemale < 0 ||
+        formState.traineePercentFemale > 100)
+    ) {
+      allErrorMessages.push(
+        'Trainee Percent Female must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.traineePercentMale !== undefined &&
+      (formState.traineePercentMale < 0 || formState.traineePercentMale > 100)
+    ) {
+      allErrorMessages.push('Trainee Percent Male must be between 0 and 100.');
+      hasError = true;
+    }
+    if (
+      formState.traineePercentNonBinary !== undefined &&
+      (formState.traineePercentNonBinary < 0 ||
+        formState.traineePercentNonBinary > 100)
+    ) {
+      allErrorMessages.push(
+        'Trainee Percent Non-Binary must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.traineePercentFemale !== undefined &&
+      formState.traineePercentMale !== undefined &&
+      formState.traineePercentNonBinary !== undefined &&
+      formState.traineePercentFemale +
+        formState.traineePercentMale +
+        formState.traineePercentNonBinary !==
+        100
+    ) {
+      allErrorMessages.push(
+        'The sum of Trainee Percent Female, Trainee Percent Male, and Trainee Percent Non-Binary must must be 100',
+      );
+      hasError = true;
+    }
+    if (
+      formState.traineePercentTransgender !== undefined &&
+      (formState.traineePercentTransgender < 0 ||
+        formState.traineePercentTransgender > 100)
+    ) {
+      allErrorMessages.push(
+        'Trainee Percent Transgender must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.traineePercentAmericanIndian !== undefined &&
+      (formState.traineePercentAmericanIndian < 0 ||
+        formState.traineePercentAmericanIndian > 100)
+    ) {
+      allErrorMessages.push(
+        'Trainee Percent American Indian must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.traineePercentAsianOrAsianAmerican !== undefined &&
+      (formState.traineePercentAsianOrAsianAmerican < 0 ||
+        formState.traineePercentAsianOrAsianAmerican > 100)
+    ) {
+      allErrorMessages.push(
+        'Trainee Percent Asian or Asian American must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.traineePercentBlackOrAfricanAmerican !== undefined &&
+      (formState.traineePercentBlackOrAfricanAmerican < 0 ||
+        formState.traineePercentBlackOrAfricanAmerican > 100)
+    ) {
+      allErrorMessages.push(
+        'Trainee Percent Black or African American must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.traineePercentLatinaLatinoLatinx !== undefined &&
+      (formState.traineePercentLatinaLatinoLatinx < 0 ||
+        formState.traineePercentLatinaLatinoLatinx > 100)
+    ) {
+      allErrorMessages.push(
+        'Trainee Percent Latina, Latino, or Latinx must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.traineePercentNativeHawaiianPacificIslander !== undefined &&
+      (formState.traineePercentNativeHawaiianPacificIslander < 0 ||
+        formState.traineePercentNativeHawaiianPacificIslander > 100)
+    ) {
+      allErrorMessages.push(
+        'Trainee Percent Native Hawaiian or Pacific Islander must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.traineeMultiracial !== undefined &&
+      (formState.traineeMultiracial < 0 || formState.traineeMultiracial > 100)
+    ) {
+      allErrorMessages.push(
+        'Trainee Percent Multiracial must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.traineeWhite !== undefined &&
+      (formState.traineeWhite < 0 || formState.traineeWhite > 100)
+    ) {
+      allErrorMessages.push('Trainee Percent White must be between 0 and 100.');
+      hasError = true;
+    }
+    if (
+      formState.traineeOtherRace !== undefined &&
+      (formState.traineeOtherRace < 0 || formState.traineeOtherRace > 100)
+    ) {
+      allErrorMessages.push(
+        'Trainee Percent Other Race must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.traineeRaceUnknown !== undefined &&
+      (formState.traineeRaceUnknown < 0 || formState.traineeRaceUnknown > 100)
+    ) {
+      allErrorMessages.push(
+        'Trainee Percent Race Unknown must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.traineePercentAmericanIndian !== undefined &&
+      formState.traineePercentBlackOrAfricanAmerican !== undefined &&
+      formState.traineePercentAsianOrAsianAmerican !== undefined &&
+      formState.traineePercentLatinaLatinoLatinx !== undefined &&
+      formState.traineePercentNativeHawaiianPacificIslander !== undefined &&
+      formState.traineeMultiracial !== undefined &&
+      formState.traineeWhite !== undefined &&
+      formState.traineeOtherRace !== undefined &&
+      formState.traineeRaceUnknown !== undefined &&
+      formState.traineePercentAmericanIndian +
+        formState.traineePercentBlackOrAfricanAmerican +
+        formState.traineePercentAsianOrAsianAmerican +
+        formState.traineePercentLatinaLatinoLatinx +
+        formState.traineePercentNativeHawaiianPacificIslander +
+        formState.traineeMultiracial +
+        formState.traineeWhite +
+        formState.traineeOtherRace +
+        formState.traineeRaceUnknown !==
+        100
+    ) {
+      allErrorMessages.push(
+        'The sum of Trainee Percent American Indian, Trainee Percent Black or African American, Trainee Percent Asian or Asian American, Trainee Percent Latina, Latino, or Latinx, Trainee Percent Native Hawaiian or Pacific Islander, Trainee Percent Multiracial, Trainee Percent White, Trainee Percent Other Race, and Trainee Percent Race Unknown must be 100',
+      );
+      hasError = true;
+    }
+
+    if (
+      formState.barrierReturningCitizensOrFormerlyIncarceratedPersons !==
+        undefined &&
+      (formState.barrierReturningCitizensOrFormerlyIncarceratedPersons < 0 ||
+        formState.barrierReturningCitizensOrFormerlyIncarceratedPersons > 100)
+    ) {
+      allErrorMessages.push(
+        'Barrier Returning Citizens must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.barrierPhysicalDisability !== undefined &&
+      (formState.barrierPhysicalDisability < 0 ||
+        formState.barrierPhysicalDisability > 100)
+    ) {
+      allErrorMessages.push(
+        'Barrier Physical Disability must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.barrierIntellectualOrDevelopmentalDisability !== undefined &&
+      (formState.barrierIntellectualOrDevelopmentalDisability < 0 ||
+        formState.barrierIntellectualOrDevelopmentalDisability > 100)
+    ) {
+      allErrorMessages.push(
+        'Barrier Intellectual or Developmental Disability must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.barrierUnhoused !== undefined &&
+      (formState.barrierUnhoused < 0 || formState.barrierUnhoused > 100)
+    ) {
+      allErrorMessages.push('Barrier Unhoused must be between 0 and 100.');
+      hasError = true;
+    }
+    if (
+      formState.barrierMentalHealth !== undefined &&
+      (formState.barrierMentalHealth < 0 || formState.barrierMentalHealth > 100)
+    ) {
+      allErrorMessages.push('Barrier Mental Health must be between 0 and 100.');
+      hasError = true;
+    }
+    if (
+      formState.barrierNewAmericans !== undefined &&
+      (formState.barrierNewAmericans < 0 || formState.barrierNewAmericans > 100)
+    ) {
+      allErrorMessages.push('Barrier New Americans must be between 0 and 100.');
+      hasError = true;
+    }
+    if (
+      formState.barrierInRecovery !== undefined &&
+      (formState.barrierInRecovery < 0 || formState.barrierInRecovery > 100)
+    ) {
+      allErrorMessages.push('Barrier In Recovery must be between 0 and 100.');
+      hasError = true;
+    }
+    if (
+      formState.barrierVeteran !== undefined &&
+      (formState.barrierVeteran < 0 || formState.barrierVeteran > 100)
+    ) {
+      allErrorMessages.push('Barrier Veteran must be between 0 and 100.');
+      hasError = true;
+    }
+    if (
+      formState.fundingPercentFromPublicFunding !== undefined &&
+      (formState.fundingPercentFromPublicFunding < 0 ||
+        formState.fundingPercentFromPublicFunding > 100)
+    ) {
+      allErrorMessages.push(
+        'Funding Percent from Public Funding must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.fundingPercentFromPrivateFunding !== undefined &&
+      (formState.fundingPercentFromPrivateFunding < 0 ||
+        formState.fundingPercentFromPrivateFunding > 100)
+    ) {
+      allErrorMessages.push(
+        'Funding Percent from Private Funding must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.fundingPercentFromSocialEnterpriseOrGeneratedRevenue !==
+        undefined &&
+      (formState.fundingPercentFromSocialEnterpriseOrGeneratedRevenue < 0 ||
+        formState.fundingPercentFromSocialEnterpriseOrGeneratedRevenue > 100)
+    ) {
+      allErrorMessages.push(
+        'Funding Percent from Social Enterprise or Generated Revenue must be between 0 and 100.',
+      );
+      hasError = true;
+    }
+    if (
+      formState.fundingPercentFromPublicFunding !== undefined &&
+      formState.fundingPercentFromPrivateFunding !== undefined &&
+      formState.fundingPercentFromSocialEnterpriseOrGeneratedRevenue !==
+        undefined &&
+      formState.fundingPercentFromPublicFunding +
+        formState.fundingPercentFromPrivateFunding +
+        formState.fundingPercentFromSocialEnterpriseOrGeneratedRevenue !==
+        100
+    ) {
+      allErrorMessages.push(
+        'The sum of Funding Percent from Public Funding, Funding Percent from Private Funding, and Funding Percent from Social Enterprise or Generated Revenue must be 100',
+      );
+      hasError = true;
+    }
+    if (formState.minimumWage !== undefined && formState.minimumWage < 0) {
+      allErrorMessages.push('Minimum Wage must be a positive number.');
+      hasError = true;
+    }
+    if (
+      formState.alumniHiredByOrg !== undefined &&
+      (formState.alumniHiredByOrg < 0 ||
+        !Number.isInteger(formState.alumniHiredByOrg))
+    ) {
+      allErrorMessages.push(
+        'Alumni Hired by Organization must be a positive integer.',
+      );
+      hasError = true;
+    }
+
+    if (!formState.orgId) {
+      hasError = true;
+    }
+
+    if (hasError) {
+      console.log('Validation failed: Displaying error messages.');
+      setErrorOpen(true);
+      setErrorMessages(allErrorMessages);
+      return false;
+    }
+
+    return true;
   };
   const handleSubmit = async () => {
+    console.log('handling submit');
     if (validateInputs()) {
       try {
         const formData = {
@@ -385,8 +902,12 @@ export default function ProgramOutcome() {
         // Handle error (e.g., show an error message)
       }
     } else {
-      console.error('Validation failed: Please fill out all required fields.');
+      console.error('Validation failed.');
       // Handle validation failure (e.g., show a validation error message)
+      if (errorMessages.length === 0) {
+        setErrorOpen(true);
+        setErrorMessages(['Please fill out all required fields.']);
+      }
     }
   };
   return (
@@ -2675,6 +3196,17 @@ export default function ProgramOutcome() {
           fullWidth
         />
       </Box>
+      {errorOpen && (
+        <Alert
+          severity="warning"
+          onClose={() => setErrorOpen(false)}
+          style={{ marginBottom: '1rem' }}
+        >
+          {errorMessages.map((message) => (
+            <div key={message}>{message}</div>
+          ))}
+        </Alert>
+      )}
       <Box mt={3}>
         <Button
           variant="contained"
