@@ -13,17 +13,14 @@ export default function VisualizationHome() {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
         display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
         backgroundColor: 'white',
       }}
     >
-      <Grid container spacing={4} justifyContent="center">
+      <Grid container spacing={4} padding={4}>
         {/* Card for Submit Kitchen Data */}
         <Grid item>
-          <Card sx={{ maxWidth: 300, boxShadow: 3 }}>
+          <Card sx={{ maxWidth: 500, boxShadow: 3 }}>
             <CardContent>
               <Typography variant="h5" component="div" gutterBottom>
                 Submit Kitchen Data
@@ -51,7 +48,7 @@ export default function VisualizationHome() {
 
         {/* Card for Program Outcomes Form */}
         <Grid item>
-          <Card sx={{ maxWidth: 300, boxShadow: 3 }}>
+          <Card sx={{ maxWidth: 500, boxShadow: 3 }}>
             <CardContent>
               <Typography variant="h5" component="div" gutterBottom>
                 Submit Program Data
