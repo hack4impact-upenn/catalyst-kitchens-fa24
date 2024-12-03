@@ -10,6 +10,7 @@ import {
 import { useSelector } from 'react-redux';
 import { getData, useData } from './api.tsx';
 import Sidebar from '../components/Sidebar.tsx';
+import Topbar from '../components/Topbar.tsx';
 import { RootState } from './redux/store';
 
 interface IDynamicElementProps {
@@ -52,8 +53,24 @@ function ProtectedRoutesWrapper() {
   return !data.error ? (
     <div style={{ display: 'flex' }}>
       <Sidebar links={links} />
-      <div style={{ marginLeft: '250px', padding: '20px', flexGrow: 1 }}>
-        <Outlet />
+      <div
+        style={{
+          flexGrow: 1,
+          marginLeft: '250px',
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <Topbar />
+        <div
+          style={{
+            padding: '20px',
+            marginTop: '-100px',
+          }}
+        >
+          <Outlet />
+        </div>
       </div>
     </div>
   ) : (
@@ -83,8 +100,23 @@ function AdminRoutesWrapper() {
   return !data.error ? (
     <div style={{ display: 'flex' }}>
       <Sidebar links={links} />
-      <div style={{ marginLeft: '250px', padding: '20px', flexGrow: 1 }}>
-        <Outlet />
+      <div
+        style={{
+          flexGrow: 1,
+          marginLeft: '250px',
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <Topbar />
+        <div
+          style={{
+            padding: '20px',
+          }}
+        >
+          <Outlet />
+        </div>
       </div>
     </div>
   ) : (
