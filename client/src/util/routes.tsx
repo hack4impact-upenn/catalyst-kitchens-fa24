@@ -62,7 +62,7 @@ function ProtectedRoutesWrapper() {
           flexDirection: 'column',
         }}
       >
-        <Topbar />
+        <Topbar email={user.email || ''} />
         <div
           style={{
             padding: '20px',
@@ -108,7 +108,7 @@ function AdminRoutesWrapper() {
           flexDirection: 'column',
         }}
       >
-        <Topbar />
+        <Topbar email={user.email || ''} />
         <div
           style={{
             padding: '20px',

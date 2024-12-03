@@ -1,5 +1,12 @@
-import React from 'react';
-import { AppBar, Toolbar, Typography, Button } from '@mui/material';
+import React, { useState } from 'react';
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Menu,
+  MenuItem,
+} from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { postData } from '../util/api';
 
@@ -32,10 +39,20 @@ const getPageTitle = (pathname: string): string => {
   }
 };
 
-function Topbar() {
+function Topbar({ email }: { email: string }) {
   const location = useLocation();
   const navigate = useNavigate();
   const pageTitle = getPageTitle(location.pathname);
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
 
   const handleLogout = async () => {
     postData('auth/logout');
@@ -55,9 +72,17 @@ function Topbar() {
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           {pageTitle}
         </Typography>
-        <Button color="inherit" onClick={handleLogout}>
-          Logout
+        <Button color="inherit" onClick={handleMenuOpen}>
+          Account
         </Button>
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleMenuClose}
+        >
+          <MenuItem disabled>{email}</MenuItem>
+          <MenuItem onClick={handleLogout}>Logout</MenuItem>
+        </Menu>
       </Toolbar>
     </AppBar>
   );
