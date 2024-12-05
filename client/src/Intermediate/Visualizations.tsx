@@ -20,7 +20,7 @@ export default function VisualizationHome() {
       <Grid container spacing={4} padding={4}>
         {/* Card for Kitchen Visualization */}
         <Grid item>
-          <Card sx={{ maxWidth: 500, boxShadow: 3 }}>
+          <Card sx={{ maxWidth: 470, boxShadow: 3 }}>
             <CardContent>
               <Typography variant="h5" component="div" gutterBottom>
                 View Kitchen Data
@@ -47,7 +47,7 @@ export default function VisualizationHome() {
 
         {/* Card for Program Visualization */}
         <Grid item>
-          <Card sx={{ maxWidth: 500, boxShadow: 3 }}>
+          <Card sx={{ maxWidth: 470, boxShadow: 3 }}>
             <CardContent>
               <Typography variant="h5" component="div" gutterBottom>
                 View Program Data

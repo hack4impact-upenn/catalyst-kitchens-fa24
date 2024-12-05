@@ -20,7 +20,7 @@ export default function VisualizationHome() {
       <Grid container spacing={4} padding={4}>
         {/* Card for Submit Kitchen Data */}
         <Grid item>
-          <Card sx={{ maxWidth: 500, boxShadow: 3 }}>
+          <Card sx={{ maxWidth: 470, boxShadow: 3 }}>
             <CardContent>
               <Typography variant="h5" component="div" gutterBottom>
                 Submit Kitchen Data
@@ -48,7 +48,7 @@ export default function VisualizationHome() {
 
         {/* Card for Program Outcomes Form */}
         <Grid item>
-          <Card sx={{ maxWidth: 500, boxShadow: 3 }}>
+          <Card sx={{ maxWidth: 470, boxShadow: 3 }}>
             <CardContent>
               <Typography variant="h5" component="div" gutterBottom>
                 Submit Program Data
