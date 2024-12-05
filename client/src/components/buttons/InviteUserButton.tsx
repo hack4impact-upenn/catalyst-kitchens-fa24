@@ -45,7 +45,11 @@ function InviteUserButton() {
 
   return (
     <div style={{ marginBottom: '10px' }}>
-      <Button variant="contained" onClick={handleClickOpen}>
+      <Button
+        variant="contained"
+        onClick={handleClickOpen}
+        sx={{ backgroundColor: 'black' }}
+      >
         Invite User
       </Button>
       <Dialog open={open} onClose={handleClose}>

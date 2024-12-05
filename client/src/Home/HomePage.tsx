@@ -86,7 +86,7 @@ function HomePage() {
     }
   };
 
-  const message = `Welcome to the Boilerplate, ${user.firstName} ${user.lastName}!`;
+  const message = `Welcome to Catalyst Kitchens, ${user.firstName} ${user.lastName}!`;
 
   return (
     <div
