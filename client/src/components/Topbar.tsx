@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -8,7 +8,7 @@ import {
   MenuItem,
 } from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { postData } from '../util/api';
+import { getData, postData } from '../util/api';
 
 const getPageTitle = (pathname: string): string => {
   switch (pathname) {
@@ -43,7 +43,8 @@ function Topbar({ email }: { email: string }) {
   const location = useLocation();
   const navigate = useNavigate();
   const pageTitle = getPageTitle(location.pathname);
-
+  const [orgName, setOrgName] = useState<string | null>(null);
+  const [orgId, setOrgId] = useState<string | null>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -58,6 +59,35 @@ function Topbar({ email }: { email: string }) {
     postData('auth/logout');
     navigate('/login');
   };
+  useEffect(() => {
+    const getUserOrganizationId = async () => {
+      try {
+        const response = await getData(`auth/organization/${email}`);
+        const orgSetId = await response.data;
+        setOrgId(orgSetId);
+      } catch (e) {
+        console.error(e);
+        setOrgName(null);
+        setOrgId(null);
+      }
+    };
+    const getUserOrganizationName = async () => {
+      try {
+        if (orgId) {
+          const response = await getData(
+            `organization/organization/name/${orgId}`,
+          );
+          const orgSetName = await response.data;
+          setOrgName(orgSetName.organizationName);
+        }
+      } catch (e) {
+        console.error(e);
+        setOrgName(null);
+      }
+    };
+    getUserOrganizationId();
+    getUserOrganizationName();
+  }, [email, orgId]);
 
   return (
     <AppBar
@@ -81,6 +111,9 @@ function Topbar({ email }: { email: string }) {
           onClose={handleMenuClose}
         >
           <MenuItem disabled>{email}</MenuItem>
+          <MenuItem disabled>
+            Organization: {orgName || 'None Assigned'}
+          </MenuItem>
           <MenuItem onClick={handleLogout}>Logout</MenuItem>
         </Menu>
       </Toolbar>

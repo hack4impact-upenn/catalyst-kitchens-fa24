@@ -14,7 +14,7 @@ const getOneKitchenOutcomes = async (year: Date, orgId: string) => {
     orgId,
     year: {
       $gte: startDate,
-      $lt: endDate,
+      $lte: endDate,
     },
   }).exec();
   console.log(startDate);

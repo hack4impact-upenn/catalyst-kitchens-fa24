@@ -222,6 +222,7 @@ interface IKitchenOutcomes extends mongoose.Document {
 const KitchenOutcomes = mongoose.model<IKitchenOutcomes>(
   'KitchenOutcomes',
   KitchenOutcomesSchema,
+  'kitchenoutcomesuploadtest',
 );
 
 export { IKitchenOutcomes, KitchenOutcomes };
