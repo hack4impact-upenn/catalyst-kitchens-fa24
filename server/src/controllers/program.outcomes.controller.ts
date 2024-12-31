@@ -28,7 +28,7 @@ const getOneProgramOutcomesController = async (
   }
 
   try {
-    //this is what was changed
+    // this is what was changed
     const adjustedYear = parseInt(year, 10) + 1;
     const yearDate = new Date(Date.UTC(adjustedYear, 0, 1));
 
@@ -186,11 +186,14 @@ const getFieldValuesByYearController = async (
   }
 
   try {
-    const valuesByYear = await getFieldValuesByYear(orgId, field as keyof IProgramOutcomes);
-    
+    const valuesByYear = await getFieldValuesByYear(
+      orgId,
+      field as keyof IProgramOutcomes,
+    );
+
     // Convert Map to object for JSON response
     const response = Object.fromEntries(valuesByYear);
-    
+
     res.status(StatusCode.OK).json(response);
   } catch (error) {
     next(ApiError.internal(`Unable to get ${field} values by year`));

@@ -771,6 +771,7 @@ function ProgramOutcomesVisualization() {
 
         if (!response || !response.data) {
           console.log('No program outcomes found for this org and year');
+          console.log(response);
           setProgramData(null);
           return;
         }

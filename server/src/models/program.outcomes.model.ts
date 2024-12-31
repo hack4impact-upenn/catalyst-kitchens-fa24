@@ -366,7 +366,7 @@ const ProgramOutcomesSchema = new mongoose.Schema({
   },
   WIOA: {
     type: String,
-    enum: ['Yes', 'No But', 'No And'],
+    enum: ['Yes', 'NoButInterested', 'NoNotInterested', 'NoRejected'],
   },
   curriculum: {
     type: String,

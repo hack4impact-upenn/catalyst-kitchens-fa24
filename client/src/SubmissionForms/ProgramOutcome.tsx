@@ -75,6 +75,7 @@ export default function ProgramOutcome() {
   type FormState = {
     emailAddress: string;
     orgId: string;
+    year: Date;
     shareSurvey: boolean;
     organizationName: string;
     responderName: string;
@@ -201,7 +202,7 @@ export default function ProgramOutcome() {
     fundingPercentFromPrivateFunding?: number;
     fundingPercentFromSocialEnterpriseOrGeneratedRevenue?: number;
     SNAPEAndT?: 'Yes' | 'NoButInterested' | 'NoNotInterested' | 'NoRejected';
-    WIOA?: 'Yes' | 'No But' | 'No And';
+    WIOA?: 'Yes' | 'NoButInterested' | 'NoNotInterested' | 'NoRejected';
     curriculum?: 'All' | 'Part' | 'None';
     programCertifications: string[];
     otherProgramCertifications?: string;
@@ -217,6 +218,7 @@ export default function ProgramOutcome() {
   const noState: FormState = {
     emailAddress: '',
     orgId: '',
+    year: new Date(new Date().getFullYear()),
     shareSurvey: false,
     organizationName: '',
     responderName: '',
@@ -910,6 +912,9 @@ export default function ProgramOutcome() {
       }
     }
   };
+
+  const currYear = new Date().getFullYear();
+
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto' }}>
       <h1>Submit Program Outcomes for {formState.organizationName}</h1>
@@ -935,9 +940,7 @@ export default function ProgramOutcome() {
         will be included as we distribute that support across the country.
         <br />
         <br />
-        <b>
-          Calendar year data for the current year is preferred but not required
-        </b>
+        <b>Calendar year data for {currYear} is preferred but not required</b>
         <br />
         Please submit data for the current calendar year if you are able. If you
         operate on non-calendar operating years, and calendar year data is
@@ -1076,8 +1079,8 @@ export default function ProgramOutcome() {
           <Box mb={2}>
             <h4>Youth: Trained</h4>
             Total # of youth who participated in foodservice job training
-            programming in 2023 or during the most recent 12-month period for
-            which you have complete data. This is the{' '}
+            programming in {currYear} or during the most recent 12-month period
+            for which you have complete data. This is the{' '}
             <b>total number enrolled</b> in all your youth specific programs.
             <br />
             <br />
@@ -2357,10 +2360,9 @@ export default function ProgramOutcome() {
           }}
         />
       </Box>
-      <h4>Barrier: Intellectual or Developmental Disability</h4>
+      <h4>Barrier: Neurodiversity</h4>
       <p>
-        <b>Percentage</b> of trainee population who have intellectual or
-        developmental disabilities.
+        <b>Percentage</b> of trainee population who are neurodiverse.
       </p>
       <Box mb={2}>
         <TextField
@@ -2866,16 +2868,23 @@ export default function ProgramOutcome() {
             onChange={(e) =>
               setFormState({
                 ...formState,
-                WIOA: e.target.value as 'Yes' | 'No But' | 'No And' | undefined,
+                WIOA: e.target.value as
+                  | 'Yes'
+                  | 'NoButInterested'
+                  | 'NoNotInterested'
+                  | 'NoRejected',
               })
             }
           >
             <MenuItem value="Yes">Yes, we receive WIOA funds</MenuItem>
-            <MenuItem value="No But">
+            <MenuItem value="NoButInterested">
               No, but we would like to be able to access WIOA funding
             </MenuItem>
-            <MenuItem value="No And">
+            <MenuItem value="NoNotInterested">
               No, and we have do not have interest in the funding
+            </MenuItem>
+            <MenuItem value="NoRejected">
+              No, and we have applied and been rejected in the past
             </MenuItem>
           </Select>
         </FormControl>
@@ -3088,11 +3097,11 @@ export default function ProgramOutcome() {
       {/* Other Fields */}
       <h4>Minimum Wage in Currnet Year</h4>
       <p>
-        What was your local minimum wage for most of the current year? If your
-        city, county, and/or state minimum wages are different, please list the
-        one that reflects where most of your graduates are placed in jobs. If
-        your local minimum wage has different tiers (i.e. by size of employer),
-        list the highest rate.
+        What was your local minimum wage for most of {currYear}? If your city,
+        county, and/or state minimum wages are different, please list the one
+        that reflects where most of your graduates are placed in jobs. If your
+        local minimum wage has different tiers (i.e. by size of employer), list
+        the highest rate.
       </p>
       <Box mb={2}>
         <TextField
@@ -3180,7 +3189,15 @@ export default function ProgramOutcome() {
       <h4>Alumni Hired by Org</h4>
       <p>
         The number of alumni of your training programs that worked for your
-        organization in the current year? Approximate number is OK.
+        organization in {currYear}? Approximate number is OK.
+      </p>
+      <p>
+        This number should refer to hires, whether full time or part time, in
+        roles that are permanent at the organization. These roles should not be
+        dependent on status as a student or graduate, e.g. students who are paid
+        during the program, temporary hires post-program, or
+        apprenticeships/transitional hires only supported by programmatic
+        funding.
       </p>
       <Box mb={2}>
         <TextField
