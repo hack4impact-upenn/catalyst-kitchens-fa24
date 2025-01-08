@@ -164,10 +164,12 @@ const ProgramOutcomesSchema = new mongoose.Schema({
     type: String,
     enum: ['Single Cohort', 'Staggered', 'Other'],
   },
-  adultCompensation: {
-    type: String,
-    enum: ['HourlyMin', 'HourlyAboveMin', 'Stipend', 'None'],
-  },
+  adultCompensation: [
+    {
+      type: String,
+      enum: ['HourlyMin', 'HourlyAboveMin', 'Stipend', 'None'],
+    },
+  ],
   adultTrainedDefinition: {
     type: String,
     enum: [
@@ -366,7 +368,7 @@ const ProgramOutcomesSchema = new mongoose.Schema({
   },
   WIOA: {
     type: String,
-    enum: ['Yes', 'No But', 'No And'],
+    enum: ['Yes', 'NoButInterested', 'NoNotInterested', 'NoRejected'],
   },
   curriculum: {
     type: String,
@@ -483,7 +485,7 @@ interface IProgramOutcomes {
   adultProgramWeeks?: number;
   adultProgramHours?: number;
   adultEnrollmentStructure?: string;
-  adultCompensation?: string;
+  adultCompensation?: string[];
   adultTrainedDefinition?: string;
   adultGraduatedDefinition?: string;
   traineeAge?: number;
@@ -539,6 +541,7 @@ interface IProgramOutcomes {
 const ProgramOutcomes = mongoose.model<IProgramOutcomes>(
   'ProgramOutcomes',
   ProgramOutcomesSchema,
+  'programoutcomesuploadtest',
 );
 
 export { IProgramOutcomes, ProgramOutcomes };

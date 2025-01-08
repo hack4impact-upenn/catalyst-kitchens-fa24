@@ -14,9 +14,9 @@ const getProgramOutcomesByOrgId = async (orgId: string) => {
 // Get a singular project outcomes data point by org_id and year
 const getOneProgramOutcomes = async (year: Date, orgId: string) => {
   console.log('Service - Getting program outcomes for:', { year, orgId });
-  const startDate = new Date(Date.UTC(year.getFullYear(), 0, 1));
-  const endDate = new Date(Date.UTC(year.getFullYear() + 1, 0, 1));
-
+  const targetYear = year.getUTCFullYear() - 1; // Shift back
+  const startDate = new Date(Date.UTC(targetYear, 0, 1)); // Start
+  const endDate = new Date(Date.UTC(targetYear + 1, 0, 1)); // Start of next
   const outcomes = await ProgramOutcomes.findOne({
     orgId,
     year: {
