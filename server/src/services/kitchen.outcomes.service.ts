@@ -4,7 +4,11 @@ import {
   KitchenOutcomes,
 } from '../models/kitchen.outcomes.model.ts';
 
-const calculateAgeAndRaceDistributions = async (year: number) => {
+const calculateAgeAndRaceDistributions = async (
+  year: number,
+  mealType: string,
+  mealRange: string,
+) => {
   try {
     console.log(
       'calculating age and race distribution service for year:',
@@ -13,9 +17,28 @@ const calculateAgeAndRaceDistributions = async (year: number) => {
     const startDate = new Date(Date.UTC(year, 0, 1));
     const endDate = new Date(Date.UTC(year + 1, 0, 1));
 
-    const outcomes = await KitchenOutcomes.find({
+    const matchConditions: any = {
       year: { $gte: startDate, $lt: endDate },
-    });
+    };
+
+    if (mealType !== 'All') {
+      matchConditions.typeOfMealsServed = { $in: [mealType] };
+    }
+
+    if (mealRange !== 'All') {
+      if (mealRange.includes('+')) {
+        const minRange = parseInt(mealRange.replace('+', ''), 10);
+        matchConditions.hungerReliefsMealsServed = { $gte: minRange };
+      } else {
+        const [minRange, maxRange] = mealRange.split('-').map(Number);
+        matchConditions.hungerReliefsMealsServed = {
+          $gte: minRange,
+          ...(maxRange && { $lte: maxRange }),
+        };
+      }
+    }
+
+    const outcomes = await KitchenOutcomes.find(matchConditions);
 
     let totalMealsAdults = 0;
     let totalMealsInfants = 0;
@@ -124,6 +147,8 @@ export { calculateAgeAndRaceDistributions };
 const getNetworkAverage = async (
   field: string,
   year: number,
+  mealType: string,
+  mealRange: string,
 ): Promise<number | null> => {
   const startDate = new Date(Date.UTC(year, 0, 1));
   const endDate = new Date(Date.UTC(year + 1, 0, 1));
@@ -134,13 +159,36 @@ const getNetworkAverage = async (
       year,
       startDate,
       endDate,
+      mealType,
+      mealRange,
     });
+    const matchConditions: any = {
+      year: { $gte: startDate, $lt: endDate },
+      [field]: { $exists: true, $ne: NaN },
+    };
+
+    if (mealType !== 'All') {
+      matchConditions.typeOfMealsServed = { $in: [mealType] };
+    }
+
+    if (mealRange !== 'All') {
+      if (mealRange.includes('+')) {
+        const minRange = parseInt(mealRange.replace('+', ''), 10);
+        matchConditions.hungerReliefsMealsServed = { $gte: minRange };
+      } else {
+        const [minRange, maxRange] = mealRange.split('-').map(Number);
+        matchConditions.hungerReliefsMealsServed = {
+          $gte: minRange,
+          ...(maxRange && { $lte: maxRange }),
+        };
+      }
+    }
+
+    console.log('Service - Match conditions:', matchConditions);
+
     const result = await KitchenOutcomes.aggregate([
       {
-        $match: {
-          year: { $gte: startDate, $lt: endDate },
-          [field]: { $exists: true, $ne: NaN },
-        },
+        $match: matchConditions,
       },
       {
         $group: {

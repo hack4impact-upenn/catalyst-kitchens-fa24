@@ -16,8 +16,11 @@ import {
 
 const router = express.Router();
 
-router.get('/distri/:year', isAuthenticated, distriController);
-
+router.get(
+  '/distri/:year/:mealType/:mealRange',
+  isAuthenticated,
+  distriController,
+);
 
 // router.get('/:year/:orgName', isAuthenticated, getOneKitchenOutcomesController);
 router.get('/:year/:orgId', isAuthenticated, getOneKitchenOutcomesController); // no authentication for now
@@ -40,7 +43,7 @@ router.delete('/delete/:id', isAdmin, deleteKitchenOutcomeByIdController);
 router.post('/add/', isAuthenticated, addKitchenOutcomesController);
 
 router.get(
-  '/network-average/:field/:year',
+  '/network-average/:field/:year/:mealType/:mealRange',
   isAuthenticated,
   getNetworkAverageController,
 );

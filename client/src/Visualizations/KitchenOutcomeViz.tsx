@@ -143,6 +143,8 @@ function KitchenOutcomesVisualization() {
   const [orgName, setOrgName] = useState<string | undefined>('');
   const [orgId, setOrgId] = useState('');
   const [year, setYear] = useState<number | ''>('');
+  const [mealType, setMealType] = useState<string>('All');
+  const [mealRange, setMealRange] = useState<string>('All');
 
   const tabNames = [
     'Hunger Relief',
@@ -150,6 +152,36 @@ function KitchenOutcomesVisualization() {
     'Capital Projects',
     'Organization Info',
   ];
+
+  const mealTypes = [
+    'All',
+    'Childcare Meals',
+    'School Meals',
+    'Soup Kitchen (onsite)',
+    'Shelter Meals (offsite)',
+    'Meals for Supportive/Transitional Housing',
+    'Meals For Seniors',
+    'Medically Tailored Meals',
+  ];
+
+  const mealRanges = [
+    'All',
+    '0-100000',
+    '100000-500000',
+    '500000-1000000',
+    '1000000+',
+  ];
+
+  const handleMealTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setMealType(event.target.value);
+  };
+
+  const handleMealRangeChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    setMealRange(event.target.value);
+  };
+
   useEffect(() => {
     const fetchOrgList = async () => {
       try {
@@ -730,7 +762,11 @@ function KitchenOutcomesVisualization() {
     },
   };
 
-  const fetchAllNetworkAverages = async (selectedYear: number) => {
+  const fetchAllNetworkAverages = async (
+    selectedYear: number,
+    mealTypeFilter: string,
+    mealRangeFilter: string,
+  ) => {
     console.log('Fetching network averages for year:', selectedYear);
 
     const fields = [
@@ -754,10 +790,10 @@ function KitchenOutcomesVisualization() {
       fields.map(async (field) => {
         try {
           console.log(
-            `trying to get network avg route with ${field} ${selectedYear}`,
+            `trying to get network avg route with ${field} ${selectedYear} ${mealTypeFilter} ${mealRangeFilter}`,
           );
           const response = await getData(
-            `kitchen_outcomes/network-average/${field}/${selectedYear}`,
+            `kitchen_outcomes/network-average/${field}/${selectedYear}/${mealTypeFilter}/${mealRangeFilter}`,
           );
           averages[field] = response.data.average;
         } catch (error) {
@@ -770,7 +806,7 @@ function KitchenOutcomesVisualization() {
     try {
       console.log('trying to call route with year: ', selectedYear);
       const response2 = await getData(
-        `kitchen_outcomes/distri/${selectedYear}`,
+        `kitchen_outcomes/distri/${selectedYear}/${mealTypeFilter}/${mealRangeFilter}`,
       );
       console.log('response data: ', response2.data);
       const ageRaceData = response2.data;
@@ -789,9 +825,9 @@ function KitchenOutcomesVisualization() {
 
   useEffect(() => {
     if (year) {
-      fetchAllNetworkAverages(Number(year));
+      fetchAllNetworkAverages(Number(year), mealType, mealRange);
     }
-  }, [year]);
+  }, [year, mealType, mealRange]);
 
   return (
     <Container maxWidth="lg">
@@ -842,6 +878,43 @@ function KitchenOutcomesVisualization() {
             {yearList.map((availableYear) => (
               <MenuItem key={availableYear} value={availableYear}>
                 {availableYear}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+        <Grid item xs={12}>
+          <Typography variant="subtitle1" sx={{ mb: 1 }}>
+            Network Average Filters
+          </Typography>
+        </Grid>
+        <Grid item xs={12} sm={6} md={6}>
+          <TextField
+            select
+            size="small"
+            fullWidth
+            label="Meal Type"
+            value={mealType}
+            onChange={handleMealTypeChange}
+          >
+            {mealTypes.map((type) => (
+              <MenuItem key={type} value={type}>
+                {type}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+        <Grid item xs={12} sm={6} md={6}>
+          <TextField
+            select
+            size="small"
+            fullWidth
+            label="Number of Meals Served"
+            value={mealRange}
+            onChange={handleMealRangeChange}
+          >
+            {mealRanges.map((range) => (
+              <MenuItem key={range} value={range}>
+                {range}
               </MenuItem>
             ))}
           </TextField>

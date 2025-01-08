@@ -20,7 +20,7 @@ const distriController = async (
   res: express.Response,
   next: express.NextFunction,
 ) => {
-  const { year } = req.params;
+  const { year, mealType, mealRange } = req.params;
 
   if (!year) {
     next(ApiError.missingFields(['year']));
@@ -39,7 +39,11 @@ const distriController = async (
       year,
     );
 
-    const ageDistribution = await calculateAgeAndRaceDistributions(yearNum);
+    const ageDistribution = await calculateAgeAndRaceDistributions(
+      yearNum,
+      mealType,
+      mealRange,
+    );
 
     res.status(StatusCode.OK).json({
       year: yearNum,
@@ -61,10 +65,10 @@ const getNetworkAverageController = async (
   res: express.Response,
   next: express.NextFunction,
 ) => {
-  const { field, year } = req.params;
+  const { field, year, mealType, mealRange } = req.params;
 
-  if (!field || !year) {
-    next(ApiError.missingFields(['field', 'year']));
+  if (!field || !year || !mealType || !mealRange) {
+    next(ApiError.missingFields(['field', 'year', 'mealType', 'mealRange']));
     return;
   }
 
@@ -75,7 +79,12 @@ const getNetworkAverageController = async (
       return;
     }
 
-    const average = await getNetworkAverage(field, yearNum);
+    const average = await getNetworkAverage(
+      field,
+      yearNum,
+      mealType,
+      mealRange,
+    );
 
     res.status(StatusCode.OK).json({
       field,
