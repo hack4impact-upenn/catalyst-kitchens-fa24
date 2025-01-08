@@ -739,6 +739,13 @@ function KitchenOutcomesVisualization() {
       'foodCostPercentage',
       'mealReimbursement',
       'hungerReliefsMealsServed',
+      'grossRevenueCafe',
+      'grossRevenueRestaurant',
+      'grossRevenueCatering',
+      'grossRevenueFoodTruck',
+      'grossRevenueWholesale',
+      'grossRevenueFoodSubscription',
+      'retailSocialEnterpriseRevenue',
     ];
 
     const averages: { [key: string]: number | null } = {};
@@ -1175,26 +1182,35 @@ function KitchenOutcomesVisualization() {
 
                   <Grid container spacing={3}>
                     {[
-                      { label: 'Cafe', value: surveyData?.grossRevenueCafe },
+                      {
+                        label: 'Cafe',
+                        value: surveyData?.grossRevenueCafe,
+                        avg: networkAverages?.grossRevenueCafe,
+                      },
                       {
                         label: 'Restaurant',
                         value: surveyData?.grossRevenueRestaurant,
+                        avg: networkAverages?.grossRevenueRestaurant,
                       },
                       {
                         label: 'Catering',
                         value: surveyData?.grossRevenueCatering,
+                        avg: networkAverages?.grossRevenueCatering,
                       },
                       {
                         label: 'Food Truck',
                         value: surveyData?.grossRevenueFoodTruck,
+                        avg: networkAverages?.grossRevenueFoodTruck,
                       },
                       {
                         label: 'Wholesale',
                         value: surveyData?.grossRevenueWholesale,
+                        avg: networkAverages?.grossRevenueWholesale,
                       },
                       {
                         label: 'Food Subscription',
                         value: surveyData?.grossRevenueFoodSubscription,
+                        avg: networkAverages?.grossRevenueFoodSubscription,
                       },
                     ].map((enterprise) => (
                       <Grid item xs={12} sm={6} md={4} key={enterprise.label}>
@@ -1226,7 +1242,7 @@ function KitchenOutcomesVisualization() {
                             {enterprise.label}
                           </Typography>
                           <Typography
-                            variant="h6"
+                            variant="h5"
                             color={
                               enterprise.value === 'No Enterprise'
                                 ? 'text.secondary'
@@ -1235,6 +1251,9 @@ function KitchenOutcomesVisualization() {
                             sx={{ fontWeight: 500 }}
                           >
                             {enterprise.value || 'N/A'}
+                          </Typography>
+                          <Typography sx={{ mt: 0.5 }}>
+                            Network Avg: {enterprise.avg?.toFixed(2)}
                           </Typography>
                         </Card>
                       </Grid>
@@ -1271,6 +1290,10 @@ function KitchenOutcomesVisualization() {
                     $
                     {surveyData?.retailSocialEnterpriseRevenue?.toLocaleString() ||
                       'N/A'}
+                  </Typography>
+                  <Typography align="center" sx={{ mt: 0.5 }}>
+                    Network Avg: $
+                    {networkAverages?.retailSocialEnterpriseRevenue?.toFixed(2)}
                   </Typography>
                 </Card>
               </Grid>
