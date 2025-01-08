@@ -187,8 +187,7 @@ export default function KitchenOutcome() {
       formState.mealsFemale +
       formState.mealsMale +
       formState.mealsNonBinary +
-      formState.mealsGenderUnknown +
-      formState.mealsTrangender;
+      formState.mealsGenderUnknown;
     const mealFundingSum =
       formState.mealFundingPublic +
       formState.mealFundingPrivateContracts +
@@ -303,6 +302,9 @@ export default function KitchenOutcome() {
     fetchOrganizationNameById();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formState.orgId]);
+
+  const currYear = new Date().getFullYear();
+
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto' }}>
       <h1 style={{ textAlign: 'center' }}>
@@ -343,12 +345,13 @@ export default function KitchenOutcome() {
       <h4>Hunger Relief Impact Funding</h4>
       <p>
         Hunger Relief Meals Served: Total number of meals prepared for low
-        income individuals in 2023 by your organization. Hunger Relief Meals are
-        prepared meals: hot, cold, frozen, ready-to-eat or reheat. <br /> <br />{' '}
-        They do not include grocery/pantry boxes. Meal kits, specific boxed mix
-        of perishable and non-perishable ingredients with recipes(e.g. “Blue
-        Apron style”) are included in community meals. Include all prepared
-        meals whether sold on contract or funded through grants or fundraising.
+        income individuals in {currYear} by your organization. Hunger Relief
+        Meals are prepared meals: hot, cold, frozen, ready-to-eat or reheat.{' '}
+        <br /> <br /> They do not include grocery/pantry boxes. Meal kits,
+        specific boxed mix of perishable and non-perishable ingredients with
+        recipes(e.g. “Blue Apron style”) are included in community meals.
+        Include all prepared meals whether sold on contract or funded through
+        grants or fundraising.
       </p>
       <Box mb={2}>
         <TextField
@@ -1144,7 +1147,7 @@ export default function KitchenOutcome() {
 
       <h4>Retail Social Enterprise Revenue</h4>
       <p>
-        Total combined gross revenue in 2023 from all foodservice social
+        Total combined gross revenue in {currYear} from all foodservice social
         enterprises, excluding contract hunger relief
       </p>
       <Box mb={2}>
