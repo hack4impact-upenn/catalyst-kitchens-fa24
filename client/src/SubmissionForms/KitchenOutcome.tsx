@@ -33,6 +33,7 @@ export default function KitchenOutcome() {
   type FormState = {
     email: string | null;
     year: Date;
+    currYear: number;
     orgId: string | null;
     shareSurvey: boolean;
     responderName: string;
@@ -109,6 +110,7 @@ export default function KitchenOutcome() {
   const noFormState: FormState = {
     email: user.email,
     year: new Date(new Date().getFullYear()),
+    currYear: new Date().getFullYear(),
     orgId: null,
     shareSurvey: true,
     responderName: '',
@@ -187,6 +189,7 @@ export default function KitchenOutcome() {
       formState.mealsFemale +
       formState.mealsMale +
       formState.mealsNonBinary +
+      formState.mealsTrangender +
       formState.mealsGenderUnknown;
     const mealFundingSum =
       formState.mealFundingPublic +
@@ -302,6 +305,16 @@ export default function KitchenOutcome() {
     fetchOrganizationNameById();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formState.orgId]);
+  useEffect(() => {
+    const setYearValue = () => {
+      setFormState({
+        ...formState,
+        year: new Date(`1/1/${formState.currYear}`),
+      });
+    };
+    setYearValue();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formState.currYear]);
 
   const currYear = new Date().getFullYear();
 
@@ -342,14 +355,36 @@ export default function KitchenOutcome() {
           fullWidth
         />
       </Box>
+      <h4>Submission Year</h4>
+      <p>
+        While it is preferred to submit data for the current calendar year, this
+        section of the form allows you to select a different submission year if
+        needed.
+      </p>
+      <Box mb={2}>
+        <TextField
+          id="outlined-basic"
+          label="Year of Submission"
+          variant="outlined"
+          type="number"
+          value={formState.currYear}
+          fullWidth
+          onChange={(e) => {
+            setFormState({
+              ...formState,
+              currYear: Number(e.target.value),
+            });
+          }}
+        />
+      </Box>
       <h4>Hunger Relief Impact Funding</h4>
       <p>
         Hunger Relief Meals Served: Total number of meals prepared for low
-        income individuals in {currYear} by your organization. Hunger Relief
-        Meals are prepared meals: hot, cold, frozen, ready-to-eat or reheat.{' '}
-        <br /> <br /> They do not include grocery/pantry boxes. Meal kits,
-        specific boxed mix of perishable and non-perishable ingredients with
-        recipes(e.g. “Blue Apron style”) are included in community meals.
+        income individuals in {formState.currYear} by your organization. Hunger
+        Relief Meals are prepared meals: hot, cold, frozen, ready-to-eat or
+        reheat. <br /> <br /> They do not include grocery/pantry boxes. Meal
+        kits, specific boxed mix of perishable and non-perishable ingredients
+        with recipes(e.g. “Blue Apron style”) are included in community meals.
         Include all prepared meals whether sold on contract or funded through
         grants or fundraising.
       </p>
@@ -1147,8 +1182,8 @@ export default function KitchenOutcome() {
 
       <h4>Retail Social Enterprise Revenue</h4>
       <p>
-        Total combined gross revenue in {currYear} from all foodservice social
-        enterprises, excluding contract hunger relief
+        Total combined gross revenue in {formState.currYear} from all
+        foodservice social enterprises, excluding contract hunger relief
       </p>
       <Box mb={2}>
         <TextField

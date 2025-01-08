@@ -76,6 +76,7 @@ export default function ProgramOutcome() {
     emailAddress: string;
     orgId: string;
     year: Date;
+    currYear: number;
     shareSurvey: boolean;
     organizationName: string;
     responderName: string;
@@ -218,6 +219,7 @@ export default function ProgramOutcome() {
   const noState: FormState = {
     emailAddress: '',
     orgId: '',
+    currYear: new Date().getFullYear(),
     year: new Date(new Date().getFullYear()),
     shareSurvey: false,
     organizationName: '',
@@ -333,6 +335,16 @@ export default function ProgramOutcome() {
     fetchOrganizationId();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user.email]);
+  useEffect(() => {
+    const setYearValue = () => {
+      setFormState({
+        ...formState,
+        year: new Date(`1/1/${formState.currYear}`),
+      });
+    };
+    setYearValue();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formState.currYear]);
   useEffect(() => {
     const fetchOrganizationNameById = async () => {
       if (formState.orgId) {
@@ -972,6 +984,28 @@ export default function ProgramOutcome() {
         <a href="info@catalystkitchens.org">info@catalystkitchens.org</a>. All
         comments are welcome.
       </p>
+      <h4>Submission Year</h4>
+      <p>
+        While it is preferred to submit data for the current calendar year, this
+        section of the form allows you to select a different submission year if
+        needed.
+      </p>
+      <Box mb={2}>
+        <TextField
+          id="outlined-basic"
+          label="Year of Submission"
+          variant="outlined"
+          type="number"
+          value={formState.currYear}
+          fullWidth
+          onChange={(e) => {
+            setFormState({
+              ...formState,
+              currYear: Number(e.target.value),
+            });
+          }}
+        />
+      </Box>
       <h3>Organization Details</h3>
       <Box mb={2}>
         <h4>Share Survey</h4>
@@ -1079,8 +1113,8 @@ export default function ProgramOutcome() {
           <Box mb={2}>
             <h4>Youth: Trained</h4>
             Total # of youth who participated in foodservice job training
-            programming in {currYear} or during the most recent 12-month period
-            for which you have complete data. This is the{' '}
+            programming in {formState.currYear} or during the most recent
+            12-month period for which you have complete data. This is the{' '}
             <b>total number enrolled</b> in all your youth specific programs.
             <br />
             <br />
@@ -3097,11 +3131,11 @@ export default function ProgramOutcome() {
       {/* Other Fields */}
       <h4>Minimum Wage in Currnet Year</h4>
       <p>
-        What was your local minimum wage for most of {currYear}? If your city,
-        county, and/or state minimum wages are different, please list the one
-        that reflects where most of your graduates are placed in jobs. If your
-        local minimum wage has different tiers (i.e. by size of employer), list
-        the highest rate.
+        What was your local minimum wage for most of {formState.currYear}? If
+        your city, county, and/or state minimum wages are different, please list
+        the one that reflects where most of your graduates are placed in jobs.
+        If your local minimum wage has different tiers (i.e. by size of
+        employer), list the highest rate.
       </p>
       <Box mb={2}>
         <TextField
@@ -3189,7 +3223,7 @@ export default function ProgramOutcome() {
       <h4>Alumni Hired by Org</h4>
       <p>
         The number of alumni of your training programs that worked for your
-        organization in {currYear}? Approximate number is OK.
+        organization in {formState.currYear}? Approximate number is OK.
       </p>
       <p>
         This number should refer to hires, whether full time or part time, in

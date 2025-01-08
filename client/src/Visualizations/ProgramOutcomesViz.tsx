@@ -632,6 +632,7 @@ function AdultSummaryBox({
 const lineChartOptions: ChartOptions<'line'> = {
   responsive: true,
   maintainAspectRatio: false,
+  spanGaps: true,
   scales: {
     y: {
       beginAtZero: true,
@@ -2060,8 +2061,8 @@ function ProgramOutcomesVisualization() {
                     {
                       label: 'Initial Wage',
                       data: historicalData.wages.initial.orgValues,
-                      borderColor: chartColors.org,
-                      backgroundColor: chartColors.org,
+                      borderColor: chartColors.network,
+                      backgroundColor: chartColors.network,
                       pointStyle: 'circle',
                       pointRadius: 6,
                       tension: 0.1,
