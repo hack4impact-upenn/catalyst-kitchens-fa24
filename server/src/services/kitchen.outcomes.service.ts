@@ -4,6 +4,159 @@ import {
   KitchenOutcomes,
 } from '../models/kitchen.outcomes.model.ts';
 
+const calculateAgeAndRaceDistributions = async (year: number) => {
+  try {
+    console.log(
+      'calculating age and race distribution service for year:',
+      year,
+    );
+    const startDate = new Date(Date.UTC(year, 0, 1));
+    const endDate = new Date(Date.UTC(year + 1, 0, 1));
+
+    const outcomes = await KitchenOutcomes.find({
+      year: { $gte: startDate, $lt: endDate },
+    });
+
+    let totalMealsAdults = 0;
+    let totalMealsInfants = 0;
+    let totalMealsChildren = 0;
+    let totalMealsSeniors = 0;
+    let totalMealsAgeUnknown = 0;
+    let totalMealsAmericanIndian = 0;
+    let totalMealsAsian = 0;
+    let totalMealsBlack = 0;
+    let totalMealsLatinx = 0;
+    let totalMealsNativeHawaiian = 0;
+    let totalMealsMultiRacial = 0;
+    let totalMealsWhite = 0;
+    let totalMealsOtherRace = 0;
+    let totalMealsRaceUnknown = 0;
+
+    outcomes.forEach((outcome) => {
+      if (
+        !Number.isNaN(outcome.hungerReliefsMealsServed) &&
+        !Number.isNaN(outcome.mealsAdults) &&
+        !Number.isNaN(outcome.mealsInfants) &&
+        !Number.isNaN(outcome.mealsChildren) &&
+        !Number.isNaN(outcome.mealsSeniors) &&
+        !Number.isNaN(outcome.mealsAgeUnknown)
+      ) {
+        const mealsServed = outcome.hungerReliefsMealsServed || 0;
+        totalMealsAdults += (outcome.mealsAdults || 0) * mealsServed;
+        totalMealsInfants += (outcome.mealsInfants || 0) * mealsServed;
+        totalMealsChildren += (outcome.mealsChildren || 0) * mealsServed;
+        totalMealsSeniors += (outcome.mealsSeniors || 0) * mealsServed;
+        totalMealsAgeUnknown += (outcome.mealsAgeUnknown || 0) * mealsServed;
+      }
+      if (
+        !Number.isNaN(outcome.hungerReliefsMealsServed) &&
+        !Number.isNaN(outcome.mealsAmericanIndian) &&
+        !Number.isNaN(outcome.mealsAsian) &&
+        !Number.isNaN(outcome.mealsBlack) &&
+        !Number.isNaN(outcome.mealsLatinx) &&
+        !Number.isNaN(outcome.mealsNativeHawaiian) &&
+        !Number.isNaN(outcome.mealsMultiRacial) &&
+        !Number.isNaN(outcome.mealsWhite) &&
+        !Number.isNaN(outcome.mealsOtherRace) &&
+        !Number.isNaN(outcome.mealsRaceUnknown)
+      ) {
+        const mealsServed = outcome.hungerReliefsMealsServed || 0;
+        totalMealsAmericanIndian +=
+          (outcome.mealsAmericanIndian || 0) * mealsServed;
+        totalMealsAsian += (outcome.mealsAsian || 0) * mealsServed;
+        totalMealsBlack += (outcome.mealsBlack || 0) * mealsServed;
+        totalMealsLatinx += (outcome.mealsLatinx || 0) * mealsServed;
+        totalMealsNativeHawaiian +=
+          (outcome.mealsNativeHawaiian || 0) * mealsServed;
+        totalMealsMultiRacial += (outcome.mealsMultiRacial || 0) * mealsServed;
+        totalMealsWhite += (outcome.mealsWhite || 0) * mealsServed;
+        totalMealsOtherRace += (outcome.mealsOtherRace || 0) * mealsServed;
+        totalMealsRaceUnknown += (outcome.mealsRaceUnknown || 0) * mealsServed;
+      }
+    });
+
+    const totalAgeMeals =
+      totalMealsAdults +
+      totalMealsInfants +
+      totalMealsChildren +
+      totalMealsSeniors +
+      totalMealsAgeUnknown;
+
+    const totalRaceMeals =
+      totalMealsAmericanIndian +
+      totalMealsAsian +
+      totalMealsBlack +
+      totalMealsLatinx +
+      totalMealsNativeHawaiian +
+      totalMealsMultiRacial +
+      totalMealsWhite +
+      totalMealsOtherRace +
+      totalMealsRaceUnknown;
+
+    const ageAndRaceDistributions = {
+      mealsAdults: (totalMealsAdults / totalAgeMeals) * 100,
+      mealsInfants: (totalMealsInfants / totalAgeMeals) * 100,
+      mealsChildren: (totalMealsChildren / totalAgeMeals) * 100,
+      mealsSeniors: (totalMealsSeniors / totalAgeMeals) * 100,
+      mealsAgeUnknown: (totalMealsAgeUnknown / totalAgeMeals) * 100,
+      mealsAmericanIndian: (totalMealsAmericanIndian / totalRaceMeals) * 100,
+      mealsAsian: (totalMealsAsian / totalRaceMeals) * 100,
+      mealsBlack: (totalMealsBlack / totalRaceMeals) * 100,
+      mealsLatinx: (totalMealsLatinx / totalRaceMeals) * 100,
+      mealsNativeHawaiian: (totalMealsNativeHawaiian / totalRaceMeals) * 100,
+      mealsMultiRacial: (totalMealsMultiRacial / totalRaceMeals) * 100,
+      mealsWhite: (totalMealsWhite / totalRaceMeals) * 100,
+      mealsOtherRace: (totalMealsOtherRace / totalRaceMeals) * 100,
+      mealsRaceUnknown: (totalMealsRaceUnknown / totalRaceMeals) * 100,
+    };
+
+    console.log('AGE RACE DISTRIBUTIONS:', ageAndRaceDistributions);
+
+    return ageAndRaceDistributions;
+  } catch (error) {
+    console.error('Error calculating age and race distributions:', error);
+    throw new Error('Unable to calculate age and race distributions');
+  }
+};
+
+export { calculateAgeAndRaceDistributions };
+
+const getNetworkAverage = async (
+  field: string,
+  year: number,
+): Promise<number | null> => {
+  const startDate = new Date(Date.UTC(year, 0, 1));
+  const endDate = new Date(Date.UTC(year + 1, 0, 1));
+
+  try {
+    console.log('Service - Getting network average for:', {
+      field,
+      year,
+      startDate,
+      endDate,
+    });
+    const result = await KitchenOutcomes.aggregate([
+      {
+        $match: {
+          year: { $gte: startDate, $lt: endDate },
+          [field]: { $exists: true, $ne: NaN },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          average: { $avg: `$${field}` },
+        },
+      },
+    ]);
+    console.log('Service - Network average result:', result);
+    return result.length > 0 ? result[0].average : null;
+  } catch (error) {
+    console.error(`Error calculating network average for ${field}:`, error);
+    throw new Error(`Unable to calculate network average for ${field}`);
+  }
+};
+
 const getOneKitchenOutcomes = async (year: Date, orgId: string) => {
   console.log('Year', year.getFullYear());
   const startDate = new Date(Date.UTC(year.getFullYear(), 0, 1));
@@ -137,4 +290,5 @@ export {
   getAllKitchenOutcomesByOrg,
   deleteKitchenOutcomeById,
   addKitchenOutcomes,
+  getNetworkAverage,
 };

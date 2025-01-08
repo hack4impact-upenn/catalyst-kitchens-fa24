@@ -11,7 +11,83 @@ import {
   getAllKitchenOutcomesByOrg,
   deleteKitchenOutcomeById,
   addKitchenOutcomes,
+  getNetworkAverage,
+  calculateAgeAndRaceDistributions,
 } from '../services/kitchen.outcomes.service.ts';
+
+const distriController = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) => {
+  const { year } = req.params;
+
+  if (!year) {
+    next(ApiError.missingFields(['year']));
+    return;
+  }
+
+  try {
+    const yearNum = parseInt(year, 10);
+    if (isNaN(yearNum)) {
+      next(ApiError.badRequest('Invalid year format'));
+      return;
+    }
+
+    console.log(
+      'calculating age and race distribution controller for year:',
+      year,
+    );
+
+    const ageDistribution = await calculateAgeAndRaceDistributions(yearNum);
+
+    res.status(StatusCode.OK).json({
+      year: yearNum,
+      ageDistribution,
+    });
+  } catch (error) {
+    next(
+      ApiError.internal(
+        `Unable to calculate age distribution for year ${year}`,
+      ),
+    );
+  }
+};
+
+export { distriController };
+
+const getNetworkAverageController = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) => {
+  const { field, year } = req.params;
+
+  if (!field || !year) {
+    next(ApiError.missingFields(['field', 'year']));
+    return;
+  }
+
+  try {
+    const yearNum = parseInt(year, 10);
+    if (isNaN(yearNum)) {
+      next(ApiError.badRequest('Invalid year format'));
+      return;
+    }
+
+    const average = await getNetworkAverage(field, yearNum);
+
+    res.status(StatusCode.OK).json({
+      field,
+      year: yearNum,
+      average: average ?? null,
+    });
+  } catch (error) {
+    next(ApiError.internal(`Unable to calculate network average for ${field}`));
+  }
+};
+
+export { getNetworkAverageController };
 
 const getOneKitchenOutcomesController = async (
   req: express.Request,

@@ -10,9 +10,14 @@ import {
   getKitchenOutcomesByOrg,
   deleteKitchenOutcomeByIdController,
   addKitchenOutcomesController,
+  getNetworkAverageController,
+  distriController,
 } from '../controllers/kitchen.outcomes.controller.ts';
 
 const router = express.Router();
+
+router.get('/distri/:year', isAuthenticated, distriController);
+
 
 // router.get('/:year/:orgName', isAuthenticated, getOneKitchenOutcomesController);
 router.get('/:year/:orgId', isAuthenticated, getOneKitchenOutcomesController); // no authentication for now
@@ -33,4 +38,11 @@ router.get('/get/all/:orgId', isAuthenticated, getKitchenOutcomesByOrg);
 router.delete('/delete/:id', isAdmin, deleteKitchenOutcomeByIdController);
 
 router.post('/add/', isAuthenticated, addKitchenOutcomesController);
+
+router.get(
+  '/network-average/:field/:year',
+  isAuthenticated,
+  getNetworkAverageController,
+);
+
 export default router;

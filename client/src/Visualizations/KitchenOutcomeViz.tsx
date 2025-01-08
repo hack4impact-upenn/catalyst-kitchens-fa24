@@ -27,7 +27,7 @@ interface SurveyData {
   organizationName: string;
   responderName: string;
   responderTitle: string;
-  hungerReliefMealsServed?: number;
+  hungerReliefsMealsServed?: number;
   typeOfMealsServed?:
     | 'Childcare Meals'
     | 'School Meals'
@@ -130,6 +130,9 @@ function KitchenOutcomesVisualization() {
   };
 
   const [surveyData, setSurveyData] = useState<SurveyData | null>(null);
+  const [networkAverages, setNetworkAverages] = useState<{
+    [key: string]: number | null;
+  }>({});
   type OrgVal = {
     name: string;
     id: string;
@@ -206,6 +209,92 @@ function KitchenOutcomesVisualization() {
     setOrgName(orgList?.find((org) => org.id === selectedOrg)?.name);
   };
   const [chartData, setChartData] = useState<{
+    ageData: {
+      labels: string[];
+      datasets: {
+        label: string;
+        data: number[];
+        backgroundColor: string[];
+        hoverBackgroundColor: string[];
+      }[];
+    };
+    raceData: {
+      labels: string[];
+      datasets: {
+        label: string;
+        data: number[];
+        backgroundColor: string[];
+        hoverBackgroundColor: string[];
+      }[];
+    };
+  }>({
+    ageData: {
+      labels: ['Infants', 'Children', 'Adults', 'Seniors', 'Unknown'],
+      datasets: [
+        {
+          label: 'Age Distribution',
+          data: [],
+          backgroundColor: [
+            '#7C9CB4', // Muted blue
+            '#86A873', // Muted green
+            '#B47C8E', // Muted rose
+            '#8E8EA6', // Muted purple
+            '#A8A8A8', // Muted gray
+          ],
+          hoverBackgroundColor: [
+            '#6B8BA3', // Darker blue
+            '#759662', // Darker green
+            '#A36B7D', // Darker rose
+            '#7D7D95', // Darker purple
+            '#979797', // Darker gray
+          ],
+        },
+      ],
+    },
+    raceData: {
+      labels: [
+        'American Indian',
+        'Asian',
+        'Black',
+        'Latinx',
+        'Native Hawaiian',
+        'Multi Racial',
+        'White',
+        'Other',
+        'Unknown',
+      ],
+      datasets: [
+        {
+          label: 'Race Distribution',
+          data: [],
+          backgroundColor: [
+            '#D95D39', // Muted rust
+            '#45B7D1', // Muted turquoise
+            '#2D4654', // Dark slate
+            '#98B06F', // Muted olive
+            '#6B4E71', // Muted purple
+            '#D98E32', // Muted orange
+            '#9EA7AA', // Light gray
+            '#B55A30', // Terracotta
+            '#626D71', // Dark gray
+          ],
+          hoverBackgroundColor: [
+            '#C54D29', // Darker rust
+            '#35A7C1', // Darker turquoise
+            '#1D3644', // Darker slate
+            '#88A05F', // Darker olive
+            '#5B3E61', // Darker purple
+            '#C97E22', // Darker orange
+            '#8E979A', // Darker light gray
+            '#A54A20', // Darker terracotta
+            '#525D61', // Darker gray
+          ],
+        },
+      ],
+    },
+  });
+
+  const [avgChartData, setAvgChartData] = useState<{
     ageData: {
       labels: string[];
       datasets: {
@@ -380,6 +469,95 @@ function KitchenOutcomesVisualization() {
     }
   }, [surveyData]);
 
+  useEffect(() => {
+    // Update avgChartData when networkAverages changes
+    if (networkAverages) {
+      const ageData = {
+        labels: ['Infants', 'Children', 'Adults', 'Seniors', 'Unknown'],
+        datasets: [
+          {
+            label: 'Age Distribution',
+            data: [
+              networkAverages?.mealsInfants ?? 0,
+              networkAverages?.mealsChildren ?? 0,
+              networkAverages?.mealsAdults ?? 0,
+              networkAverages?.mealsSeniors ?? 0,
+              networkAverages?.mealsAgeUnknown ?? 0,
+            ],
+            backgroundColor: [
+              '#7C9CB4', // Muted blue
+              '#86A873', // Muted green
+              '#B47C8E', // Muted rose
+              '#8E8EA6', // Muted purple
+              '#A8A8A8', // Muted gray
+            ],
+            hoverBackgroundColor: [
+              '#6B8BA3', // Darker blue
+              '#759662', // Darker green
+              '#A36B7D', // Darker rose
+              '#7D7D95', // Darker purple
+              '#979797', // Darker gray
+            ],
+          },
+        ],
+      };
+
+      const raceData = {
+        labels: [
+          'American Indian',
+          'Asian',
+          'Black',
+          'Latinx',
+          'Native Hawaiian',
+          'Multi Racial',
+          'White',
+          'Other',
+          'Unknown',
+        ],
+        datasets: [
+          {
+            label: 'Race Distribution',
+            data: [
+              networkAverages?.mealsAmericanIndian ?? 0,
+              networkAverages?.mealsAsian ?? 0,
+              networkAverages?.mealsBlack ?? 0,
+              networkAverages?.mealsLatinx ?? 0,
+              networkAverages?.mealsNativeHawaiian ?? 0,
+              networkAverages?.mealsMultiRacial ?? 0,
+              networkAverages?.mealsWhite ?? 0,
+              networkAverages?.mealsOtherRace ?? 0,
+              networkAverages?.mealsRaceUnknown ?? 0,
+            ],
+            backgroundColor: [
+              '#D95D39', // Muted rust
+              '#45B7D1', // Muted turquoise
+              '#2D4654', // Dark slate
+              '#98B06F', // Muted olive
+              '#6B4E71', // Muted purple
+              '#D98E32', // Muted orange
+              '#9EA7AA', // Light gray
+              '#B55A30', // Terracotta
+              '#626D71', // Dark gray
+            ],
+            hoverBackgroundColor: [
+              '#C54D29', // Darker rust
+              '#35A7C1', // Darker turquoise
+              '#1D3644', // Darker slate
+              '#88A05F', // Darker olive
+              '#5B3E61', // Darker purple
+              '#C97E22', // Darker orange
+              '#8E979A', // Darker light gray
+              '#A54A20', // Darker terracotta
+              '#525D61', // Darker gray
+            ],
+          },
+        ],
+      };
+
+      setAvgChartData({ ageData, raceData });
+    }
+  }, [networkAverages]);
+
   const options = {
     responsive: true,
     maintainAspectRatio: true,
@@ -551,6 +729,63 @@ function KitchenOutcomesVisualization() {
       },
     },
   };
+
+  const fetchAllNetworkAverages = async (selectedYear: number) => {
+    console.log('Fetching network averages for year:', selectedYear);
+
+    const fields = [
+      // basic stats
+      'costPerMeal',
+      'foodCostPercentage',
+      'mealReimbursement',
+      'hungerReliefsMealsServed',
+    ];
+
+    const averages: { [key: string]: number | null } = {};
+
+    await Promise.all(
+      fields.map(async (field) => {
+        try {
+          console.log(
+            `trying to get network avg route with ${field} ${selectedYear}`,
+          );
+          const response = await getData(
+            `kitchen_outcomes/network-average/${field}/${selectedYear}`,
+          );
+          averages[field] = response.data.average;
+        } catch (error) {
+          console.error(`Error fetching network average for ${field}:`, error);
+          averages[field] = null;
+        }
+      }),
+    );
+
+    try {
+      console.log('trying to call route with year: ', selectedYear);
+      const response2 = await getData(
+        `kitchen_outcomes/distri/${selectedYear}`,
+      );
+      console.log('response data: ', response2.data);
+      const ageRaceData = response2.data;
+
+      Object.keys(ageRaceData.ageDistribution).forEach((field) => {
+        averages[field] = ageRaceData.ageDistribution[field];
+      });
+    } catch (error) {
+      console.error('Error fetching age-race distributions:', error);
+    }
+
+    console.log('Fetched network averages:', averages);
+    setNetworkAverages(averages);
+    return averages;
+  };
+
+  useEffect(() => {
+    if (year) {
+      fetchAllNetworkAverages(Number(year));
+    }
+  }, [year]);
+
   return (
     <Container maxWidth="lg">
       <Typography variant="h4" align="left" sx={{ my: 4 }}>
@@ -788,7 +1023,112 @@ function KitchenOutcomesVisualization() {
                       },
                       {
                         label: 'Hunger Relief Meals Served',
-                        value: surveyData?.hungerReliefMealsServed,
+                        value: surveyData?.hungerReliefsMealsServed,
+                      },
+                    ].map((item) => (
+                      <Grid item xs={12} key={item.label}>
+                        <Box>
+                          <Typography
+                            variant="subtitle2"
+                            color="textSecondary"
+                            gutterBottom
+                          >
+                            {item.label}
+                          </Typography>
+                          <Typography variant="h6">
+                            {item.prefix || ''}
+                            {item.value?.toLocaleString() || 'N/A'}
+                            {item.suffix || ''}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Card>
+              </Grid>
+            </Grid>
+            <Typography variant="h6" sx={{ mt: 4, mb: 4 }}>
+              Network Averages
+            </Typography>
+            <Grid container spacing={3}>
+              {/* Age Distribution Chart */}
+              <Grid item xs={12} md={4}>
+                <Card
+                  sx={{
+                    p: 2,
+                    bgcolor: 'rgba(236, 239, 237, 0.5)',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
+                >
+                  <Typography variant="h6" align="center" sx={{ mb: 2 }}>
+                    Network Average Age Distribution
+                  </Typography>
+                  <Box
+                    sx={{ flex: 1, position: 'relative', minHeight: '300px' }}
+                  >
+                    <Doughnut data={avgChartData.ageData} options={options} />
+                  </Box>
+                </Card>
+              </Grid>
+
+              {/* Race Distribution Chart */}
+              <Grid item xs={12} md={4}>
+                <Card
+                  sx={{
+                    p: 2,
+                    bgcolor: 'rgba(236, 239, 237, 0.5)',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
+                >
+                  <Typography variant="h6" align="center" sx={{ mb: 2 }}>
+                    Network Average Race Distribution
+                  </Typography>
+                  <Box
+                    sx={{ flex: 1, position: 'relative', minHeight: '300px' }}
+                  >
+                    <Doughnut data={avgChartData.raceData} options={options} />
+                  </Box>
+                </Card>
+              </Grid>
+
+              {/* Important Figures */}
+              <Grid item xs={12} md={4}>
+                <Card
+                  sx={{
+                    p: 2,
+                    bgcolor: 'rgba(236, 239, 237, 0.5)',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
+                >
+                  <Typography variant="h6" align="center" sx={{ mb: 2 }}>
+                    Network Average Important Figures
+                  </Typography>
+                  <Grid container spacing={2}>
+                    {[
+                      {
+                        label: 'Network Avg. Cost per Meal',
+                        value: networkAverages?.costPerMeal,
+                        prefix: '$',
+                      },
+                      {
+                        label: 'Network Avg. Food Cost Percentage',
+                        value: networkAverages?.foodCostPercentage,
+                        suffix: '%',
+                      },
+                      {
+                        label: 'Network Avg. Meal Reimbursement',
+                        value: networkAverages?.mealReimbursement,
+                        prefix: '$',
+                      },
+                      {
+                        label: 'Network Avg. Hunger Relief Meals Served',
+                        value: networkAverages?.hungerReliefsMealsServed,
                       },
                     ].map((item) => (
                       <Grid item xs={12} key={item.label}>
