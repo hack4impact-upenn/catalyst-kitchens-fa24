@@ -13,6 +13,7 @@ import {
   Tab,
   MenuItem,
   Popper,
+  Slider,
 } from '@mui/material';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -137,6 +138,7 @@ function KitchenOutcomesVisualization() {
     name: string;
     id: string;
   };
+  const currentYear = new Date().getFullYear();
   const [orgList, setOrgList] = useState<OrgVal[] | null>(null);
   const [yearList, setYearList] = useState<number[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -145,6 +147,7 @@ function KitchenOutcomesVisualization() {
   const [year, setYear] = useState<number | ''>('');
   const [mealType, setMealType] = useState<string>('All');
   const [mealRange, setMealRange] = useState<string>('All');
+  const [yearRange, setYearRange] = useState<number[]>([2017, currentYear]); // Default range
 
   const tabNames = [
     'Hunger Relief',
@@ -180,6 +183,11 @@ function KitchenOutcomesVisualization() {
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     setMealRange(event.target.value);
+  };
+
+  const handleYearRangeChange = (event: Event, newValue: number | number[]) => {
+    setYearRange(newValue as number[]);
+    // Trigger network average calculation with new filter
   };
 
   useEffect(() => {
@@ -764,6 +772,7 @@ function KitchenOutcomesVisualization() {
 
   const fetchAllNetworkAverages = async (
     selectedYear: number,
+    yearRangeFilter: number[],
     mealTypeFilter: string,
     mealRangeFilter: string,
   ) => {
@@ -792,8 +801,9 @@ function KitchenOutcomesVisualization() {
           console.log(
             `trying to get network avg route with ${field} ${selectedYear} ${mealTypeFilter} ${mealRangeFilter}`,
           );
+          const [startYear, endYear] = yearRangeFilter;
           const response = await getData(
-            `kitchen_outcomes/network-average/${field}/${selectedYear}/${mealTypeFilter}/${mealRangeFilter}`,
+            `kitchen_outcomes/network-average/${field}/${startYear}/${endYear}/${mealTypeFilter}/${mealRangeFilter}`,
           );
           averages[field] = response.data.average;
         } catch (error) {
@@ -805,8 +815,9 @@ function KitchenOutcomesVisualization() {
 
     try {
       console.log('trying to call route with year: ', selectedYear);
+      const [startYear, endYear] = yearRangeFilter;
       const response2 = await getData(
-        `kitchen_outcomes/distri/${selectedYear}/${mealTypeFilter}/${mealRangeFilter}`,
+        `kitchen_outcomes/distri/${startYear}/${endYear}/${mealTypeFilter}/${mealRangeFilter}`,
       );
       console.log('response data: ', response2.data);
       const ageRaceData = response2.data;
@@ -825,9 +836,9 @@ function KitchenOutcomesVisualization() {
 
   useEffect(() => {
     if (year) {
-      fetchAllNetworkAverages(Number(year), mealType, mealRange);
+      fetchAllNetworkAverages(Number(year), yearRange, mealType, mealRange);
     }
-  }, [year, mealType, mealRange]);
+  }, [year, yearRange, mealType, mealRange]);
 
   return (
     <Container maxWidth="lg">
@@ -918,6 +929,17 @@ function KitchenOutcomesVisualization() {
               </MenuItem>
             ))}
           </TextField>
+        </Grid>
+        <Grid item xs={12}>
+          <Typography gutterBottom>Year Range</Typography>
+          <Slider
+            value={yearRange}
+            onChange={handleYearRangeChange}
+            valueLabelDisplay="auto"
+            min={2017}
+            max={currentYear}
+            sx={{ color: 'black' }}
+          />
         </Grid>
       </Grid>
 
