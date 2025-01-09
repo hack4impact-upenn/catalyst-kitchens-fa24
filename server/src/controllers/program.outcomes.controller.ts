@@ -147,21 +147,81 @@ const getNetworkAverageController = async (
   res: express.Response,
   next: express.NextFunction,
 ) => {
-  const { field, year } = req.params;
+  const {
+    field,
+    year,
+    endYear,
+    adultProgramSize,
+    youthProgramSize,
+    barrierHomelessness,
+    barrierReturningCitizens,
+    barrierInRecovery,
+  } = req.params;
 
-  if (!field || !year) {
-    next(ApiError.missingFields(['field', 'year']));
+  if (
+    !field ||
+    !year ||
+    !endYear ||
+    !adultProgramSize ||
+    !youthProgramSize ||
+    !barrierHomelessness ||
+    !barrierInRecovery ||
+    !barrierReturningCitizens
+  ) {
+    next(
+      ApiError.missingFields([
+        'field',
+        'year',
+        'endYear',
+        'adultProgramSize',
+        'youthProgramSize',
+        'barrierHomelessness',
+        'barrierInRecovery',
+        'barrierReturningCitizens',
+      ]),
+    );
     return;
   }
 
   try {
     const yearNum = parseInt(year, 10);
+    const endYearNum = parseInt(endYear, 10);
     if (isNaN(yearNum)) {
-      next(ApiError.badRequest('Invalid year format'));
+      next(ApiError.badRequest('Invalid start year format'));
+      return;
+    }
+    if (isNaN(endYearNum)) {
+      next(ApiError.badRequest('Invalid end year format'));
       return;
     }
 
-    const average = await getNetworkAverage(field, yearNum);
+    const createProgramSize = (
+      value: string,
+    ): 'All' | '1-19' | '20-49' | '50-99' | '100+' => {
+      if (['All', '1-19', '20-49', '50-99', '100+'].includes(value)) {
+        return value as 'All' | '1-19' | '20-49' | '50-99' | '100+';
+      }
+      return 'All';
+    };
+
+    const createBarrierOptions = (
+      value: string,
+    ): 'All' | '0-25%' | '26-50%' | '51-75%' | '76-100%' => {
+      if (['All', '0-25%', '26-50%', '51-75%', '76-100%'].includes(value)) {
+        return value as 'All' | '0-25%' | '26-50%' | '51-75%' | '76-100%';
+      }
+      return 'All';
+    };
+    const average = await getNetworkAverage(
+      field,
+      yearNum,
+      endYearNum,
+      createProgramSize(adultProgramSize),
+      createProgramSize(youthProgramSize),
+      createBarrierOptions(barrierHomelessness),
+      createBarrierOptions(barrierInRecovery),
+      createBarrierOptions(barrierReturningCitizens),
+    );
 
     res.status(StatusCode.OK).json({
       field,

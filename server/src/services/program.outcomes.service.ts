@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   IProgramOutcomes,
   ProgramOutcomes,
@@ -77,23 +78,80 @@ const deleteProgramOutcomeById = async (id: string) => {
 const getNetworkAverage = async (
   field: string,
   year: number,
+  endYear: number,
+  adultProgramSize: 'All' | '1-19' | '20-49' | '50-99' | '100+',
+  youthProgramSize: 'All' | '1-19' | '20-49' | '50-99' | '100+',
+  barrierHomelessness: 'All' | '0-25%' | '26-50%' | '51-75%' | '76-100%',
+  barrierInRecovery: 'All' | '0-25%' | '26-50%' | '51-75%' | '76-100%',
+  barrierReturningCitizens: 'All' | '0-25%' | '26-50%' | '51-75%' | '76-100%',
 ): Promise<number | null> => {
   const startDate = new Date(Date.UTC(year, 0, 1));
-  const endDate = new Date(Date.UTC(year + 1, 0, 1));
+  const endDate = new Date(Date.UTC(endYear + 1, 0, 1));
+
+  // Helper function to convert ranges to numerical bounds
+  const getRange = (
+    range: string,
+  ): { $gte: number; $lt: number } | undefined => {
+    const ranges: Record<string, [number, number]> = {
+      '1-19': [1, 20],
+      '20-49': [20, 50],
+      '50-99': [50, 100],
+      '100+': [100, Infinity],
+      '0-25%': [0, 25],
+      '26-50%': [26, 50],
+      '51-75%': [51, 75],
+      '76-100%': [76, 100],
+    };
+    return ranges[range]
+      ? { $gte: ranges[range][0], $lt: ranges[range][1] }
+      : undefined;
+  };
+
+  // Base filters
+  const filters: any = {
+    year: { $gte: startDate, $lt: endDate },
+    [field]: { $exists: true, $ne: null },
+  };
+
+  // Add filters based on program size and barriers
+  if (adultProgramSize !== 'All') {
+    const range = getRange(adultProgramSize);
+    if (range) filters.adultsTrained = range;
+  }
+
+  if (youthProgramSize !== 'All') {
+    const range = getRange(youthProgramSize);
+    if (range) filters.youthTrained = range;
+  }
+
+  if (barrierHomelessness !== 'All') {
+    const range = getRange(barrierHomelessness);
+    if (range) filters.barrierUnhoused = range;
+  }
+
+  if (barrierInRecovery !== 'All') {
+    const range = getRange(barrierInRecovery);
+    if (range) filters.barrierInRecovery = range;
+  }
+
+  if (barrierReturningCitizens !== 'All') {
+    const range = getRange(barrierReturningCitizens);
+    if (range)
+      filters.barrierReturningCitizensOrFormerlyIncarceratedPersons = range;
+  }
 
   try {
-    console.log('Service - Getting network average for:', {
+    console.log('Service - Getting network average with filters:', {
       field,
       year,
       startDate,
       endDate,
+      filters,
     });
+
     const result = await ProgramOutcomes.aggregate([
       {
-        $match: {
-          year: { $gte: startDate, $lt: endDate },
-          [field]: { $exists: true, $ne: null },
-        },
+        $match: filters,
       },
       {
         $group: {
@@ -102,8 +160,12 @@ const getNetworkAverage = async (
         },
       },
     ]);
+
     console.log('Service - Network average result:', result);
-    return result.length > 0 ? result[0].average : null;
+    if (result.length > 0) {
+      return result[0].average ? result[0].average : null;
+    }
+    return null;
   } catch (error) {
     console.error(`Error calculating network average for ${field}:`, error);
     throw new Error(`Unable to calculate network average for ${field}`);

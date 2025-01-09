@@ -15,7 +15,7 @@ import {
 const router = express.Router();
 
 router.get(
-  '/network-average/:field/:year',
+  '/network-average/:field/:year/:endYear/:adultProgramSize/:youthProgramSize/:barrierHomelessness/:barrierInRecovery/:barrierReturningCitizens',
   isAuthenticated,
   getNetworkAverageController,
 );

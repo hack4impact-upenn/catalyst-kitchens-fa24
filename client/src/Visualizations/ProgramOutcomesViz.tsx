@@ -11,6 +11,7 @@ import {
   Tabs,
   Tab,
   MenuItem,
+  Slider,
   CircularProgress,
 } from '@mui/material';
 import {
@@ -31,6 +32,8 @@ import {
   PointElement,
   LineElement,
 } from 'chart.js';
+import { AlignHorizontalCenter } from '@mui/icons-material';
+import { height, textAlign } from '@mui/system';
 import { getData } from '../util/api';
 
 ChartJS.register(
@@ -531,6 +534,11 @@ function FundingOutcomesBox({ summaryData }: MetricSummaryProps) {
     fontSize: '0.875rem',
     fontWeight: 500,
   };
+  const metricTitleStyle = {
+    color: '#666',
+    fontSize: '2rem',
+    fontweight: 500,
+  };
 
   const metricValueStyle = {
     color: '#333',
@@ -543,45 +551,277 @@ function FundingOutcomesBox({ summaryData }: MetricSummaryProps) {
     fontSize: '0.875rem',
   };
   const publicFundingVal =
-    summaryData.organizationInfo.fundingPercentFromPublicFunding || 0;
+    summaryData.organizationInfo.fundingPercentFromPublicFunding.value || 0;
   const privateFundingVal =
-    summaryData.organizationInfo.fundingPercentFromPrivateFunding;
+    summaryData.organizationInfo.fundingPercentFromPrivateFunding.value || 0;
   const socialFundingVal =
     summaryData.organizationInfo
-      .fundingPercentFromSocialEnterpriseOrGeneratedRevenue;
+      .fundingPercentFromSocialEnterpriseOrGeneratedRevenue.value || 0;
+  const networkAveragePublicFundingVal =
+    summaryData.organizationInfo.fundingPercentFromPublicFunding
+      .networkAverage || 0;
+  const networkAveragePrivateFundingVal =
+    summaryData.organizationInfo.fundingPercentFromPrivateFunding
+      .networkAverage || 0;
+  const networkAverageSocialFundingVal =
+    summaryData.organizationInfo
+      .fundingPercentFromSocialEnterpriseOrGeneratedRevenue.networkAverage || 0;
+  const chartDataRegular: {
+    labels: string[];
+    datasets: {
+      label: string;
+      data: number[];
+      backgroundColor: string[];
+      hoverBackgroundColor: string[];
+    }[];
+  } = {
+    labels: ['Public Funding', 'Private Funding', 'Social Enterprise/Revenue'],
+    datasets: [
+      {
+        label: 'Funding Distribution',
+        data: [publicFundingVal, privateFundingVal, socialFundingVal],
+        backgroundColor: [
+          '#7C9CB4', // Muted blue
+          '#86A873', // Muted green
+          '#B47C8E', // Muted rose
+          '#8E8EA6', // Muted purple
+          '#A8A8A8', // Muted gray
+        ],
+        hoverBackgroundColor: [
+          '#6B8BA3', // Darker blue
+          '#759662', // Darker green
+          '#A36B7D', // Darker rose
+          '#7D7D95', // Darker purple
+          '#979797', // Darker gray
+        ],
+      },
+    ],
+  };
+  const chartDataNetworkAverage: {
+    labels: string[];
+    datasets: {
+      label: string;
+      data: number[];
+      backgroundColor: string[];
+      hoverBackgroundColor: string[];
+    }[];
+  } = {
+    labels: ['Public Funding', 'Private Funding', 'Social Enterprise/Revenue'],
+    datasets: [
+      {
+        label: 'Funding Distribution',
+        data: [
+          networkAveragePublicFundingVal,
+          networkAveragePrivateFundingVal,
+          networkAverageSocialFundingVal,
+        ],
+        backgroundColor: [
+          '#7C9CB4', // Muted blue
+          '#86A873', // Muted green
+          '#B47C8E', // Muted rose
+          '#8E8EA6', // Muted purple
+          '#A8A8A8', // Muted gray
+        ],
+        hoverBackgroundColor: [
+          '#6B8BA3', // Darker blue
+          '#759662', // Darker green
+          '#A36B7D', // Darker rose
+          '#7D7D95', // Darker purple
+          '#979797', // Darker gray
+        ],
+      },
+    ],
+  };
+  const options = {
+    responsive: true,
+    maintainAspectRatio: true,
+    aspectRatio: 1.2,
+    onClick(event: any, elements: any[], chart: any) {
+      if (elements.length > 0) {
+        const { index } = elements[0];
+        const meta = chart.getDatasetMeta(0);
+
+        // Toggle visibility
+        if (meta.data[index]) {
+          meta.data[index].hidden = !meta.data[index].hidden;
+        }
+
+        // Update legend item style
+        const { legendItems } = chart.legend;
+        if (legendItems?.[index]) {
+          const isHidden = meta.data[index].hidden;
+          legendItems[index].hidden = isHidden;
+
+          // Make the color box translucent when hidden
+          if (isHidden) {
+            meta.data[
+              index
+            ].options.backgroundColor = `${meta.data[index].options.backgroundColor}40`;
+          } else {
+            meta.data[index].options.backgroundColor = meta.data[
+              index
+            ].options.backgroundColor.replace(/40$/, '');
+          }
+        }
+
+        chart.update();
+      }
+    },
+    plugins: {
+      legend: {
+        position: 'right' as const,
+        labels: {
+          color: '#000000',
+          generateLabels(chart: any) {
+            const { data } = chart;
+            if (data.labels.length && data.datasets.length) {
+              const meta = chart.getDatasetMeta(0);
+              if (!meta?.data) return [];
+
+              return data.labels.map((label: string, i: number) => {
+                const style = meta.controller.getStyle(i);
+                const isHidden = meta.data[i]?.hidden || false;
+
+                return {
+                  text: label,
+                  fillStyle: isHidden
+                    ? `${style.backgroundColor}40`
+                    : style.backgroundColor,
+                  strokeStyle: style.borderColor,
+                  lineWidth: style.borderWidth,
+                  hidden: isHidden,
+                  index: i,
+                };
+              });
+            }
+            return [];
+          },
+        },
+        onClick(e: any, legendItem: any, legend: any) {
+          const { index } = legendItem;
+          const { chart: ci } = legend;
+
+          if (ci.isDatasetVisible(0)) {
+            const meta = ci.getDatasetMeta(0);
+            if (!meta.data) return;
+
+            // Toggle only the clicked item's visibility
+            if (meta.data[index]) {
+              meta.data[index].hidden = !meta.data[index].hidden;
+            }
+
+            // Update only the clicked legend item's style
+            const { legendItems } = legend.chart.legend;
+            if (legendItems?.[index]) {
+              const isHidden = meta.data[index].hidden;
+              legendItems[index].hidden = isHidden;
+
+              // Make the color box translucent when hidden
+              if (isHidden) {
+                meta.data[
+                  index
+                ].options.backgroundColor = `${meta.data[index].options.backgroundColor}40`;
+              } else {
+                meta.data[index].options.backgroundColor = meta.data[
+                  index
+                ].options.backgroundColor.replace(/40$/, '');
+              }
+            }
+
+            ci.update();
+          }
+        },
+      },
+      tooltip: {
+        enabled: true,
+        position: 'nearest' as const,
+        titleAlign: 'left' as const,
+        bodyAlign: 'left' as const,
+        padding: 12,
+        caretPadding: 6,
+        callbacks: {
+          title(tooltipItems: any[]) {
+            return `    ${tooltipItems[0].label}`;
+          },
+          label(context: any) {
+            const { dataset } = context;
+            const meta = context.chart.getDatasetMeta(0);
+            if (!meta?.data) return '';
+
+            const value = dataset.data[context.dataIndex];
+            const total = dataset.data.reduce(
+              (acc: number, data: number) => acc + data,
+              0,
+            );
+            const percentageOfTotal = ((value / total) * 100).toFixed(1);
+
+            // Calculate percentage of displayed data if there are hidden segments
+            const visibleData = dataset.data.filter(
+              (_: any, index: number) => !meta.data[index]?.hidden,
+            );
+            const hasHiddenSegments = meta.data.some((d: any) => d?.hidden);
+
+            if (hasHiddenSegments) {
+              const visibleTotal = visibleData.reduce(
+                (acc: number, data: number) => acc + data,
+                0,
+              );
+              const percentageOfVisible = (
+                (value / visibleTotal) *
+                100
+              ).toFixed(1);
+
+              return [
+                `Total: ${value.toLocaleString()}`,
+                `${percentageOfTotal}% of total`,
+                `${percentageOfVisible}% of displayed`,
+              ];
+            }
+
+            return [
+              `Total: ${value.toLocaleString()}%`,
+              `${percentageOfTotal}% of reported data`,
+            ];
+          },
+        },
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        titleColor: 'white',
+        bodyColor: 'white',
+        titleFont: {
+          size: 14,
+          weight: 'bold' as const,
+        },
+        bodyFont: {
+          size: 13,
+        },
+        displayColors: true,
+        boxWidth: 10,
+        boxHeight: 10,
+        boxPadding: 6,
+        titleSpacing: 4,
+        titleMarginBottom: 8,
+      },
+    },
+  };
   return (
-    <Grid container spacing={2} sx={{ mb: 3 }}>
-      <Grid item xs={12} md={4}>
-        <Box sx={metricCardStyle}>
-          <Typography sx={metricLabelStyle}>Public Funding Share</Typography>
-          <Typography sx={metricValueStyle}>
-            {summaryData.organizationInfo.fundingPercentFromPublicFunding
-              .value || 'N/A'}
-          </Typography>
-        </Box>
-      </Grid>
-      <Grid item xs={12} md={4}>
-        <Box sx={metricCardStyle}>
-          <Typography sx={metricLabelStyle}>Private Funding Share</Typography>
-          <Typography sx={metricValueStyle}>
-            {summaryData.organizationInfo.fundingPercentFromPrivateFunding
-              .value || 'N/A'}
-          </Typography>
-        </Box>
-      </Grid>
-      <Grid item xs={12} md={4}>
-        <Box sx={metricCardStyle}>
-          <Typography sx={metricLabelStyle}>Youth Positive Outcomes</Typography>
-          <Typography sx={metricValueStyle}>
-            {summaryData.youthOutcomes.positiveOutcomes.value || 'N/A'}
-          </Typography>
-          <Typography sx={networkAvgStyle}>
-            Network Avg:{' '}
-            {summaryData.youthOutcomes.positiveOutcomes.networkAverage || 'N/A'}
-          </Typography>
-        </Box>
-      </Grid>
-    </Grid>
+    <Card sx={{ p: 3 }}>
+      <Box sx={{ height: '400', textAlign: 'center' }}>
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid item xs={12} md={6}>
+            <Typography variant="h6" gutterBottom>
+              Organization Funding Distribution
+            </Typography>
+            <Doughnut data={chartDataRegular} options={options} />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Typography variant="h6" gutterBottom>
+              Network Average Funding Distribution
+            </Typography>
+            <Doughnut data={chartDataNetworkAverage} options={options} />
+          </Grid>
+        </Grid>
+      </Box>
+    </Card>
   );
 }
 function YouthMetricSummary({ summaryData }: MetricSummaryProps) {
@@ -853,6 +1093,37 @@ function ProgramOutcomesVisualization() {
     severity: 'error' | 'warning' | 'info' | 'success';
     message: string;
   } | null>(null);
+  // selectedStartYear
+  // selectedEndYear
+  // selectedAdultProgramSize
+  // selectedYouthProgramSize
+  // selectedBarrierHomelessness
+  // selectedBarrierReturningCitizens
+  // selectedBarrierInRecovery
+  type BarrierOptions = 'All' | '0-25%' | '26-50%' | '51-75%' | '76-100%';
+  type ProgramSizeOptions = 'All' | '1-19' | '20-49' | '50-99' | '100+';
+  const [selectedStartYear, setSelectedStartYear] = useState<number | null>(
+    null,
+  );
+  const [selectedEndYear, setSelectedEndYear] = useState<number | null>(null);
+  const [selectedBarrierHomelessness, setSelectedBarrierHomelessness] =
+    useState<BarrierOptions>('All');
+  const [
+    selectedBarrierReturningCitizens,
+    setSelectedBarrierReturningCitizens,
+  ] = useState<BarrierOptions>('All');
+  const [selectedBarrierInRecovery, setSelectedBarrierInRecovery] =
+    useState<BarrierOptions>('All');
+  const [selectedAdultProgramSize, setSelectedAdultProgramSize] =
+    useState<ProgramSizeOptions>('All');
+  const [selectedYouthProgramSize, setSelectedYouthProgramSize] =
+    useState<ProgramSizeOptions>('All');
+  const [networkAverageLoading, setNetworkAverageLoading] =
+    useState<boolean>(false);
+  const [
+    networkAverageYearIntrinsicLoading,
+    setNetworkAverageYearIntrisicLoading,
+  ] = useState<boolean>(false);
   const [alertOpen, setAlertOpen] = useState(false);
   const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
   const [networkAverages, setNetworkAverages] = useState<{
@@ -891,6 +1162,23 @@ function ProgramOutcomesVisualization() {
     };
     fetchOrgList();
   }, []);
+  useEffect(() => {
+    const fetchYears = async () => {
+      setSelectedAdultProgramSize('All');
+      setSelectedYouthProgramSize('All');
+      setSelectedBarrierHomelessness('All');
+      setSelectedBarrierInRecovery('All');
+      setSelectedBarrierReturningCitizens('All');
+      if (year !== '') {
+        setSelectedStartYear(year);
+        setSelectedEndYear(year);
+      } else {
+        setSelectedStartYear(null);
+        setSelectedEndYear(null);
+      }
+    };
+    fetchYears();
+  }, [year]);
 
   // Fetch program outcomes data based on the selected year and organization ID
   useEffect(() => {
@@ -1043,14 +1331,29 @@ function ProgramOutcomesVisualization() {
     ];
 
     const averages: { [key: string]: number | null } = {};
-
     await Promise.all(
       fields.map(async (field) => {
         try {
-          const response = await getData(
-            `program_outcomes/network-average/${field}/${selectedYear}`,
-          );
-          averages[field] = response.data.average;
+          // selectedStartYear
+          // selectedEndYear
+          // selectedAdultProgramSize
+          // selectedYouthProgramSize
+          // selectedBarrierHomelessness
+          // selectedBarrierReturningCitizens
+          // selectedBarrierInRecovery
+          if (!selectedStartYear || !selectedEndYear) {
+            console.error('No selected start or end years');
+            averages[field] = null;
+          } else {
+            const response = await getData(
+              `program_outcomes/network-average/${field}/${selectedStartYear}/${selectedEndYear}/${selectedAdultProgramSize}/${selectedYouthProgramSize}/${encodeURIComponent(
+                selectedBarrierHomelessness,
+              )}/${encodeURIComponent(
+                selectedBarrierInRecovery,
+              )}/${encodeURIComponent(selectedBarrierReturningCitizens)}`,
+            );
+            averages[field] = response.data.average;
+          }
         } catch (error) {
           console.error(`Error fetching network average for ${field}:`, error);
           averages[field] = null;
@@ -1060,6 +1363,7 @@ function ProgramOutcomesVisualization() {
 
     console.log('Fetched network averages:', averages);
     setNetworkAverages(averages);
+    setNetworkAverageLoading(false);
     return averages;
   };
 
@@ -1068,7 +1372,17 @@ function ProgramOutcomesVisualization() {
     if (year) {
       fetchAllNetworkAverages(Number(year));
     }
-  }, [year]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    year,
+    selectedAdultProgramSize,
+    selectedYouthProgramSize,
+    selectedBarrierHomelessness,
+    selectedBarrierInRecovery,
+    selectedBarrierReturningCitizens,
+    selectedEndYear,
+    selectedStartYear,
+  ]);
 
   // Update fetchSummaryData to use stored network averages instead of fetching
   const fetchSummaryData = useCallback(() => {
@@ -1431,7 +1745,7 @@ function ProgramOutcomesVisualization() {
 
   // Update the renderSummaryTab function
   const renderSummaryTab = () => {
-    if (!summaryData) {
+    if (!summaryData || networkAverageLoading) {
       return (
         <Grid container>
           <Grid
@@ -1837,16 +2151,23 @@ function ProgramOutcomesVisualization() {
     const networkAverageResults = await Promise.all(
       yearsList.map(async (yearNum) => {
         const networkResponse = await getData(
-          `program_outcomes/network-average/${field}/${yearNum}`,
+          `program_outcomes/network-average/${field}/${yearNum}/${yearNum}/${encodeURIComponent(
+            selectedAdultProgramSize,
+          )}/${encodeURIComponent(
+            selectedYouthProgramSize,
+          )}/${encodeURIComponent(
+            selectedBarrierHomelessness,
+          )}/${encodeURIComponent(
+            selectedBarrierInRecovery,
+          )}/${encodeURIComponent(selectedBarrierReturningCitizens)}`,
         );
         console.log(
           `Network average for ${field} in ${yearNum}:`,
           networkResponse.data,
         );
-        return networkResponse;
+        return networkResponse || 0;
       }),
     );
-
     const result = {
       years: yearsList,
       orgValues: yearsList.map((yearNum) => yearValues[yearNum]),
@@ -1881,7 +2202,7 @@ function ProgramOutcomesVisualization() {
         fetchFieldHistory(orgId, 'adultWage'), // Add this line
         fetchFieldHistory(orgId, 'adultWageAtTwelveMonths'), // Add this line
       ]);
-
+      setNetworkAverageYearIntrisicLoading(false);
       setHistoricalData({
         completionRate,
         placementRate,
@@ -1900,7 +2221,14 @@ function ProgramOutcomesVisualization() {
     };
 
     fetchHistoricalData();
-  }, [orgId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    orgId,
+    selectedAdultProgramSize,
+    selectedBarrierHomelessness,
+    selectedBarrierInRecovery,
+    selectedBarrierReturningCitizens,
+  ]);
 
   // Add effect to fetch organization info when orgId changes
   useEffect(() => {
@@ -1910,6 +2238,7 @@ function ProgramOutcomesVisualization() {
       try {
         const response = await getData(`organization/id/${orgId}`);
         setOrganizationInfo(response.data);
+        // eslint-disable-next-line @typescript-eslint/no-shadow
       } catch (error) {
         console.error('Error fetching organization info:', error);
       }
@@ -1920,7 +2249,7 @@ function ProgramOutcomesVisualization() {
 
   // Add renderOrganizationInfoTab function
   const renderOrganizationInfoTab = () => {
-    if (!organizationInfo) {
+    if (!organizationInfo || !summaryData || networkAverageLoading) {
       return (
         <Grid container>
           <Grid
@@ -1941,38 +2270,57 @@ function ProgramOutcomesVisualization() {
     }
 
     return (
-      <Card sx={{ p: 3, maxWidth: 600, mx: 'auto', mt: 2 }}>
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <Typography variant="h5" gutterBottom>
-              {organizationInfo.organizationName}
-            </Typography>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-              Organization Status
-            </Typography>
-            <Typography variant="body1">{organizationInfo.status}</Typography>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-              Address
-            </Typography>
-            <Typography variant="body1">{organizationInfo.street}</Typography>
-            <Typography variant="body1">
-              {`${organizationInfo.city}, ${organizationInfo.state} ${organizationInfo.zip}`}
-            </Typography>
-          </Grid>
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <FundingOutcomesBox summaryData={summaryData} />
         </Grid>
-      </Card>
+        <Grid item xs={12}>
+          <Card sx={{ p: 3, mx: 'auto', mt: 2 }}>
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
+                <Typography variant="h5" gutterBottom>
+                  {organizationInfo.organizationName}
+                </Typography>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Typography
+                  variant="subtitle1"
+                  color="text.secondary"
+                  gutterBottom
+                >
+                  Organization Status
+                </Typography>
+                <Typography variant="body1">
+                  {organizationInfo.status}
+                </Typography>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Typography
+                  variant="subtitle1"
+                  color="text.secondary"
+                  gutterBottom
+                >
+                  Address
+                </Typography>
+                <Typography variant="body1">
+                  {organizationInfo.street}
+                </Typography>
+                <Typography variant="body1">
+                  {`${organizationInfo.city}, ${organizationInfo.state} ${organizationInfo.zip}`}
+                </Typography>
+              </Grid>
+            </Grid>
+          </Card>
+        </Grid>
+      </Grid>
     );
   };
 
   // Now renderAdultOutcomesTab can use handleLegendClick
   const renderAdultOutcomesTab = () => {
-    if (!programData || !historicalData) {
+    if (!programData || !historicalData || networkAverageYearIntrinsicLoading) {
       return (
         <Grid container>
           <Grid
@@ -2407,11 +2755,16 @@ function ProgramOutcomesVisualization() {
     };
 
     fetchYouthHistoricalData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orgId]);
 
   // Update the renderYouthOutcomesTab function
   const renderYouthOutcomesTab = () => {
-    if (!programData || !youthHistoricalData) {
+    if (
+      !programData ||
+      !youthHistoricalData ||
+      networkAverageYearIntrinsicLoading
+    ) {
       return (
         <Grid container>
           <Grid
@@ -2709,6 +3062,14 @@ function ProgramOutcomesVisualization() {
       </Grid>
     );
   };
+  const yearRange = [2018, 2040]; // Example range of years
+
+  const handleYearChange = (event: Event, newValue: number | number[]) => {
+    const [start, end] = newValue as number[];
+    setSelectedStartYear(start);
+    setSelectedEndYear(end);
+    setNetworkAverageLoading(true);
+  };
 
   return (
     <Container maxWidth="lg">
@@ -2762,6 +3123,150 @@ function ProgramOutcomesVisualization() {
         </Grid>
       </Grid>
 
+      {/* Filter Selectors */}
+      <Grid
+        container
+        spacing={2}
+        sx={{
+          mb: 4,
+        }}
+      >
+        <Grid item xs={12}>
+          <Typography variant="h4">Network Average Filters</Typography>
+        </Grid>
+        {/* Year Range Slider */}
+        <Grid item xs={12}>
+          <Typography variant="subtitle1">Select Year Range</Typography>
+          <Slider
+            value={
+              selectedStartYear && selectedEndYear
+                ? [selectedStartYear, selectedEndYear]
+                : yearRange
+            }
+            onChange={handleYearChange}
+            valueLabelDisplay="auto"
+            min={yearRange[0]}
+            max={yearRange[1]}
+          />
+        </Grid>
+
+        {/* Regular Select Fields */}
+        <Grid item xs={12} md={4}>
+          <TextField
+            label="Barrier Unhoused"
+            variant="outlined"
+            size="small"
+            select
+            fullWidth
+            value={selectedBarrierHomelessness}
+            onChange={(event) => {
+              setSelectedBarrierHomelessness(
+                event.target.value as BarrierOptions,
+              );
+              setNetworkAverageLoading(true);
+              setNetworkAverageYearIntrisicLoading(true);
+            }}
+          >
+            {['All', '0-25%', '26-50%', '51-75%', '76-100%'].map((option) => (
+              <MenuItem key={option} value={option}>
+                {option}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <TextField
+            label="Barrier Returning Citizens or Formerly Incarcerated"
+            variant="outlined"
+            size="small"
+            select
+            fullWidth
+            value={selectedBarrierReturningCitizens}
+            onChange={(event) => {
+              setSelectedBarrierReturningCitizens(
+                event.target.value as BarrierOptions,
+              );
+              setNetworkAverageLoading(true);
+              setNetworkAverageYearIntrisicLoading(true);
+            }}
+          >
+            {['All', '0-25%', '26-50%', '51-75%', '76-100%'].map((option) => (
+              <MenuItem key={option} value={option}>
+                {option}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <TextField
+            label="Barrier In Recovery"
+            variant="outlined"
+            size="small"
+            select
+            fullWidth
+            value={selectedBarrierInRecovery}
+            onChange={(event) => {
+              setSelectedBarrierInRecovery(
+                event.target.value as BarrierOptions,
+              );
+              setNetworkAverageLoading(true);
+              setNetworkAverageYearIntrisicLoading(true);
+            }}
+          >
+            {['All', '0-25%', '26-50%', '51-75%', '76-100%'].map((option) => (
+              <MenuItem key={option} value={option}>
+                {option}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <TextField
+            label="Adult Program Size"
+            variant="outlined"
+            size="small"
+            select
+            fullWidth
+            value={selectedAdultProgramSize}
+            onChange={(event) => {
+              setSelectedAdultProgramSize(
+                event.target.value as ProgramSizeOptions,
+              );
+              setNetworkAverageLoading(true);
+              setNetworkAverageYearIntrisicLoading(true);
+            }}
+          >
+            {['All', '1-19', '20-49', '50-99', '100+'].map((option) => (
+              <MenuItem key={option} value={option}>
+                {option}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <TextField
+            label="Youth Program Size"
+            variant="outlined"
+            size="small"
+            select
+            fullWidth
+            value={selectedYouthProgramSize}
+            onChange={(event) => {
+              setSelectedYouthProgramSize(
+                event.target.value as ProgramSizeOptions,
+              );
+              setNetworkAverageLoading(true);
+              setNetworkAverageYearIntrisicLoading(true);
+            }}
+          >
+            {['All', '1-19', '20-49', '50-99', '100+'].map((option) => (
+              <MenuItem key={option} value={option}>
+                {option}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+      </Grid>
       {/* Tabs */}
       <Box sx={{ mb: 4, width: '100%' }}>
         <Box
