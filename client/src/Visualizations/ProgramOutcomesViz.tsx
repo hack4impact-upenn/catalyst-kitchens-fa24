@@ -1,5 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import React, { useEffect, useState, useCallback } from 'react';
+import { Doughnut, Bar, Line } from 'react-chartjs-2';
 import {
   Grid,
   Card,
@@ -10,8 +11,8 @@ import {
   Tabs,
   Tab,
   MenuItem,
+  CircularProgress,
 } from '@mui/material';
-import { Doughnut, Bar, Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -293,8 +294,16 @@ interface SummaryData {
     };
     positiveOutcomes: NetworkComparison;
   };
+  programInfo: {
+    programCostPerTrainee: NetworkComparison;
+    minimumWage: NetworkComparison;
+  };
+  organizationInfo: {
+    fundingPercentFromPublicFunding: NetworkComparison;
+    fundingPercentFromPrivateFunding: NetworkComparison;
+    fundingPercentFromSocialEnterpriseOrGeneratedRevenue: NetworkComparison;
+  };
 }
-
 interface MetricSummaryProps {
   summaryData: SummaryData;
 }
@@ -375,7 +384,66 @@ const baseBarOptions: ChartOptions<'bar'> = {
     },
   },
 };
-
+interface OrganizationMetricSummaryProps {
+  selectedYear: number | '';
+  summaryData: SummaryData;
+}
+function OrganizationMetricSummary({
+  summaryData,
+  selectedYear,
+}: OrganizationMetricSummaryProps) {
+  const metricCardStyle = {
+    p: 2,
+    borderRadius: 1,
+    bgcolor: '#f5f5f5',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: 1,
+  };
+  const metricLabelStyle = {
+    color: '#666',
+    fontSize: '0.875rem',
+    fontWeight: 500,
+  };
+  const metricValueStyle = {
+    color: '#333',
+    fontSize: '1.25rem',
+    fontWeight: 600,
+  };
+  return (
+    <Grid container spacing={2} sx={{ mb: 3 }}>
+      <Grid item xs={12} md={4}>
+        <Box sx={metricCardStyle}>
+          <Typography sx={metricLabelStyle}>
+            Program Cost Per Trainee
+          </Typography>
+          <Typography sx={metricValueStyle}>
+            {summaryData.programInfo.programCostPerTrainee.value || 'N/A'}
+            <Typography
+              component="span"
+              sx={{ color: '#666', fontSize: '0.875rem', ml: 1 }}
+            >
+              (Network Avg:{' '}
+              {summaryData.programInfo.programCostPerTrainee.networkAverage ||
+                'N/A'}
+              )
+            </Typography>
+          </Typography>
+        </Box>
+      </Grid>
+      <Grid item xs={12} md={4}>
+        <Box sx={metricCardStyle}>
+          <Typography sx={metricLabelStyle}>
+            Minimum Wage for Local Area in {selectedYear}
+          </Typography>
+          <Typography sx={metricValueStyle}>
+            ${summaryData.programInfo.minimumWage.value || 'N/A'} per hour
+          </Typography>
+        </Box>
+      </Grid>
+    </Grid>
+  );
+}
 function AdultMetricSummary({ summaryData }: MetricSummaryProps) {
   const metricCardStyle = {
     p: 2,
@@ -448,7 +516,74 @@ function AdultMetricSummary({ summaryData }: MetricSummaryProps) {
     </Grid>
   );
 }
+function FundingOutcomesBox({ summaryData }: MetricSummaryProps) {
+  const metricCardStyle = {
+    p: 2,
+    borderRadius: 1,
+    bgcolor: '#f5f5f5',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: 1,
+  };
 
+  const metricLabelStyle = {
+    color: '#666',
+    fontSize: '0.875rem',
+    fontWeight: 500,
+  };
+
+  const metricValueStyle = {
+    color: '#333',
+    fontSize: '1.25rem',
+    fontWeight: 600,
+  };
+
+  const networkAvgStyle = {
+    color: '#666',
+    fontSize: '0.875rem',
+  };
+  const publicFundingVal =
+    summaryData.organizationInfo.fundingPercentFromPublicFunding || 0;
+  const privateFundingVal =
+    summaryData.organizationInfo.fundingPercentFromPrivateFunding;
+  const socialFundingVal =
+    summaryData.organizationInfo
+      .fundingPercentFromSocialEnterpriseOrGeneratedRevenue;
+  return (
+    <Grid container spacing={2} sx={{ mb: 3 }}>
+      <Grid item xs={12} md={4}>
+        <Box sx={metricCardStyle}>
+          <Typography sx={metricLabelStyle}>Public Funding Share</Typography>
+          <Typography sx={metricValueStyle}>
+            {summaryData.organizationInfo.fundingPercentFromPublicFunding
+              .value || 'N/A'}
+          </Typography>
+        </Box>
+      </Grid>
+      <Grid item xs={12} md={4}>
+        <Box sx={metricCardStyle}>
+          <Typography sx={metricLabelStyle}>Private Funding Share</Typography>
+          <Typography sx={metricValueStyle}>
+            {summaryData.organizationInfo.fundingPercentFromPrivateFunding
+              .value || 'N/A'}
+          </Typography>
+        </Box>
+      </Grid>
+      <Grid item xs={12} md={4}>
+        <Box sx={metricCardStyle}>
+          <Typography sx={metricLabelStyle}>Youth Positive Outcomes</Typography>
+          <Typography sx={metricValueStyle}>
+            {summaryData.youthOutcomes.positiveOutcomes.value || 'N/A'}
+          </Typography>
+          <Typography sx={networkAvgStyle}>
+            Network Avg:{' '}
+            {summaryData.youthOutcomes.positiveOutcomes.networkAverage || 'N/A'}
+          </Typography>
+        </Box>
+      </Grid>
+    </Grid>
+  );
+}
 function YouthMetricSummary({ summaryData }: MetricSummaryProps) {
   const metricCardStyle = {
     p: 2,
@@ -705,7 +840,6 @@ const handleLegendClick = (
     ci.show(index);
   }
 };
-
 function ProgramOutcomesVisualization() {
   const [tabValue, setTabValue] = useState(0);
   const [programData, setProgramData] = useState<ProgramData | null>(null);
@@ -900,6 +1034,12 @@ function ProgramOutcomesVisualization() {
       'youthJobRetentionSixMonths',
       'youthJobRetentionTwelveMonths',
       'youthJobRetentionTwentyFourMonths',
+      // Organization Metrics
+      'programCostPerTrainee',
+      // Organization Funding Metrics
+      'fundingPercentFromPublicFunding',
+      'fundingPercentFromPrivateFunding',
+      'fundingPercentFromSocialEnterpriseOrGeneratedRevenue',
     ];
 
     const averages: { [key: string]: number | null } = {};
@@ -957,6 +1097,20 @@ function ProgramOutcomesVisualization() {
 
     // Calculate youth metrics
     const youthEnrolled = toNullableNumber(programData.youthTrained);
+    const minimumWage = toNullableNumber(programData.minimumWage);
+    const fundingPercentFromPublicFunding = toNullableNumber(
+      programData.fundingPercentFromPublicFunding,
+    );
+    const fundingPercentFromPrivateFunding = toNullableNumber(
+      programData.fundingPercentFromPrivateFunding,
+    );
+    const fundingPercentFromSocialEnterpriseOrGeneratedRevenue =
+      toNullableNumber(
+        programData.fundingPercentFromSocialEnterpriseOrGeneratedRevenue,
+      );
+    const programCostPerTrainee = toNullableNumber(
+      programData.programCostPerTrainee,
+    );
     const youthRetentionCount = calculateRetentionCount(
       programData.youthTrained,
       programData.youthJobRetentionTwentyFourMonths,
@@ -1136,6 +1290,31 @@ function ProgramOutcomesVisualization() {
           networkAverage: networkAverages.youthPositiveOutcomes,
         },
       },
+      programInfo: {
+        programCostPerTrainee: {
+          value: programCostPerTrainee,
+          networkAverage: networkAverages.programCostPerTrainee,
+        },
+        minimumWage: {
+          value: minimumWage,
+          networkAverage: networkAverages.minimumWage,
+        },
+      },
+      organizationInfo: {
+        fundingPercentFromPublicFunding: {
+          value: fundingPercentFromPublicFunding,
+          networkAverage: networkAverages.fundingPercentFromPublicFunding,
+        },
+        fundingPercentFromPrivateFunding: {
+          value: fundingPercentFromPrivateFunding,
+          networkAverage: networkAverages.fundingPercentFromPrivateFunding,
+        },
+        fundingPercentFromSocialEnterpriseOrGeneratedRevenue: {
+          value: fundingPercentFromSocialEnterpriseOrGeneratedRevenue,
+          networkAverage:
+            networkAverages.fundingPercentFromSocialEnterpriseOrGeneratedRevenue,
+        },
+      },
     };
 
     setSummaryData(summary);
@@ -1253,7 +1432,23 @@ function ProgramOutcomesVisualization() {
   // Update the renderSummaryTab function
   const renderSummaryTab = () => {
     if (!summaryData) {
-      return <Typography>Loading summary data...</Typography>;
+      return (
+        <Grid container>
+          <Grid
+            item
+            xs={12}
+            md={12}
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '100vh',
+            }}
+          >
+            <CircularProgress size={80} sx={{ color: 'black' }} />
+          </Grid>
+        </Grid>
+      );
     }
 
     // Create barriers data
@@ -1477,6 +1672,18 @@ function ProgramOutcomesVisualization() {
 
     return (
       <Grid container spacing={3}>
+        {/* Organization Metrics Section */}
+        <Grid item xs={12}>
+          <Card sx={{ p: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Organization Metrics
+            </Typography>
+            <OrganizationMetricSummary
+              summaryData={summaryData}
+              selectedYear={year}
+            />
+          </Card>
+        </Grid>
         {/* Barriers section */}
         <Grid item xs={12}>
           <Card sx={{ p: 3 }}>
@@ -1714,7 +1921,23 @@ function ProgramOutcomesVisualization() {
   // Add renderOrganizationInfoTab function
   const renderOrganizationInfoTab = () => {
     if (!organizationInfo) {
-      return <Typography>Loading organization information...</Typography>;
+      return (
+        <Grid container>
+          <Grid
+            item
+            xs={12}
+            md={12}
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '100vh',
+            }}
+          >
+            <CircularProgress size={80} sx={{ color: 'black' }} />
+          </Grid>
+        </Grid>
+      );
     }
 
     return (
@@ -1750,7 +1973,23 @@ function ProgramOutcomesVisualization() {
   // Now renderAdultOutcomesTab can use handleLegendClick
   const renderAdultOutcomesTab = () => {
     if (!programData || !historicalData) {
-      return <Typography>Loading adult outcomes data...</Typography>;
+      return (
+        <Grid container>
+          <Grid
+            item
+            xs={12}
+            md={12}
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '100vh',
+            }}
+          >
+            <CircularProgress size={80} sx={{ color: 'black' }} />
+          </Grid>
+        </Grid>
+      );
     }
 
     return (
@@ -2173,7 +2412,23 @@ function ProgramOutcomesVisualization() {
   // Update the renderYouthOutcomesTab function
   const renderYouthOutcomesTab = () => {
     if (!programData || !youthHistoricalData) {
-      return <Typography>Loading youth outcomes data...</Typography>;
+      return (
+        <Grid container>
+          <Grid
+            item
+            xs={12}
+            md={12}
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '100vh',
+            }}
+          >
+            <CircularProgress size={80} sx={{ color: 'black' }} />
+          </Grid>
+        </Grid>
+      );
     }
 
     return (

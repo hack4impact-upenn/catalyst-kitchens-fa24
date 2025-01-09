@@ -3129,7 +3129,7 @@ export default function ProgramOutcome() {
         </div>
       )}
       {/* Other Fields */}
-      <h4>Minimum Wage in Currnet Year</h4>
+      <h4>Minimum Wage in Year {formState.currYear}</h4>
       <p>
         What was your local minimum wage for most of {formState.currYear}? If
         your city, county, and/or state minimum wages are different, please list
