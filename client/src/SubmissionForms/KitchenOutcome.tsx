@@ -27,6 +27,7 @@ import {
 } from '@mui/material';
 import { number } from 'prop-types';
 import { RootState } from '../util/redux/store';
+import { getData } from '../util/api';
 
 export default function KitchenOutcome() {
   // Define the form state type
@@ -106,6 +107,8 @@ export default function KitchenOutcome() {
   const [genderOpen, setGenderOpen] = useState(false);
   const [racialOpen, setRacialOpen] = useState(false);
   const [orgOpen, setOrgOpen] = useState(false);
+  const [yearOpen, setYearOpen] = useState(false);
+  const [yearError, setYearError] = useState('');
   // Initialize formState with the FormState type
   const noFormState: FormState = {
     email: user.email,
@@ -174,7 +177,7 @@ export default function KitchenOutcome() {
     { label: 'November', value: '11' },
     { label: 'December', value: '12' },
   ];
-  function validateInputs() {
+  async function validateInputs() {
     const racialPercentageSum =
       formState.mealsAmericanIndian +
       formState.mealsAsian +
@@ -202,6 +205,35 @@ export default function KitchenOutcome() {
       formState.mealsSeniors +
       formState.mealsAgeUnknown;
     let works = true;
+
+    const year = formState.year.getFullYear();
+
+    if (
+      Number.isNaN(year) ||
+      year < 2017 ||
+      year > new Date().getFullYear() + 5
+    ) {
+      works = false;
+      setYearError('The year is too old or too far in the future.');
+      setYearOpen(true);
+    } else {
+      try {
+        console.log('Checking year:', year);
+        const response = await getData(
+          `kitchen_outcomes/${year - 2}/${formState.orgId}`,
+        );
+        console.log('Response:', response);
+        console.log(response.data != null);
+        if (response.data != null && response.data !== '') {
+          works = false;
+          setYearError('A submission for this year already exists.');
+          setYearOpen(true);
+        }
+      } catch (error) {
+        console.error('Error checking year:', error);
+      }
+    }
+
     if (racialPercentageSum !== 100) {
       works = false;
       setRacialOpen(true);
@@ -225,7 +257,7 @@ export default function KitchenOutcome() {
     return works;
   }
   const handleSubmit = async () => {
-    if (validateInputs()) {
+    if (await validateInputs()) {
       axios
         .post('http://localhost:4000/api/kitchen_outcomes/add/', formState)
         .then((response) => {
@@ -1324,6 +1356,19 @@ export default function KitchenOutcome() {
           User is not associated with an organization. Cannot submit form at
           this time. Please contact Catalyst Kitchens to be assigned to an
           organization.
+        </Alert>
+      ) : (
+        // eslint-disable-next-line react/jsx-no-useless-fragment
+        <></>
+      )}
+      {yearOpen ? (
+        <Alert
+          severity="warning"
+          onClose={() => {
+            setYearOpen(false);
+          }}
+        >
+          {yearError}
         </Alert>
       ) : (
         // eslint-disable-next-line react/jsx-no-useless-fragment
