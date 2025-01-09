@@ -5,17 +5,20 @@ import {
 } from '../models/kitchen.outcomes.model.ts';
 
 const calculateAgeAndRaceDistributions = async (
-  year: number,
+  startYear: number,
+  endYear: number,
   mealType: string,
   mealRange: string,
 ) => {
   try {
     console.log(
-      'calculating age and race distribution service for year:',
-      year,
+      'calculating age and race distribution service for start year:',
+      startYear,
+      'end year:',
+      endYear,
     );
-    const startDate = new Date(Date.UTC(year, 0, 1));
-    const endDate = new Date(Date.UTC(year + 1, 0, 1));
+    const startDate = new Date(Date.UTC(startYear, 0, 1));
+    const endDate = new Date(Date.UTC(endYear + 1, 0, 1));
 
     const matchConditions: any = {
       year: { $gte: startDate, $lt: endDate },
@@ -146,17 +149,19 @@ export { calculateAgeAndRaceDistributions };
 
 const getNetworkAverage = async (
   field: string,
-  year: number,
+  startYear: number,
+  endYear: number,
   mealType: string,
   mealRange: string,
 ): Promise<number | null> => {
-  const startDate = new Date(Date.UTC(year, 0, 1));
-  const endDate = new Date(Date.UTC(year + 1, 0, 1));
+  const startDate = new Date(Date.UTC(startYear, 0, 1));
+  const endDate = new Date(Date.UTC(endYear + 1, 0, 1));
 
   try {
     console.log('Service - Getting network average for:', {
       field,
-      year,
+      startYear,
+      endYear,
       startDate,
       endDate,
       mealType,

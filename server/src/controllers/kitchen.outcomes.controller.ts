@@ -20,39 +20,54 @@ const distriController = async (
   res: express.Response,
   next: express.NextFunction,
 ) => {
-  const { year, mealType, mealRange } = req.params;
+  const { startYear, endYear, mealType, mealRange } = req.params;
 
-  if (!year) {
-    next(ApiError.missingFields(['year']));
+  if (!startYear) {
+    next(ApiError.missingFields(['startYear']));
+    return;
+  }
+
+  if (!endYear) {
+    next(ApiError.missingFields(['endYear']));
     return;
   }
 
   try {
-    const yearNum = parseInt(year, 10);
-    if (isNaN(yearNum)) {
+    const startYearNum = parseInt(startYear, 10);
+    if (isNaN(startYearNum)) {
+      next(ApiError.badRequest('Invalid year format'));
+      return;
+    }
+
+    const endYearNum = parseInt(endYear, 10);
+    if (isNaN(endYearNum)) {
       next(ApiError.badRequest('Invalid year format'));
       return;
     }
 
     console.log(
-      'calculating age and race distribution controller for year:',
-      year,
+      'calculating age and race distribution controller for startYear:',
+      startYear,
+      'endYear:',
+      endYear,
     );
 
     const ageDistribution = await calculateAgeAndRaceDistributions(
-      yearNum,
+      startYearNum,
+      endYearNum,
       mealType,
       mealRange,
     );
 
     res.status(StatusCode.OK).json({
-      year: yearNum,
+      startYear: startYearNum,
+      endYear: endYearNum,
       ageDistribution,
     });
   } catch (error) {
     next(
       ApiError.internal(
-        `Unable to calculate age distribution for year ${year}`,
+        `Unable to calculate age distribution for year ${startYear} to ${endYear}`,
       ),
     );
   }
@@ -65,30 +80,46 @@ const getNetworkAverageController = async (
   res: express.Response,
   next: express.NextFunction,
 ) => {
-  const { field, year, mealType, mealRange } = req.params;
+  const { field, startYear, endYear, mealType, mealRange } = req.params;
 
-  if (!field || !year || !mealType || !mealRange) {
-    next(ApiError.missingFields(['field', 'year', 'mealType', 'mealRange']));
+  if (!field || !startYear || !endYear || !mealType || !mealRange) {
+    next(
+      ApiError.missingFields([
+        'field',
+        'startYear',
+        'endYear',
+        'mealType',
+        'mealRange',
+      ]),
+    );
     return;
   }
 
   try {
-    const yearNum = parseInt(year, 10);
-    if (isNaN(yearNum)) {
+    const startYearNum = parseInt(startYear, 10);
+    if (isNaN(startYearNum)) {
+      next(ApiError.badRequest('Invalid year format'));
+      return;
+    }
+
+    const endYearNum = parseInt(endYear, 10);
+    if (isNaN(endYearNum)) {
       next(ApiError.badRequest('Invalid year format'));
       return;
     }
 
     const average = await getNetworkAverage(
       field,
-      yearNum,
+      startYearNum,
+      endYearNum,
       mealType,
       mealRange,
     );
 
     res.status(StatusCode.OK).json({
       field,
-      year: yearNum,
+      startYear: startYearNum,
+      endYear: endYearNum,
       average: average ?? null,
     });
   } catch (error) {

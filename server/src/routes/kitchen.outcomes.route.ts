@@ -17,7 +17,7 @@ import {
 const router = express.Router();
 
 router.get(
-  '/distri/:year/:mealType/:mealRange',
+  '/distri/:startYear/:endYear/:mealType/:mealRange',
   isAuthenticated,
   distriController,
 );
@@ -43,7 +43,7 @@ router.delete('/delete/:id', isAdmin, deleteKitchenOutcomeByIdController);
 router.post('/add/', isAuthenticated, addKitchenOutcomesController);
 
 router.get(
-  '/network-average/:field/:year/:mealType/:mealRange',
+  '/network-average/:field/:startYear/:endYear/:mealType/:mealRange',
   isAuthenticated,
   getNetworkAverageController,
 );
