@@ -105,14 +105,15 @@ export default function EditOrganization() {
         console.log(result);
         if (result) {
           const { data } = result;
-          setNewOrg({
-            ...newOrg,
-            organizationName: data?.organizationName,
-            street: data?.street,
-            city: data?.city,
-            state: data?.state,
-            zip: data?.zip,
-          });
+          // setNewOrg({
+          //   ...newOrg,
+          //   organizationName: data?.organizationName,
+          //   street: data?.street,
+          //   city: data?.city,
+          //   state: data?.state,
+          //   zip: data?.zip,
+          // });
+          setNewOrg(data);
         } else {
           console.log('No available organization');
         }
@@ -227,6 +228,18 @@ export default function EditOrganization() {
               setNewOrg({ ...newOrg, zip: e.target.value });
             }}
           />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            select
+            label="Status"
+            value={newOrg.status}
+            onChange={(e) => setNewOrg({ ...newOrg, status: e.target.value })}
+            fullWidth
+          >
+            <MenuItem value="Member">Member</MenuItem>
+            <MenuItem value="Model Member">Model Member</MenuItem>
+          </TextField>
         </Grid>
 
         <Grid item xs={12}>

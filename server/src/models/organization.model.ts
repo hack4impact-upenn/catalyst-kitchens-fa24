@@ -17,7 +17,7 @@ const OrganizationSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['Member', 'DJIBRIL', 'Model Member'],
+      enum: ['Member', 'Model Member'],
       required: true,
     },
     street: { type: String, required: true },

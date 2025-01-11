@@ -25,7 +25,7 @@ import {
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { postData } from '../util/api';
+import { getData, postData } from '../util/api';
 import { RootState } from '../util/redux/store';
 
 export default function ProgramOutcome() {
@@ -374,10 +374,38 @@ export default function ProgramOutcome() {
 
   const [errorOpen, setErrorOpen] = useState(false);
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
-  const validateInputs = () => {
+  const validateInputs = async () => {
     console.log('Validating inputs');
     let hasError = false;
     const allErrorMessages: string[] = [];
+
+    const year = formState.currYear;
+
+    if (
+      Number.isNaN(year) ||
+      year < 2017 ||
+      year > new Date().getFullYear() + 5
+    ) {
+      hasError = true;
+      console.log('year:', year);
+      allErrorMessages.push('The year is too old or too far in the future.');
+    } else {
+      try {
+        console.log('Checking year:', year);
+        const response = await getData(
+          `program_outcomes/org/${formState.orgId}/${year - 2}`,
+        );
+        console.log('Response:', response);
+        console.log(response.data != null);
+        if (response.data != null && response.data !== '') {
+          hasError = true;
+          allErrorMessages.push('A submission for this year already exists.');
+        }
+      } catch (error) {
+        console.error('Error checking year:', error);
+      }
+    }
+
     if (
       formState.programCostPerTrainee !== undefined &&
       formState.programCostPerTrainee < 0
@@ -900,7 +928,7 @@ export default function ProgramOutcome() {
   };
   const handleSubmit = async () => {
     console.log('handling submit');
-    if (validateInputs()) {
+    if (await validateInputs()) {
       try {
         const formData = {
           ...formState,
