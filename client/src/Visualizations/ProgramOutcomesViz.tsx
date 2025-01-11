@@ -13,6 +13,8 @@ import {
   MenuItem,
   Slider,
   CircularProgress,
+  Checkbox,
+  FormControlLabel,
 } from '@mui/material';
 import {
   Chart as ChartJS,
@@ -1118,6 +1120,10 @@ function ProgramOutcomesVisualization() {
     useState<ProgramSizeOptions>('All');
   const [selectedYouthProgramSize, setSelectedYouthProgramSize] =
     useState<ProgramSizeOptions>('All');
+  const [
+    selectedModelOrganizationComparison,
+    setSelectedModelOrganizationComparison,
+  ] = useState(false);
   const [networkAverageLoading, setNetworkAverageLoading] =
     useState<boolean>(false);
   const [
@@ -1350,7 +1356,9 @@ function ProgramOutcomesVisualization() {
                 selectedBarrierHomelessness,
               )}/${encodeURIComponent(
                 selectedBarrierInRecovery,
-              )}/${encodeURIComponent(selectedBarrierReturningCitizens)}`,
+              )}/${encodeURIComponent(
+                selectedBarrierReturningCitizens,
+              )}/${selectedModelOrganizationComparison}`,
             );
             averages[field] = response.data.average;
           }
@@ -1382,6 +1390,7 @@ function ProgramOutcomesVisualization() {
     selectedBarrierReturningCitizens,
     selectedEndYear,
     selectedStartYear,
+    selectedModelOrganizationComparison,
   ]);
 
   // Update fetchSummaryData to use stored network averages instead of fetching
@@ -2159,7 +2168,9 @@ function ProgramOutcomesVisualization() {
             selectedBarrierHomelessness,
           )}/${encodeURIComponent(
             selectedBarrierInRecovery,
-          )}/${encodeURIComponent(selectedBarrierReturningCitizens)}`,
+          )}/${encodeURIComponent(
+            selectedBarrierReturningCitizens,
+          )}/${selectedModelOrganizationComparison}`,
         );
         console.log(
           `Network average for ${field} in ${yearNum}:`,
@@ -2228,6 +2239,7 @@ function ProgramOutcomesVisualization() {
     selectedBarrierHomelessness,
     selectedBarrierInRecovery,
     selectedBarrierReturningCitizens,
+    selectedModelOrganizationComparison,
   ]);
 
   // Add effect to fetch organization info when orgId changes
@@ -2749,6 +2761,7 @@ function ProgramOutcomesVisualization() {
           },
           positiveOutcomes,
         });
+        setNetworkAverageYearIntrisicLoading(false);
       } catch (error) {
         console.error('Error in fetchYouthHistoricalData:', error);
       }
@@ -3134,6 +3147,24 @@ function ProgramOutcomesVisualization() {
         <Grid item xs={12}>
           <Typography variant="h4">Network Average Filters</Typography>
         </Grid>
+        <Grid item xs={12}>
+          <FormControlLabel
+            label="Compare against Model Organization Members?"
+            control={
+              <Checkbox
+                checked={selectedModelOrganizationComparison}
+                onChange={() => {
+                  setSelectedModelOrganizationComparison(
+                    !selectedModelOrganizationComparison,
+                  );
+                  setNetworkAverageLoading(true);
+                  setNetworkAverageYearIntrisicLoading(true);
+                }}
+                style={{ color: 'black' }}
+              />
+            }
+          />
+        </Grid>
         {/* Year Range Slider */}
         <Grid item xs={12}>
           <Typography variant="subtitle1">Select Year Range</Typography>
@@ -3147,9 +3178,9 @@ function ProgramOutcomesVisualization() {
             valueLabelDisplay="auto"
             min={yearRange[0]}
             max={yearRange[1]}
+            style={{ color: 'black' }}
           />
         </Grid>
-
         {/* Regular Select Fields */}
         <Grid item xs={12} md={4}>
           <TextField

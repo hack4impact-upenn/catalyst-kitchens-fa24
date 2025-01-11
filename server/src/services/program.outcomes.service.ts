@@ -84,6 +84,7 @@ const getNetworkAverage = async (
   barrierHomelessness: 'All' | '0-25%' | '26-50%' | '51-75%' | '76-100%',
   barrierInRecovery: 'All' | '0-25%' | '26-50%' | '51-75%' | '76-100%',
   barrierReturningCitizens: 'All' | '0-25%' | '26-50%' | '51-75%' | '76-100%',
+  compareModelOrganization: 'true' | 'false',
 ): Promise<number | null> => {
   const startDate = new Date(Date.UTC(year, 0, 1));
   const endDate = new Date(Date.UTC(endYear + 1, 0, 1));
@@ -148,10 +149,44 @@ const getNetworkAverage = async (
       endDate,
       filters,
     });
-
+    if (compareModelOrganization !== 'true') {
+      const result = await ProgramOutcomes.aggregate([
+        {
+          $match: filters,
+        },
+        {
+          $group: {
+            _id: null,
+            average: { $avg: `$${field}` },
+          },
+        },
+      ]);
+      console.log('Service - Network average result:', result);
+      if (result.length > 0) {
+        return result[0].average ? result[0].average : null;
+      }
+      return null;
+    }
+    console.log('Getting Model Members Comparison');
     const result = await ProgramOutcomes.aggregate([
       {
         $match: filters,
+      },
+      {
+        $lookup: {
+          from: 'organization',
+          localField: 'orgId',
+          foreignField: '_id',
+          as: 'organization',
+        },
+      },
+      {
+        $unwind: '$organization',
+      },
+      {
+        $match: {
+          'organization.status': 'Model Member',
+        },
       },
       {
         $group: {
@@ -160,7 +195,7 @@ const getNetworkAverage = async (
         },
       },
     ]);
-
+    console.log('Model Members Successful Comparison');
     console.log('Service - Network average result:', result);
     if (result.length > 0) {
       return result[0].average ? result[0].average : null;

@@ -9,6 +9,7 @@ const calculateAgeAndRaceDistributions = async (
   endYear: number,
   mealType: string,
   mealRange: string,
+  modelOrganizationComparison: string,
 ) => {
   try {
     console.log(
@@ -40,8 +41,32 @@ const calculateAgeAndRaceDistributions = async (
         };
       }
     }
-
-    const outcomes = await KitchenOutcomes.find(matchConditions);
+    let outcomes: any[] = [];
+    if (modelOrganizationComparison !== 'true') {
+      outcomes = await KitchenOutcomes.find(matchConditions);
+    } else {
+      outcomes = await KitchenOutcomes.aggregate([
+        {
+          $match: matchConditions,
+        },
+        {
+          $lookup: {
+            from: 'organization',
+            localField: 'orgId',
+            foreignField: '_id',
+            as: 'organization',
+          },
+        },
+        {
+          $unwind: '$organization',
+        },
+        {
+          $match: {
+            'organization.status': 'Model Member',
+          },
+        },
+      ]);
+    }
 
     let totalMealsAdults = 0;
     let totalMealsInfants = 0;
@@ -153,6 +178,7 @@ const getNetworkAverage = async (
   endYear: number,
   mealType: string,
   mealRange: string,
+  modelOrganizationComparison: string,
 ): Promise<number | null> => {
   const startDate = new Date(Date.UTC(startYear, 0, 1));
   const endDate = new Date(Date.UTC(endYear + 1, 0, 1));
@@ -190,10 +216,40 @@ const getNetworkAverage = async (
     }
 
     console.log('Service - Match conditions:', matchConditions);
-
+    if (modelOrganizationComparison !== 'true') {
+      const result = await KitchenOutcomes.aggregate([
+        {
+          $match: matchConditions,
+        },
+        {
+          $group: {
+            _id: null,
+            average: { $avg: `$${field}` },
+          },
+        },
+      ]);
+      console.log('Service - Network average result:', result);
+      return result.length > 0 ? result[0].average : null;
+    }
     const result = await KitchenOutcomes.aggregate([
       {
         $match: matchConditions,
+      },
+      {
+        $lookup: {
+          from: 'organization',
+          localField: 'orgId',
+          foreignField: '_id',
+          as: 'organization',
+        },
+      },
+      {
+        $unwind: '$organization',
+      },
+      {
+        $match: {
+          'organization.status': 'Model Member',
+        },
       },
       {
         $group: {

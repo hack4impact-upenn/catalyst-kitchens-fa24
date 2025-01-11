@@ -33,7 +33,7 @@ function UnauthenticatedRoutesWrapper() {
 function ProtectedRoutesWrapper() {
   const data = useData('auth/authstatus');
   const user = useSelector((state: RootState) => state.user);
-  const data2 = useData('admin/adminstatus');
+  const checkAdminStatus = useData('admin/adminstatus');
   if (data === null) return null;
   const validOrg = getData(`/organization/${user.email}`);
   const links = [
@@ -42,13 +42,15 @@ function ProtectedRoutesWrapper() {
   if (validOrg !== null) {
     links.push({ name: 'Submit Data', icon: ArrowUpward, to: '/outcome-form' });
   }
-  if (data2 !== null) {
-    links.push({
-      name: 'Organization Dashboard',
-      icon: TableChart,
-      to: '/organizations',
-    });
-    links.push({ name: 'User Dashboard', icon: Person, to: '/users' });
+  if (checkAdminStatus !== null) {
+    if (checkAdminStatus.data !== null) {
+      links.push({
+        name: 'Organization Dashboard',
+        icon: TableChart,
+        to: '/organizations',
+      });
+      links.push({ name: 'User Dashboard', icon: Person, to: '/users' });
+    }
   }
   return !data.error ? (
     <div style={{ display: 'flex' }}>

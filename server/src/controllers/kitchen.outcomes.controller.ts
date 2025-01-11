@@ -20,7 +20,13 @@ const distriController = async (
   res: express.Response,
   next: express.NextFunction,
 ) => {
-  const { startYear, endYear, mealType, mealRange } = req.params;
+  const {
+    startYear,
+    endYear,
+    mealType,
+    mealRange,
+    modelOrganizationComparison,
+  } = req.params;
 
   if (!startYear) {
     next(ApiError.missingFields(['startYear']));
@@ -57,6 +63,7 @@ const distriController = async (
       endYearNum,
       mealType,
       mealRange,
+      modelOrganizationComparison,
     );
 
     res.status(StatusCode.OK).json({
@@ -80,9 +87,23 @@ const getNetworkAverageController = async (
   res: express.Response,
   next: express.NextFunction,
 ) => {
-  const { field, startYear, endYear, mealType, mealRange } = req.params;
+  const {
+    field,
+    startYear,
+    endYear,
+    mealType,
+    mealRange,
+    modelOrganizationComparison,
+  } = req.params;
 
-  if (!field || !startYear || !endYear || !mealType || !mealRange) {
+  if (
+    !field ||
+    !startYear ||
+    !endYear ||
+    !mealType ||
+    !mealRange ||
+    !modelOrganizationComparison
+  ) {
     next(
       ApiError.missingFields([
         'field',
@@ -97,13 +118,13 @@ const getNetworkAverageController = async (
 
   try {
     const startYearNum = parseInt(startYear, 10);
-    if (isNaN(startYearNum)) {
+    if (Number.isNaN(startYearNum)) {
       next(ApiError.badRequest('Invalid year format'));
       return;
     }
 
     const endYearNum = parseInt(endYear, 10);
-    if (isNaN(endYearNum)) {
+    if (Number.isNaN(endYearNum)) {
       next(ApiError.badRequest('Invalid year format'));
       return;
     }
@@ -114,6 +135,7 @@ const getNetworkAverageController = async (
       endYearNum,
       mealType,
       mealRange,
+      modelOrganizationComparison,
     );
 
     res.status(StatusCode.OK).json({

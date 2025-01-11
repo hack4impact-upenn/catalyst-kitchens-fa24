@@ -14,6 +14,8 @@ import {
   MenuItem,
   Popper,
   Slider,
+  FormControlLabel,
+  Checkbox,
 } from '@mui/material';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -148,7 +150,10 @@ function KitchenOutcomesVisualization() {
   const [mealType, setMealType] = useState<string>('All');
   const [mealRange, setMealRange] = useState<string>('All');
   const [yearRange, setYearRange] = useState<number[]>([2017, currentYear]); // Default range
-
+  const [
+    selectedModelOrganizationComparison,
+    setSelectedModelOrganizationComparison,
+  ] = useState(false);
   const tabNames = [
     'Hunger Relief',
     'Social Enterprise',
@@ -803,7 +808,7 @@ function KitchenOutcomesVisualization() {
           );
           const [startYear, endYear] = yearRangeFilter;
           const response = await getData(
-            `kitchen_outcomes/network-average/${field}/${startYear}/${endYear}/${mealTypeFilter}/${mealRangeFilter}`,
+            `kitchen_outcomes/network-average/${field}/${startYear}/${endYear}/${mealTypeFilter}/${mealRangeFilter}/${selectedModelOrganizationComparison}`,
           );
           averages[field] = response.data.average;
         } catch (error) {
@@ -817,7 +822,7 @@ function KitchenOutcomesVisualization() {
       console.log('trying to call route with year: ', selectedYear);
       const [startYear, endYear] = yearRangeFilter;
       const response2 = await getData(
-        `kitchen_outcomes/distri/${startYear}/${endYear}/${mealTypeFilter}/${mealRangeFilter}`,
+        `kitchen_outcomes/distri/${startYear}/${endYear}/${mealTypeFilter}/${mealRangeFilter}/${selectedModelOrganizationComparison}`,
       );
       console.log('response data: ', response2.data);
       const ageRaceData = response2.data;
@@ -838,7 +843,14 @@ function KitchenOutcomesVisualization() {
     if (year) {
       fetchAllNetworkAverages(Number(year), yearRange, mealType, mealRange);
     }
-  }, [year, yearRange, mealType, mealRange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    year,
+    yearRange,
+    mealType,
+    mealRange,
+    selectedModelOrganizationComparison,
+  ]);
 
   return (
     <Container maxWidth="lg">
@@ -894,9 +906,25 @@ function KitchenOutcomesVisualization() {
           </TextField>
         </Grid>
         <Grid item xs={12}>
-          <Typography variant="subtitle1" sx={{ mb: 1 }}>
+          <Typography variant="h4" sx={{ mb: 1 }}>
             Network Average Filters
           </Typography>
+        </Grid>
+        <Grid item xs={12}>
+          <FormControlLabel
+            label="Compare against Model Organization Members?"
+            control={
+              <Checkbox
+                checked={selectedModelOrganizationComparison}
+                onChange={() => {
+                  setSelectedModelOrganizationComparison(
+                    !selectedModelOrganizationComparison,
+                  );
+                }}
+                style={{ color: 'black' }}
+              />
+            }
+          />
         </Grid>
         <Grid item xs={12} sm={6} md={6}>
           <TextField

@@ -156,6 +156,7 @@ const getNetworkAverageController = async (
     barrierHomelessness,
     barrierReturningCitizens,
     barrierInRecovery,
+    compareModelOrganization,
   } = req.params;
 
   if (
@@ -166,7 +167,8 @@ const getNetworkAverageController = async (
     !youthProgramSize ||
     !barrierHomelessness ||
     !barrierInRecovery ||
-    !barrierReturningCitizens
+    !barrierReturningCitizens ||
+    !compareModelOrganization
   ) {
     next(
       ApiError.missingFields([
@@ -178,6 +180,7 @@ const getNetworkAverageController = async (
         'barrierHomelessness',
         'barrierInRecovery',
         'barrierReturningCitizens',
+        'compareModelOrganization',
       ]),
     );
     return;
@@ -186,11 +189,11 @@ const getNetworkAverageController = async (
   try {
     const yearNum = parseInt(year, 10);
     const endYearNum = parseInt(endYear, 10);
-    if (isNaN(yearNum)) {
+    if (Number.isNaN(yearNum)) {
       next(ApiError.badRequest('Invalid start year format'));
       return;
     }
-    if (isNaN(endYearNum)) {
+    if (Number.isNaN(endYearNum)) {
       next(ApiError.badRequest('Invalid end year format'));
       return;
     }
@@ -221,6 +224,7 @@ const getNetworkAverageController = async (
       createBarrierOptions(barrierHomelessness),
       createBarrierOptions(barrierInRecovery),
       createBarrierOptions(barrierReturningCitizens),
+      compareModelOrganization as 'true' | 'false',
     );
 
     res.status(StatusCode.OK).json({
