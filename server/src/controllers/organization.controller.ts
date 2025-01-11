@@ -58,6 +58,8 @@ const addOrganizationController = async (
   res: express.Response,
   next: express.NextFunction,
 ) => {
+  console.log('Add org controller');
+  console.log(req.body);
   const { status, street, city, zip, state, organizationName } = req.body;
   addOrganization(status, street, city, state, zip, organizationName)
     .then((org: unknown) => {
@@ -110,8 +112,9 @@ const editOrganizationController = async (
   res: express.Response,
   next: express.NextFunction,
 ) => {
-  const { id, organizationName, status, street, city, state, zip } = req.body;
-  if (!id) {
+  const { _id, organizationName, status, street, city, state, zip } = req.body;
+  console.log(req.body);
+  if (!_id) {
     next(ApiError.missingFields(['id']));
   }
   try {
@@ -120,7 +123,7 @@ const editOrganizationController = async (
     const org = await editOrganization(
       status,
       organizationName,
-      id,
+      _id,
       street,
       city,
       state,

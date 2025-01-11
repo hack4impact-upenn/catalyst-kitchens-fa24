@@ -201,6 +201,19 @@ export default function AddOrganization() {
           />
         </Grid>
 
+        <Grid item xs={12} sm={6}>
+          <TextField
+            select
+            label="Status"
+            value={newOrg.status}
+            onChange={(e) => setNewOrg({ ...newOrg, status: e.target.value })}
+            fullWidth
+          >
+            <MenuItem value="Member">Member</MenuItem>
+            <MenuItem value="Model Member">Model Member</MenuItem>
+          </TextField>
+        </Grid>
+
         <Grid item xs={12}>
           <Button
             fullWidth
