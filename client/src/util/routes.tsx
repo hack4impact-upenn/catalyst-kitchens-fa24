@@ -5,6 +5,7 @@ import {
   PieChart,
   TableChart,
   ArrowUpward,
+  ArrowDownward,
   Add,
 } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
@@ -50,6 +51,11 @@ function ProtectedRoutesWrapper() {
         to: '/organizations',
       });
       links.push({ name: 'User Dashboard', icon: Person, to: '/users' });
+      links.push({
+        name: 'Data Download',
+        icon: ArrowDownward,
+        to: '/data-download',
+      });
     }
   }
   return !data.error ? (
@@ -98,6 +104,11 @@ function AdminRoutesWrapper() {
     to: '/organizations',
   });
   links.push({ name: 'User Dashboard', icon: Person, to: '/users' });
+  links.push({
+    name: 'Data Download',
+    icon: ArrowDownward,
+    to: '/data-download',
+  });
   return !data.error ? (
     <div style={{ display: 'flex' }}>
       <Sidebar links={links} />

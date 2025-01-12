@@ -48,7 +48,7 @@ function InviteUserButton() {
       <Button
         variant="contained"
         onClick={handleClickOpen}
-        sx={{ backgroundColor: 'black' }}
+        sx={{ backgroundColor: 'black', color: 'white' }}
       >
         Invite User
       </Button>

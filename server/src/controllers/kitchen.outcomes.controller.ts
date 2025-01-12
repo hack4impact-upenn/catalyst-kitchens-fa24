@@ -2,6 +2,7 @@
 import express from 'express';
 import ApiError from '../util/apiError.ts';
 import StatusCode from '../util/statusCode.ts';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { IKitchenOutcomes } from '../models/kitchen.outcomes.model.ts';
 import {
   getOneKitchenOutcomes,
@@ -12,6 +13,7 @@ import {
   deleteKitchenOutcomeById,
   addKitchenOutcomes,
   getNetworkAverage,
+  getAllKitchenOutcomesByYear,
   calculateAgeAndRaceDistributions,
 } from '../services/kitchen.outcomes.service.ts';
 
@@ -81,6 +83,26 @@ const distriController = async (
 };
 
 export { distriController };
+const getAllKitchenOutcomesByYearController = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) => {
+  const { year } = req.params;
+  if (!year) {
+    next(ApiError.missingFields(['year']));
+    return;
+  }
+  const numericalYear = Number(year);
+  return getAllKitchenOutcomesByYear(numericalYear)
+    .then((kitchenOutcomes: any[]) => {
+      res.status(StatusCode.OK).send(kitchenOutcomes);
+    })
+    .catch(() => {
+      next(ApiError.internal('Unable to retrieve program outcomes by year'));
+    });
+};
+export { getAllKitchenOutcomesByYearController };
 
 const getNetworkAverageController = async (
   req: express.Request,

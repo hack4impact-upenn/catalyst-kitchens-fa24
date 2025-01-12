@@ -27,7 +27,7 @@ import {
 } from '@mui/material';
 import { number } from 'prop-types';
 import { RootState } from '../util/redux/store';
-import { getData } from '../util/api';
+import { getData, postData } from '../util/api';
 
 export default function KitchenOutcome() {
   // Define the form state type
@@ -258,15 +258,13 @@ export default function KitchenOutcome() {
   }
   const handleSubmit = async () => {
     if (await validateInputs()) {
-      axios
-        .post('http://localhost:4000/api/kitchen_outcomes/add/', formState)
-        .then((response) => {
-          console.log('submitted!');
-          setFormState(noFormState);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      try {
+        const response = await postData('kitchen_outcomes/new', formState);
+        console.log('Kitchen outcome submitted successfully:', response);
+        setFormState(noFormState);
+      } catch (error) {
+        console.error('Error submitting kitchen outcome:', error);
+      }
     }
   };
   useEffect(() => {
@@ -291,18 +289,13 @@ export default function KitchenOutcome() {
     const fetchOrganizationId = async () => {
       if (user.email) {
         try {
-          axios
-            .get(`http://localhost:4000/api/auth/organization/${user.email}`)
-            .then((response) => {
-              const { data } = response;
-              setFormState({
-                ...formState,
-                orgId: data,
-              });
-            })
-            .catch((error) => {
-              console.log(error);
-            });
+          const response = await getData(`auth/organization/${user.email}`);
+          if (response.data) {
+            const { data } = response;
+            setFormState({ ...formState, orgId: data });
+          } else {
+            console.error('No organization id found for user');
+          }
         } catch (error) {
           console.error('Error fetching organization ID:', error);
         }
@@ -315,20 +308,20 @@ export default function KitchenOutcome() {
     const fetchOrganizationNameById = async () => {
       if (formState.orgId) {
         try {
-          axios
-            .get(
-              `http://localhost:4000/api/organization/organization/name/${formState.orgId}`,
-            )
-            .then((response) => {
-              const { data } = response;
-              setFormState({
-                ...formState,
-                organizationName: data.organizationName,
-              });
-            })
-            .catch((error) => {
-              console.log(error);
+          const response = await getData(
+            `organization/organization/name/${formState.orgId}`,
+          );
+          if (response.data) {
+            const { data } = response;
+            setFormState({
+              ...formState,
+              organizationName: data.organizationName,
             });
+          } else {
+            console.error(
+              'No Organization Name found for given organization id',
+            );
+          }
         } catch (error) {
           console.error('Error fetching organization name by ID:', error);
         }

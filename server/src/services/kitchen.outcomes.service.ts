@@ -390,6 +390,31 @@ const deleteKitchenOutcomeById = async (id: string) => {
     throw new Error('Unable to delete kitchen outcome');
   }
 };
+const getAllKitchenOutcomesByYear = async (year: number) => {
+  const startDate = new Date(Date.UTC(year, 0, 1));
+  const endDate = new Date(Date.UTC(year + 1, 0, 1));
+  const outcomes = await KitchenOutcomes.find({
+    year: {
+      $gte: startDate,
+      $lt: endDate,
+    },
+  }).exec();
+  if (outcomes.length > 0) {
+    const parsedOutcomes = outcomes.map((outcome) => {
+      return {
+        ...outcome.toObject(),
+        typeOfMealsServed: outcome.typeOfMealsServed?.join(';') || '',
+        capitalExpansionProjectNeeds:
+          outcome.capitalExpansionProjectNeeds?.join(';') || '',
+      };
+    });
+
+    console.log('Parsed outcomes:', parsedOutcomes);
+    return parsedOutcomes;
+  }
+  console.log('No outcomes found for the specified year.');
+  return [];
+};
 
 export {
   getOneKitchenOutcomes,
@@ -400,4 +425,5 @@ export {
   deleteKitchenOutcomeById,
   addKitchenOutcomes,
   getNetworkAverage,
+  getAllKitchenOutcomesByYear,
 };

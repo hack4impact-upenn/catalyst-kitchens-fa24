@@ -6,6 +6,10 @@ const ProgramOutcomesSchema = new mongoose.Schema({
     ref: 'MemberOrganization',
     required: false,
   },
+  organizationName: {
+    type: String,
+    required: false,
+  },
   year: {
     type: Date,
     required: false,
@@ -451,6 +455,7 @@ const ProgramOutcomesSchema = new mongoose.Schema({
 
 interface IProgramOutcomes {
   orgId?: mongoose.Schema.Types.ObjectId;
+  organizationName?: string;
   year?: Date;
   programCostPerTrainee?: number;
   programDesignedForYouthAndAdults?: boolean;

@@ -45,10 +45,32 @@ const getDistinctYearsByOrgId = async (orgId: string): Promise<number[]> => {
   return [...new Set(years)].sort((a, b) => b - a);
 };
 
-// Get all program outcomes of a given year
-const getAllProgramOutcomesByYear = async (year: Date) => {
-  const outcomes = await ProgramOutcomes.find({ year }).exec();
-  return outcomes;
+const getAllProgramOutcomesByYear = async (year: number) => {
+  const startDate = new Date(Date.UTC(year, 0, 1));
+  const endDate = new Date(Date.UTC(year + 1, 0, 1));
+  const outcomes = await ProgramOutcomes.find({
+    year: {
+      $gte: startDate,
+      $lt: endDate,
+    },
+  }).exec();
+  if (outcomes.length > 0) {
+    const parsedOutcomes = outcomes.map((outcome) => {
+      return {
+        ...outcome.toObject(),
+        programCertifications: outcome.programCertifications?.join(';') || '',
+        participantCertifications:
+          outcome.participantCertifications?.join(';') || '',
+        jobCategory: outcome.jobCategory?.join(';') || '',
+        adultCompensation: outcome.adultCompensation?.join(';') || '',
+      };
+    });
+
+    console.log('Parsed outcomes:', parsedOutcomes);
+    return parsedOutcomes;
+  }
+  console.log('No outcomes found for the specified year.');
+  return [];
 };
 
 const addProgramOutcomes = async (obj: IProgramOutcomes) => {

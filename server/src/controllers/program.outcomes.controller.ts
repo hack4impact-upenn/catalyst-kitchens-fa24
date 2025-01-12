@@ -73,9 +73,9 @@ const getAllProgramOutcomesByYearController = async (
     next(ApiError.missingFields(['year']));
     return;
   }
-  const yearDate = new Date(year);
-  return getAllProgramOutcomesByYear(yearDate)
-    .then((programOutcomes: IProgramOutcomes[]) => {
+  const numericalYear = Number(year);
+  return getAllProgramOutcomesByYear(numericalYear)
+    .then((programOutcomes: any[]) => {
       res.status(StatusCode.OK).send(programOutcomes);
     })
     .catch(() => {

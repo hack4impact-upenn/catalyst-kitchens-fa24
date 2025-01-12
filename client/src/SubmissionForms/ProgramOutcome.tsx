@@ -315,18 +315,13 @@ export default function ProgramOutcome() {
     const fetchOrganizationId = async () => {
       if (user.email) {
         try {
-          axios
-            .get(`http://localhost:4000/api/auth/organization/${user.email}`)
-            .then((response) => {
-              const { data } = response;
-              setFormState({
-                ...formState,
-                orgId: data,
-              });
-            })
-            .catch((error) => {
-              console.log(error);
-            });
+          const response = await getData(`auth/organization/${user.email}`);
+          if (response.data) {
+            const { data } = response;
+            setFormState({ ...formState, orgId: data });
+          } else {
+            console.error('No organization id found for user');
+          }
         } catch (error) {
           console.error('Error fetching organization ID:', error);
         }
@@ -349,20 +344,20 @@ export default function ProgramOutcome() {
     const fetchOrganizationNameById = async () => {
       if (formState.orgId) {
         try {
-          axios
-            .get(
-              `http://localhost:4000/api/organization/organization/name/${formState.orgId}`,
-            )
-            .then((response) => {
-              const { data } = response;
-              setFormState({
-                ...formState,
-                organizationName: data.organizationName,
-              });
-            })
-            .catch((error) => {
-              console.log(error);
+          const response = await getData(
+            `organization/organization/name/${formState.orgId}`,
+          );
+          if (response.data) {
+            const { data } = response;
+            setFormState({
+              ...formState,
+              organizationName: data.organizationName,
             });
+          } else {
+            console.error(
+              'No Organization Name found for given organization id',
+            );
+          }
         } catch (error) {
           console.error('Error fetching organization name by ID:', error);
         }

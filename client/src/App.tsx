@@ -32,7 +32,7 @@ import SubmissionsHome from './Intermediate/Submissions.tsx';
 import VisualizationHome from './Intermediate/Visualizations.tsx';
 import AddOrganization from './AddOrganization/AddOrganization.tsx';
 import EditOrganization from './EditOrganization/EditOrganization.tsx';
-
+import AdminDataDownloadPage from './AdminDashboard/AdminDataDownloadPage.tsx';
 // Router Configuration
 const router = createBrowserRouter([
   {
@@ -74,6 +74,7 @@ const router = createBrowserRouter([
       { path: 'organizations', element: <OrgAdminPage /> },
       { path: 'organizations-add', element: <AddOrganization /> },
       { path: 'organizations-update/:orgId', element: <EditOrganization /> },
+      { path: 'data-download', element: <AdminDataDownloadPage /> },
     ],
   },
   {

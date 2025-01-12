@@ -12,6 +12,7 @@ import {
   addKitchenOutcomesController,
   getNetworkAverageController,
   distriController,
+  getAllKitchenOutcomesByYearController,
 } from '../controllers/kitchen.outcomes.controller.ts';
 
 const router = express.Router();
@@ -20,6 +21,11 @@ router.get(
   '/distri/:startYear/:endYear/:mealType/:mealRange/:modelOrganizationComparison',
   isAuthenticated,
   distriController,
+);
+router.get(
+  '/year/:year',
+  isAuthenticated,
+  getAllKitchenOutcomesByYearController,
 );
 
 // router.get('/:year/:orgName', isAuthenticated, getOneKitchenOutcomesController);
