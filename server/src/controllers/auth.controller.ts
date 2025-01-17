@@ -118,8 +118,6 @@ const logout = async (
         }
       });
     }
-<<<<<<< HEAD
-=======
     // Datadog logout
     logger_info.info('Logout');
 
@@ -128,7 +126,6 @@ const logout = async (
       distinct_id: req.user ? (req.user as IUser)._id : undefined,
       email: req.user ? (req.user as IUser).email : undefined,
     });
->>>>>>> f1f4ef540e1b7be713682effef4065efbcd7b07e
   });
 };
 
