@@ -58,6 +58,7 @@ resource "aws_ecs_task_definition" "app" {
         { "name" : "COOKIE_SECRET", "value" : var.cookie_secret },
         { "name" : "SENDGRID_API_KEY", "value" : var.sendgrid_api_key },
         { "name" : "SENDGRID_EMAIL_ADDRESS", "value" : var.sendgrid_email_address }
+        { "name" : "MIXPANEL_TOKEN", "value" : var.mixpanel_token },
       ],
       logConfiguration = {
         logDriver = "awslogs"
