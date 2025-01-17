@@ -14,11 +14,11 @@ async function logout() {
  * @returns true if successful, false otherwise
  * PLEASE REMOVE THIS FUNCTION AND BACKEND ENDPOINT UPON DEPLOYMENT
  */
-async function selfUpgrade(email: string) {
-  const res = await putData('admin/autopromote', { email });
-  if (res.error) return false;
-  return true;
-}
+// async function selfUpgrade(email: string) {
+//   const res = await putData('admin/autopromote', { email });
+//   if (res.error) return false;
+//   return true;
+// }
 
 // eslint-disable-next-line import/prefer-default-export
-export { logout, selfUpgrade };
+export { logout };

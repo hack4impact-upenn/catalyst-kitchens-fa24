@@ -9,7 +9,7 @@ import {
   toggleAdmin,
   selectUser,
 } from '../util/redux/userSlice.ts';
-import { logout as logoutApi, selfUpgrade } from './api.tsx';
+import { logout as logoutApi } from './api.tsx';
 import ScreenGrid from '../components/ScreenGrid.tsx';
 import PrimaryButton from '../components/buttons/PrimaryButton.tsx';
 
@@ -78,13 +78,13 @@ function HomePage() {
     }
   };
 
-  const handleSelfPromote = async () => {
-    const newAdminStatus = await selfUpgrade(user.email as string);
-    if (newAdminStatus) {
-      dispatch(toggleAdmin());
-      setAdmin(true);
-    }
-  };
+  // const handleSelfPromote = async () => {
+  //   const newAdminStatus = await selfUpgrade(user.email as string);
+  //   if (newAdminStatus) {
+  //     dispatch(toggleAdmin());
+  //     setAdmin(true);
+  //   }
+  // };
 
   const message = `Welcome to Catalyst Kitchens, ${user.firstName} ${user.lastName}!`;
 
@@ -203,20 +203,6 @@ function HomePage() {
           >
             {message}
           </Typography>
-        </Grid>
-
-        {/* Promote Button or Admin Actions */}
-        <Grid
-          item
-          container
-          justifyContent="center"
-          sx={{ marginBottom: '20px' }}
-        >
-          <PromoteButton
-            admin={admin}
-            handleSelfPromote={handleSelfPromote}
-            navigator={navigator}
-          />
         </Grid>
 
         {/* Logout Button */}
