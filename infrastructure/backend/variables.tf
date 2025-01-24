@@ -17,7 +17,7 @@ variable "region" {
 }
 
 variable "cluster_name" {
-  default     = "app-cluster"
+  default     = "catalyst-kitchens"
   type        = string
   description = "Name of the ECS cluster"
 }

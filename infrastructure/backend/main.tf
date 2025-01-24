@@ -57,7 +57,7 @@ resource "aws_ecs_task_definition" "app" {
         { "name" : "ATLAS_URI", "value" : var.atlas_uri },
         { "name" : "COOKIE_SECRET", "value" : var.cookie_secret },
         { "name" : "SENDGRID_API_KEY", "value" : var.sendgrid_api_key },
-        { "name" : "SENDGRID_EMAIL_ADDRESS", "value" : var.sendgrid_email_address }
+        { "name" : "SENDGRID_EMAIL_ADDRESS", "value" : var.sendgrid_email_address },
         { "name" : "MIXPANEL_TOKEN", "value" : var.mixpanel_token },
       ],
       logConfiguration = {
@@ -325,46 +325,46 @@ data "aws_iam_role" "ecs_task_execution_role" {
   name = "ecs_task_execution_role"
 }
 
-data "aws_iam_policy" "cloudwatch_logs_policy" {
-  arn = "arn:aws:iam::${var.aws_account_id}:policy/ECSLogsPolicy"
-}
+# data "aws_iam_policy" "cloudwatch_logs_policy" {
+#   arn = "arn:aws:iam::${var.aws_account_id}:policy/ECSLogsPolicy"
+# }
 
 resource "aws_iam_role_policy_attachment" "ecs_task_execution_policy_attachment" {
   role       = data.aws_iam_role.ecs_task_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
-# resource "aws_iam_policy" "cloudwatch_logs_policy" {
-#   name        = "ECSLogsPolicy"
-#   description = "Allow ECS Task Execution Role to push logs to CloudWatch"
+resource "aws_iam_policy" "cloudwatch_logs_policy" {
+  name        = "ECSLogsPolicy"
+  description = "Allow ECS Task Execution Role to push logs to CloudWatch"
 
-#   policy = jsonencode({
-#     Version = "2012-10-17",
-#     Statement = [
-#       {
-#         Effect = "Allow",
-#         Action = [
-#           "logs:CreateLogStream",
-#           "logs:CreateLogGroup"
-#         ],
-#         Resource = "arn:aws:logs:*:*:*"
-#       },
-#       {
-#         Effect = "Allow",
-#         Action = [
-#           "logs:PutLogEvents"
-#         ],
-#         Resource = [
-#           "arn:aws:logs:*:*:log-group:/ecs/*:log-stream:*",
-#           "arn:aws:logs:*:*:log-group:/ecs/*"
-#         ]
-#       }
-#     ]
-#   })
-# }
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "logs:CreateLogStream",
+          "logs:CreateLogGroup"
+        ],
+        Resource = "arn:aws:logs:*:*:*"
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "logs:PutLogEvents"
+        ],
+        Resource = [
+          "arn:aws:logs:*:*:log-group:/ecs/*:log-stream:*",
+          "arn:aws:logs:*:*:log-group:/ecs/*"
+        ]
+      }
+    ]
+  })
+}
 
 resource "aws_iam_role_policy_attachment" "cloudwatch_logs_policy_attachment" {
   role       = data.aws_iam_role.ecs_task_execution_role.name
-  policy_arn = data.aws_iam_policy.cloudwatch_logs_policy.arn
+  policy_arn = aws_iam_policy.cloudwatch_logs_policy.arn
 }
 
