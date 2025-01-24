@@ -1,4 +1,4 @@
-FROM node:20.0.0
+FROM node:16.20.2
 
 LABEL org.opencontainers.image.source=https://github.com/rosewang01/dockerize-boilerplate
 LABEL org.opencontainers.image.description="Boilerplate Server Side Container"
@@ -8,7 +8,7 @@ WORKDIR /
 
 COPY ./package.json ./package.json
 RUN yarn install 
-RUN yarn add --dev typescript@latest
+RUN yarn add --dev typescript@4.9.5
 
 COPY . .
 
