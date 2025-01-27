@@ -7,8 +7,10 @@ LABEL org.opencontainers.image.licenses=MIT
 WORKDIR /
 
 COPY ./package.json ./package.json
-RUN yarn install 
-RUN yarn add --dev typescript@4.9.5
+COPY ./yarn.lock ./yarn.lock
+RUN yarn install --frozen-lockfile
+# RUN yarn install 
+# RUN yarn add --dev typescript@5.6.2
 
 COPY . .
 
