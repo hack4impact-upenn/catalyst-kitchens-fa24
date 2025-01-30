@@ -1,7 +1,9 @@
+import { version } from 'typescript';
 import MongoConnection from './src/config/mongoConnection.ts';
 import createExpressApp from './src/config/createExpressApp.ts';
 import 'dotenv/config';
 
+console.log(`Using TypeScript version: ${version}`);
 const main = async () => {
   // Listen for termination
   process.on('SIGTERM', () => process.exit());
