@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { RequestHandler } from 'express';
 import path from 'path';
 import passport from 'passport';
 import cookieParser from 'cookie-parser';
@@ -10,7 +10,6 @@ import initializePassport from './configPassport.ts';
 import 'dotenv/config';
 import apiErrorResponder from '../util/apiErrorResponder.ts';
 import ApiError from '../util/apiError.ts';
-
 /**
  * Creates an express instance with the appropriate routes and middleware
  * for the project.
@@ -55,17 +54,17 @@ const createExpressApp = (sessionStore: MongoStore): express.Express => {
   app.use(
     session({
       secret: process.env.COOKIE_SECRET || 'SHOULD_DEFINE_COOKIE_SECRET',
-      resave: false, // don't save session if unmodified
-      saveUninitialized: false, // don't create session until something stored
-      store: sessionStore, // use MongoDB to store session info
+      resave: false,
+      saveUninitialized: false,
+      store: sessionStore,
       cookie: {
-        maxAge: 1000 * 60 * 60 * 24, // 1 day
+        maxAge: 1000 * 60 * 60 * 24,
       },
-    }),
+    }) as any as RequestHandler,
   );
 
   // Init passport on every route call and allow it to use "express-session"
-  app.use(passport.initialize());
+  app.use(passport.initialize() as any as RequestHandler);
   app.use(passport.session());
 
   // Inits routers listed in routers.ts file
