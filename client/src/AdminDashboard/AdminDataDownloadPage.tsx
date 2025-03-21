@@ -10,6 +10,8 @@ import {
 } from '@mui/material';
 import { Close } from '@mui/icons-material';
 import * as XLSX from 'xlsx';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import * as FileSaver from 'file-saver';
 import { getData } from '../util/api';
 
