@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import { Close } from '@mui/icons-material';
 import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
+import * as FileSaver from 'file-saver';
 import { getData } from '../util/api';
 
 function AdminDataDownloadPage() {
@@ -82,7 +82,7 @@ function AdminDataDownloadPage() {
       const blob = new Blob([excelBuffer], {
         type: 'application/octet-stream',
       });
-      saveAs(blob, `ProgramData_${selectedYear}.xlsx`);
+      FileSaver.saveAs(blob, `ProgramData_${selectedYear}.xlsx`);
     }
   };
 
@@ -98,7 +98,7 @@ function AdminDataDownloadPage() {
       const blob = new Blob([excelBuffer], {
         type: 'application/octet-stream',
       });
-      saveAs(blob, `KitchenData_${selectedYear}.xlsx`);
+      FileSaver.saveAs(blob, `KitchenData_${selectedYear}.xlsx`);
     }
   };
   const handleKitchenOutcomesClose = (
