@@ -41,7 +41,7 @@
     "@mui/system": "^5.5.2",
     "@reduxjs/toolkit": "^1.8.1",
     "axios": "^1.1.2",
-    "chart.js": "4.4.7",
+    "chart.js": "^4.4.8",
     "chartjs-plugin-datalabels": "^2.2.0",
     "cross-env": "^7.0.3",
     "eslint-config-airbnb-typescript-prettier": "^5.0.0",
