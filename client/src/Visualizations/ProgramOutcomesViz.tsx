@@ -332,10 +332,6 @@ const baseBarOptions: ChartOptions<'bar'> = {
       grid: {
         color: 'rgba(0, 0, 0, 0.05)',
         display: true,
-        borderColor: 'rgba(0, 0, 0, 0.1)',
-        borderWidth: 1,
-        borderDash: [],
-        borderDashOffset: 0,
         lineWidth: 1,
         tickBorderDash: [],
         tickBorderDashOffset: 0,
@@ -1711,10 +1707,6 @@ function ProgramOutcomesVisualization() {
           grid: {
             color: 'rgba(0, 0, 0, 0.05)',
             display: true,
-            borderColor: 'rgba(0, 0, 0, 0.1)',
-            borderWidth: 1,
-            borderDash: [],
-            borderDashOffset: 0,
             lineWidth: 1,
             tickBorderDash: [],
             tickBorderDashOffset: 0,
@@ -2182,6 +2174,8 @@ function ProgramOutcomesVisualization() {
     const result = {
       years: yearsList,
       orgValues: yearsList.map((yearNum) => yearValues[yearNum]),
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       networkValues: networkAverageResults.map((res) => res.data.average),
     };
 
