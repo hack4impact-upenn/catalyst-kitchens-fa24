@@ -9,7 +9,9 @@
     "server"
   ],
   "engines": {
-    "node": "20.16.0"
+    "node": "20.16.0",
+    "npm": "10.8.1",
+    "yarn": "1.22.19"
   },
   "scripts": {
     "start": "node server/dist/index.js",
