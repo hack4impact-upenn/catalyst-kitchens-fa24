@@ -310,6 +310,16 @@ export default function ProgramOutcome() {
     jobCategory: [],
     alumniHiredByOrg: undefined,
   };
+  const validOptions = [
+    'Other',
+    'The first day of program',
+    '2-4 day provisional period',
+    'One week provisional period',
+    'Two week provisional period',
+  ] as const;
+
+  const isValidOption = (value: any): value is (typeof validOptions)[number] =>
+    validOptions.includes(value);
   const [formState, setFormState] = React.useState<FormState>(noState);
   useEffect(() => {
     const fetchOrganizationId = async () => {
@@ -1446,8 +1456,9 @@ export default function ProgramOutcome() {
                 onChange={(e) => {
                   setFormState({
                     ...formState,
-                    youthTrainedDefinition: e.target
-                      .value as keyof (typeof formState)['youthTrainedDefinition'],
+                    youthTrainedDefinition: isValidOption(e.target.value)
+                      ? e.target.value
+                      : 'Other',
                   });
                 }}
                 label="Youth Trained Definition"
@@ -1486,8 +1497,10 @@ export default function ProgramOutcome() {
                 onChange={(e) => {
                   setFormState({
                     ...formState,
-                    youthGraduatedDefinition: e.target
-                      .value as keyof (typeof formState)['youthGraduatedDefinition'],
+                    youthGraduatedDefinition: e.target.value as
+                      | 'Other'
+                      | 'All weeks of program'
+                      | 'Early exit for employment allowed',
                   });
                 }}
                 label="Youth Graduated Definition"
@@ -1519,7 +1532,12 @@ export default function ProgramOutcome() {
                   setFormState({
                     ...formState,
                     youthOutcomesMeasure: e.target.value as Array<
-                      keyof (typeof formState)['youthOutcomesMeasure']
+                      | 'Other'
+                      | 'High School Graduation'
+                      | 'Return to School'
+                      | 'Family Reunification'
+                      | 'Non-Recidivism'
+                      | 'Stable Housing'
                     >,
                   });
                 }}
@@ -2024,8 +2042,10 @@ export default function ProgramOutcome() {
                 onChange={(e) => {
                   setFormState({
                     ...formState,
-                    adultGraduatedDefinition: e.target
-                      .value as keyof (typeof formState)['adultGraduatedDefinition'],
+                    adultGraduatedDefinition: e.target.value as
+                      | 'Other'
+                      | 'All weeks of program'
+                      | 'Early exit for employment allowed',
                   });
                 }}
                 label="Adult Graduated Definition"
