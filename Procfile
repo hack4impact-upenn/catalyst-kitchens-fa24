@@ -1,1 +1,1 @@
-web: yarn --cwd server build && yarn --cwd client build && yarn --cwd server start && yarn --cwd client start
+web: NODE_ENV=production yarn --cwd server start
