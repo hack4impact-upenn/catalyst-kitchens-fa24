@@ -425,8 +425,13 @@ function OrganizationMetricSummary({
               sx={{ color: '#666', fontSize: '0.875rem', ml: 1 }}
             >
               (Network Avg:{' '}
-              {summaryData.programInfo.programCostPerTrainee.networkAverage ||
-                'N/A'}
+              {summaryData.programInfo.programCostPerTrainee.networkAverage &&
+              summaryData.programInfo.programCostPerTrainee.networkAverage !==
+                undefined
+                ? summaryData.programInfo.programCostPerTrainee.networkAverage.toFixed(
+                    2,
+                  )
+                : 'N/A'}
               )
             </Typography>
           </Typography>
@@ -479,7 +484,11 @@ function AdultMetricSummary({ summaryData }: MetricSummaryProps) {
               sx={{ color: '#666', fontSize: '0.875rem', ml: 1 }}
             >
               (Network Avg:{' '}
-              {summaryData.adultOutcomes.enrolled.networkAverage || 'N/A'})
+              {summaryData.adultOutcomes.enrolled.networkAverage &&
+              summaryData.adultOutcomes.enrolled.networkAverage !== undefined
+                ? summaryData.adultOutcomes.enrolled.networkAverage.toFixed(1)
+                : 'N/A'}
+              )
             </Typography>
           </Typography>
         </Box>
@@ -494,7 +503,11 @@ function AdultMetricSummary({ summaryData }: MetricSummaryProps) {
               sx={{ color: '#666', fontSize: '0.875rem', ml: 1 }}
             >
               (Network Avg:{' '}
-              {summaryData.adultOutcomes.completion.networkAverage || 'N/A'})
+              {summaryData.adultOutcomes.completion.networkAverage &&
+              summaryData.adultOutcomes.completion.networkAverage != null
+                ? summaryData.adultOutcomes.completion.networkAverage.toFixed(1)
+                : 'N/A'}
+              )
             </Typography>
           </Typography>
         </Box>
@@ -509,7 +522,13 @@ function AdultMetricSummary({ summaryData }: MetricSummaryProps) {
               sx={{ color: '#666', fontSize: '0.875rem', ml: 1 }}
             >
               (Network Avg:{' '}
-              {summaryData.adultOutcomes.jobPlacement.networkAverage || 'N/A'})
+              {summaryData.adultOutcomes.jobPlacement.networkAverage &&
+              summaryData.adultOutcomes.jobPlacement.networkAverage != null
+                ? summaryData.adultOutcomes.jobPlacement.networkAverage.toFixed(
+                    1,
+                  )
+                : 'N/A'}
+              )
             </Typography>
           </Typography>
         </Box>
@@ -859,7 +878,10 @@ function YouthMetricSummary({ summaryData }: MetricSummaryProps) {
           </Typography>
           <Typography sx={networkAvgStyle}>
             Network Avg:{' '}
-            {summaryData.youthOutcomes.enrolled.networkAverage || 'N/A'}
+            {summaryData.youthOutcomes.enrolled.networkAverage &&
+            summaryData.youthOutcomes.enrolled.networkAverage !== undefined
+              ? summaryData.youthOutcomes.enrolled.networkAverage.toFixed(1)
+              : 'N/A'}
           </Typography>
         </Box>
       </Grid>
@@ -877,10 +899,22 @@ function YouthMetricSummary({ summaryData }: MetricSummaryProps) {
             </Typography>
           </Typography>
           <Typography sx={networkAvgStyle}>
-            Network:{' '}
-            {summaryData.youthOutcomes.completed.count.networkAverage || 'N/A'}(
-            {summaryData.youthOutcomes.completed.percentage.networkAverage ||
-              'N/A'}
+            Network Avg:{' '}
+            {summaryData.youthOutcomes.completed.count.networkAverage &&
+            summaryData.youthOutcomes.completed.count.networkAverage !==
+              undefined
+              ? summaryData.youthOutcomes.completed.count.networkAverage.toFixed(
+                  1,
+                )
+              : 'N/A'}
+            (
+            {summaryData.youthOutcomes.completed.count.networkAverage &&
+            summaryData.youthOutcomes.completed.count.networkAverage !==
+              undefined
+              ? summaryData.youthOutcomes.completed.count.networkAverage.toFixed(
+                  1,
+                )
+              : 'N/A'}
             % of enrolled)
           </Typography>
         </Box>
@@ -893,7 +927,13 @@ function YouthMetricSummary({ summaryData }: MetricSummaryProps) {
           </Typography>
           <Typography sx={networkAvgStyle}>
             Network Avg:{' '}
-            {summaryData.youthOutcomes.positiveOutcomes.networkAverage || 'N/A'}
+            {summaryData.youthOutcomes.positiveOutcomes.networkAverage &&
+            summaryData.youthOutcomes.positiveOutcomes.networkAverage !==
+              undefined
+              ? summaryData.youthOutcomes.positiveOutcomes.networkAverage.toFixed(
+                  1,
+                )
+              : 'N/A'}
           </Typography>
         </Box>
       </Grid>
@@ -959,7 +999,11 @@ function AdultSummaryBox({
             {programData.adultsTrained || 'N/A'}
           </Typography>
           <Typography sx={networkAvgStyle}>
-            Network Avg: {networkAverages.adultsTrained || 'N/A'}
+            Network Avg:{' '}
+            {networkAverages.adultsTrained !== null &&
+            networkAverages.adultsTrained !== undefined
+              ? `${networkAverages.adultsTrained.toFixed(0)}`
+              : 'N/A'}
           </Typography>
         </Box>
       </Grid>

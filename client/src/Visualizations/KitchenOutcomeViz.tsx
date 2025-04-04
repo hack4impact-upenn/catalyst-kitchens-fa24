@@ -1243,22 +1243,34 @@ function KitchenOutcomesVisualization() {
                     {[
                       {
                         label: 'Network Avg. Cost per Meal',
-                        value: networkAverages?.costPerMeal,
+                        value: networkAverages.costPerMeal
+                          ? `${networkAverages.costPerMeal.toFixed(2)}`
+                          : 'NaN',
                         prefix: '$',
                       },
                       {
                         label: 'Network Avg. Food Cost Percentage',
-                        value: networkAverages?.foodCostPercentage,
+                        value: networkAverages.foodCostPercentage
+                          ? networkAverages.foodCostPercentage.toFixed(2)
+                          : 'NaN',
                         suffix: '%',
                       },
                       {
                         label: 'Network Avg. Meal Reimbursement',
-                        value: networkAverages?.mealReimbursement,
+                        value: networkAverages.mealReimbursement
+                          ? networkAverages.mealReimbursement.toFixed(2)
+                          : 'NaN',
                         prefix: '$',
                       },
                       {
                         label: 'Network Avg. Hunger Relief Meals Served',
-                        value: networkAverages?.hungerReliefsMealsServed,
+                        value: networkAverages.hungerReliefsMealsServed
+                          ? Number(
+                              networkAverages.hungerReliefsMealsServed.toFixed(
+                                2,
+                              ),
+                            ).toLocaleString()
+                          : 'NaN',
                       },
                     ].map((item) => (
                       <Grid item xs={12} key={item.label}>
@@ -1308,32 +1320,75 @@ function KitchenOutcomesVisualization() {
                       {
                         label: 'Cafe',
                         value: surveyData?.grossRevenueCafe,
-                        avg: networkAverages?.grossRevenueCafe,
+                        avg:
+                          typeof networkAverages.grossRevenueCafe === 'number'
+                            ? Number(
+                                networkAverages.grossRevenueCafe.toFixed(2),
+                              ).toLocaleString()
+                            : null,
                       },
                       {
                         label: 'Restaurant',
                         value: surveyData?.grossRevenueRestaurant,
-                        avg: networkAverages?.grossRevenueRestaurant,
+                        avg:
+                          typeof networkAverages.grossRevenueRestaurant ===
+                          'number'
+                            ? Number(
+                                networkAverages.grossRevenueRestaurant.toFixed(
+                                  2,
+                                ),
+                              ).toLocaleString()
+                            : null,
                       },
                       {
                         label: 'Catering',
                         value: surveyData?.grossRevenueCatering,
-                        avg: networkAverages?.grossRevenueCatering,
+                        avg:
+                          typeof networkAverages.grossRevenueCatering ===
+                          'number'
+                            ? Number(
+                                networkAverages.grossRevenueCatering.toFixed(2),
+                              ).toLocaleString()
+                            : null,
                       },
                       {
                         label: 'Food Truck',
                         value: surveyData?.grossRevenueFoodTruck,
-                        avg: networkAverages?.grossRevenueFoodTruck,
+                        avg:
+                          typeof networkAverages.grossRevenueFoodTruck ===
+                          'number'
+                            ? Number(
+                                networkAverages.grossRevenueFoodTruck.toFixed(
+                                  2,
+                                ),
+                              ).toLocaleString()
+                            : null,
                       },
                       {
                         label: 'Wholesale',
                         value: surveyData?.grossRevenueWholesale,
-                        avg: networkAverages?.grossRevenueWholesale,
+                        avg:
+                          typeof networkAverages.grossRevenueWholesale ===
+                          'number'
+                            ? Number(
+                                networkAverages.grossRevenueWholesale.toFixed(
+                                  2,
+                                ),
+                              ).toLocaleString()
+                            : null,
                       },
                       {
                         label: 'Food Subscription',
                         value: surveyData?.grossRevenueFoodSubscription,
-                        avg: networkAverages?.grossRevenueFoodSubscription,
+                        avg:
+                          typeof networkAverages.grossRevenueFoodSubscription ===
+                          'number'
+                            ? Number(
+                                networkAverages.grossRevenueFoodSubscription.toFixed(
+                                  2,
+                                ),
+                              ).toLocaleString()
+                            : null,
                       },
                     ].map((enterprise) => (
                       <Grid item xs={12} sm={6} md={4} key={enterprise.label}>
@@ -1376,7 +1431,7 @@ function KitchenOutcomesVisualization() {
                             {enterprise.value || 'N/A'}
                           </Typography>
                           <Typography sx={{ mt: 0.5 }}>
-                            Network Avg: {enterprise.avg?.toFixed(2)}
+                            Network Avg: ${enterprise.avg}
                           </Typography>
                         </Card>
                       </Grid>
@@ -1416,7 +1471,14 @@ function KitchenOutcomesVisualization() {
                   </Typography>
                   <Typography align="center" sx={{ mt: 0.5 }}>
                     Network Avg: $
-                    {networkAverages?.retailSocialEnterpriseRevenue?.toFixed(2)}
+                    {typeof networkAverages?.retailSocialEnterpriseRevenue ===
+                    'number'
+                      ? Number(
+                          networkAverages.retailSocialEnterpriseRevenue.toFixed(
+                            2,
+                          ),
+                        ).toLocaleString()
+                      : null}
                   </Typography>
                 </Card>
               </Grid>
